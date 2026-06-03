@@ -1,0 +1,364 @@
+---
+// SearchBar.astro
+---
+
+<div class="search-container">
+  <div class="search-wrapper">
+    <!-- 搜索引擎选择器 -->
+    <div class="engine-selector">
+      <button class="current-engine-btn" id="engineBtn" type="button">
+        <i data-lucide="search" class="engine-icon" id="currentEngineIcon"></i>
+        <span class="engine-name" id="currentEngineName">搜索</span>
+        <i data-lucide="chevron-down" class="chevron-icon"></i>
+      </button>
+      <div class="engine-dropdown" id="engineDropdown">
+        <button class="engine-item active" type="button" data-engine="local" data-icon="search" data-action="">
+          <i data-lucide="search" class="item-icon"></i>
+          <span>本地过滤</span>
+        </button>
+        <button class="engine-item" type="button" data-engine="google" data-icon="globe" data-action="https://www.google.com/search?q=">
+          <i data-lucide="globe" class="item-icon"></i>
+          <span>Google</span>
+        </button>
+        <button class="engine-item" type="button" data-engine="baidu" data-icon="chrome" data-action="https://www.baidu.com/s?wd=">
+          <i data-lucide="chrome" class="item-icon"></i>
+          <span>百度</span>
+        </button>
+        <button class="engine-item" type="button" data-engine="bing" data-icon="compass" data-action="https://cn.bing.com/search?q=">
+          <i data-lucide="compass" class="item-icon"></i>
+          <span>必应</span>
+        </button>
+        <button class="engine-item" type="button" data-engine="github" data-icon="github" data-action="https://github.com/search?q=">
+          <i data-lucide="github" class="item-icon"></i>
+          <span>GitHub</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 分割线 -->
+    <div class="divider"></div>
+    
+    <!-- 输入框 -->
+    <input 
+      type="text" 
+      id="searchInput" 
+      placeholder="输入关键字过滤本地卡片... (按 Enter 进行外部搜索)" 
+      autocomplete="off"
+    />
+    
+    <!-- 键盘提示 -->
+    <div class="kbd-hint" id="kbdHint">/</div>
+    
+    <!-- 清空按钮 -->
+    <button class="clear-btn" id="clearBtn" type="button" style="display: none;">
+      <i data-lucide="x" class="clear-icon"></i>
+    </button>
+  </div>
+</div>
+
+<style is:global>
+  .search-container {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .search-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 7px 16px 7px 8px;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-smooth);
+    position: relative;
+    backdrop-filter: blur(10px);
+  }
+
+  .search-wrapper:focus-within {
+    border-color: var(--theme-primary-hover);
+    box-shadow: 0 12px 40px -15px rgba(0, 0, 0, 0.05), 0 0 0 3px rgba(163, 179, 182, 0.18);
+    background: var(--card-bg-hover);
+  }
+
+  .engine-selector {
+    position: relative;
+  }
+
+  .current-engine-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--color-text-main);
+    font-size: 13.5px;
+    font-weight: 550;
+    transition: var(--transition-smooth);
+  }
+
+  .current-engine-btn:hover {
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  .engine-icon {
+    width: 15px;
+    height: 15px;
+    color: var(--theme-primary);
+  }
+
+  .chevron-icon {
+    width: 13px;
+    height: 13px;
+    opacity: 0.5;
+    transition: var(--transition-smooth);
+  }
+
+  .current-engine-btn:hover .chevron-icon {
+    opacity: 0.8;
+    transform: translateY(1px);
+  }
+
+  .divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(0, 0, 0, 0.06);
+    margin: 0 6px;
+  }
+
+  input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: var(--color-text-main);
+    padding: 8px 6px;
+    font-family: inherit;
+  }
+
+  input::placeholder {
+    color: var(--color-text-sub);
+    opacity: 0.65;
+  }
+
+  .kbd-hint {
+    font-size: 10px;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    color: var(--color-text-sub);
+    padding: 3px 7px;
+    border-radius: 6px;
+    pointer-events: none;
+    font-family: monospace;
+    font-weight: bold;
+    transition: var(--transition-smooth);
+  }
+
+  .search-wrapper:focus-within .kbd-hint {
+    opacity: 0;
+    transform: scale(0.8) translateY(-2px);
+  }
+
+  .clear-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-sub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 50%;
+    transition: var(--transition-smooth);
+  }
+
+  .clear-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--color-text-main);
+  }
+
+  .clear-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* 下拉菜单 */
+  .engine-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(25px);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 15px 35px -10px rgba(0,0,0,0.06);
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    z-index: 100;
+    min-width: 130px;
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+    pointer-events: none;
+    transition: var(--transition-smooth);
+  }
+
+  .engine-dropdown.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+
+  .engine-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 13px;
+    color: var(--color-text-main);
+    transition: var(--transition-smooth);
+  }
+
+  .engine-item:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateX(2px);
+  }
+
+  .engine-item.active {
+    background: rgba(154, 168, 173, 0.15);
+    color: var(--theme-primary);
+    font-weight: 600;
+  }
+
+  .item-icon {
+    width: 14px;
+    height: 14px;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const engineBtn = document.getElementById('engineBtn');
+    const engineDropdown = document.getElementById('engineDropdown');
+    const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+    const currentEngineIcon = document.getElementById('currentEngineIcon');
+    const currentEngineName = document.getElementById('currentEngineName');
+    const clearBtn = document.getElementById('clearBtn') as HTMLElement;
+    const kbdHint = document.getElementById('kbdHint') as HTMLElement;
+    
+    let activeEngine = 'local';
+    let activeAction = '';
+
+    const savedEngine = localStorage.getItem('nav_search_engine');
+    if (savedEngine) {
+      const item = document.querySelector(`.engine-item[data-engine="${savedEngine}"]`);
+      if (item) {
+        selectEngine(item);
+      }
+    }
+
+    function selectEngine(element: Element) {
+      document.querySelectorAll('.engine-item').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+      
+      activeEngine = element.getAttribute('data-engine') || 'local';
+      activeAction = element.getAttribute('data-action') || '';
+      const icon = element.getAttribute('data-icon') || 'search';
+      const name = element.querySelector('span')?.textContent || '搜索';
+
+      localStorage.setItem('nav_search_engine', activeEngine);
+
+      currentEngineName!.textContent = name;
+      currentEngineIcon!.setAttribute('data-lucide', icon);
+      
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+
+      if (activeEngine === 'local') {
+        searchInput.placeholder = "输入关键字过滤本地卡片... (按 Enter 进行外部搜索)";
+      } else {
+        searchInput.placeholder = `在 ${name} 中搜索...`;
+      }
+    }
+
+    engineBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      engineDropdown?.classList.toggle('open');
+      const chevron = engineBtn.querySelector('.chevron-icon') as HTMLElement;
+      if (chevron) {
+        chevron.style.transform = engineDropdown?.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0)';
+      }
+    });
+
+    document.querySelectorAll('.engine-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectEngine(item);
+        engineDropdown?.classList.remove('open');
+        const chevron = engineBtn?.querySelector('.chevron-icon') as HTMLElement;
+        if (chevron) chevron.style.transform = 'rotate(0)';
+        searchInput.focus();
+      });
+    });
+
+    document.addEventListener('click', () => {
+      engineDropdown?.classList.remove('open');
+      const chevron = engineBtn?.querySelector('.chevron-icon') as HTMLElement;
+      if (chevron) chevron.style.transform = 'rotate(0)';
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
+
+    searchInput.addEventListener('input', () => {
+      const val = searchInput.value.trim().toLowerCase();
+      
+      if (val) {
+        clearBtn.style.display = 'flex';
+        kbdHint.style.display = 'none';
+      } else {
+        clearBtn.style.display = 'none';
+        kbdHint.style.display = 'block';
+      }
+
+      const event = new CustomEvent('local-search', { detail: { query: val } });
+      window.dispatchEvent(event);
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      searchInput.value = '';
+      searchInput.dispatchEvent(new Event('input'));
+      searchInput.focus();
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const query = searchInput.value.trim();
+        if (!query) return;
+
+        if (activeEngine === 'local') {
+          window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+        } else {
+          window.open(`${activeAction}${encodeURIComponent(query)}`, '_blank');
+        }
+      }
+    });
+  });
+</script>

@@ -1,0 +1,686 @@
+---
+interface Props {
+	title?: string;
+	description?: string;
+}
+
+const { title = "个人导航聚合页", description = "极简优雅的莫兰迪低饱和度个人导航" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
+		<title>{title}</title>
+		
+		<!-- 引入 Google Fonts 现代字体 -->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+		
+		<!-- 引入 Lucide Icons CDN -->
+		<script src="https://unpkg.com/lucide@latest"></script>
+
+		<!-- 首屏极速防闪烁与透明度/模糊度同步脚本 -->
+		<script is:inline>
+			(function() {
+				try {
+					const data = localStorage.getItem('nav_appearance');
+					if (!data) return;
+					const config = JSON.parse(data);
+					const doc = document.documentElement;
+					
+					// 1. 同步卡片不透明度和毛玻璃模糊度 CSS 变量
+					const opacity = config.cardOpacity !== undefined ? config.cardOpacity : 0.65;
+					const blur = config.cardBlur !== undefined ? config.cardBlur : 20;
+					const primaryColor = config.primaryColor || 'blue';
+					
+					doc.style.setProperty('--card-bg-opacity', String(opacity));
+					doc.style.setProperty('--card-blur-radius', blur + 'px');
+					
+					if (config.bgStyle === 'dark-slate') {
+						doc.style.setProperty('--card-bg', 'rgba(38, 41, 43, ' + opacity + ')');
+						doc.style.setProperty('--color-bg', '#1e2122');
+						doc.style.setProperty('--color-text-main', '#e8e8e8');
+						doc.style.setProperty('--color-text-sub', '#9ba1a3');
+					} else {
+						doc.style.setProperty('--card-bg', 'rgba(255, 255, 255, ' + opacity + ')');
+					}
+					
+					doc.style.setProperty('--theme-primary', 'var(--theme-' + primaryColor + ')');
+					doc.style.setProperty('--theme-primary-hover', 'var(--theme-' + primaryColor + '-hover, var(--theme-' + primaryColor + '))');
+					
+					// 2. 同步自定义在线壁纸 URL 变量
+					if (config.bgStyle === 'custom-url' && config.customBgUrl) {
+						doc.style.setProperty('--custom-bg-image-url', 'url("' + config.customBgUrl + '")');
+					}
+					
+					// 3. 将字体和背景的 Class 同步渲染在 html 根节点，实现首屏绘制对齐
+					doc.classList.add('font-' + (config.fontStyle || 'system-sans'));
+					doc.classList.add('bg-' + (config.bgStyle || 'morandi-glow'));
+				} catch(e) {
+					console.error('Appearance fast-init failed:', e);
+				}
+			})();
+		</script>
+	</head>
+	<body>
+		<div class="app-container">
+			<slot />
+		</div>
+	</body>
+</html>
+
+<style is:global>
+	/* 莫兰迪配色系统及全局变量 */
+	:root {
+		/* 基础背景与文字 */
+		--color-bg: #f5f4f0;            /* 静谧暖米灰 */
+		--color-text-main: #222222;     /* 调深为主炭黑，极大增加字迹清晰度 */
+		--color-text-sub: #585858;      /* 调深为中深灰，提升小字阅读对比度 */
+		
+		/* 极现代玻璃拟态卡片配置 */
+		--card-bg: rgba(255, 255, 255, 0.65);
+		--card-bg-hover: rgba(255, 255, 255, 0.88);
+		--card-border: rgba(226, 222, 211, 0.5);
+		--card-border-hover: rgba(163, 179, 182, 0.5);
+		--card-shadow: 0 10px 30px -10px rgba(67, 67, 67, 0.04);
+		--card-shadow-hover: 0 20px 40px -15px rgba(67, 67, 67, 0.08), 0 0 0 1px rgba(163, 179, 182, 0.1);
+
+		/* 莫兰迪分类色彩组合（低饱和度，温润沉静） */
+		--theme-blue: #9aa8ad;          /* 烟雨蓝 */
+		--theme-green: #a0b0a3;         /* 烟草绿 */
+		--theme-purple: #b5abb0;        /* 丁香灰 */
+		--theme-pink: #ccbab0;          /* 珊瑚粉 */
+		--theme-orange: #d1c1b3;        /* 燕麦杏 */
+		--theme-yellow: #cab99b;        /* 芥末黄 */
+		
+		/* 默认莫兰迪主题色（用于主按钮/高亮） */
+		--theme-primary: var(--theme-blue);
+		--theme-primary-hover: #8ea0a4;
+
+		/* 圆角和过渡时间 */
+		--radius-sm: 8px;
+		--radius-md: 16px;
+		--radius-lg: 28px;
+		--transition-smooth: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+		--transition-elastic: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+	}
+
+	/* 全局重置与基础样式 */
+	*, *::before, *::after {
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0;
+	}
+
+	html {
+		background-color: var(--color-bg);
+		color: var(--color-text-main);
+		scroll-behavior: smooth;
+		overflow-x: hidden;
+		
+		/* 全局启用文本抗锯齿及 ClearType 渲染优化 */
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		text-rendering: optimizeLegibility;
+	}
+
+	/* 第一版：思源莫兰迪黑体（Plus Jakarta Sans + Noto Sans SC） */
+	html.font-morandi-sans {
+		font-family: 'Plus Jakarta Sans', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+	}
+
+	/* 第二版：本地微软雅黑高清（Segoe UI + Microsoft YaHei） */
+	html.font-system-sans {
+		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+	}
+
+	/* 第三版：自定义在线字体或本地上传字体 */
+	html.font-custom-link, html.font-custom-file {
+		font-family: var(--font-family-custom), -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif !important;
+	}
+
+	body {
+		min-height: 100vh;
+		position: relative;
+		background-attachment: fixed;
+		background-color: var(--color-bg);
+		transition: background-color 0.4s ease, background-image 0.4s ease;
+	}
+
+	/* ================= 4 种背景美化风格定义 ================= */
+	
+	/* 1. 莫兰迪流光渐变（默认） */
+	html.bg-morandi-glow body, body.bg-morandi-glow {
+		background-image: 
+			radial-gradient(circle at 5% 10%, rgba(154, 168, 173, 0.15) 0%, transparent 35%),
+			radial-gradient(circle at 95% 85%, rgba(204, 186, 176, 0.15) 0%, transparent 40%),
+			linear-gradient(to bottom, #f5f4f0, #f0eee8);
+	}
+
+	/* 2. 暖米纯色 */
+	html.bg-solid-cream body, body.bg-solid-cream {
+		background-color: #f5f4f0;
+		background-image: none;
+	}
+
+	/* 3. 静谧深空暗调 */
+	html.bg-dark-slate body, body.bg-dark-slate {
+		background-color: #1e2122;
+		background-image: none;
+		--color-bg: #1e2122;
+		--color-text-main: #e8e8e8;
+		--color-text-sub: #9ba1a3;
+		--card-bg: rgba(38, 41, 43, var(--card-bg-opacity, 0.65)) !important;
+		--card-border: rgba(255, 255, 255, 0.06);
+		--card-border-hover: rgba(255, 255, 255, 0.15);
+		--card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2);
+		--card-shadow-hover: 0 20px 40px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
+	}
+	html.bg-dark-slate a.back-home-btn,
+	html.bg-dark-slate .action-btn.secondary,
+	html.bg-dark-slate .cat-icon-box,
+	html.bg-dark-slate .tab-btn,
+	html.bg-dark-slate .custom-select-trigger,
+	html.bg-dark-slate .admin-form input,
+	html.bg-dark-slate .admin-form select,
+	html.bg-dark-slate .icon-btn,
+	body.bg-dark-slate a.back-home-btn,
+	body.bg-dark-slate .action-btn.secondary,
+	body.bg-dark-slate .cat-icon-box,
+	body.bg-dark-slate .tab-btn,
+	body.bg-dark-slate .custom-select-trigger,
+	body.bg-dark-slate .admin-form input,
+	body.bg-dark-slate .admin-form select,
+	body.bg-dark-slate .icon-btn {
+		background: rgba(255, 255, 255, 0.04) !important;
+		color: #e8e8e8 !important;
+		border-color: rgba(255, 255, 255, 0.08) !important;
+	}
+	html.bg-dark-slate .tab-btn.active,
+	body.bg-dark-slate .tab-btn.active {
+		background: var(--theme-primary) !important;
+		color: #fff !important;
+		border-color: var(--theme-primary) !important;
+	}
+	html.bg-dark-slate .custom-options-container,
+	body.bg-dark-slate .custom-options-container {
+		background: rgba(30, 33, 34, 0.95) !important;
+		border-color: rgba(255, 255, 255, 0.08) !important;
+	}
+	html.bg-dark-slate .custom-option:hover,
+	body.bg-dark-slate .custom-option:hover {
+		background: rgba(255, 255, 255, 0.06) !important;
+	}
+
+	/* 4. 自定义壁纸风格 */
+	html.bg-custom-url body, html.bg-custom-file body, 
+	body.bg-custom-url, body.bg-custom-file {
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+		background-image: var(--custom-bg-image-url, none);
+	}
+
+	html.bg-custom-url, html.bg-custom-file {
+		--color-text-main: #111111;
+		--color-text-sub: #4b4b4b;
+	}
+
+	html.bg-custom-url::after, html.bg-custom-file::after,
+	body.bg-custom-url::after, body.bg-custom-file::after {
+		content: "";
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(245, 244, 240, 0.45); /* 覆盖一层温润遮罩保护对比度 */
+		z-index: -2;
+		pointer-events: none;
+	}
+
+	/* 定义美化设置中所选背景模式的伪莫兰迪圆点颜色 */
+	:root {
+		--theme-morandi-glow: #9aa8ad;
+		--theme-solid-cream: #ccbab0;
+		--theme-dark-slate: #3a3a3a;
+		--theme-custom-url: #cab99b;
+		--theme-custom-file: #b5abb0;
+		--theme-custom-link: #9aa8ad;
+	}
+
+	/* ================= 静谧深空暗调模式下的局部组件深度适配 ================= */
+	
+	/* 1. 侧边栏及内部挂件 */
+	html.bg-dark-slate .sidebar-container {
+		background: rgba(30, 33, 34, 0.72) !important;
+		border-right-color: rgba(255, 255, 255, 0.06) !important;
+		box-shadow: 10px 0 40px -20px rgba(0, 0, 0, 0.5) !important;
+	}
+	
+	html.bg-dark-slate .time-widget,
+	html.bg-dark-slate .weather-widget {
+		background: rgba(255, 255, 255, 0.03) !important;
+		border-color: rgba(255, 255, 255, 0.05) !important;
+		box-shadow: none !important;
+	}
+	
+	html.bg-dark-slate .weather-widget:hover {
+		background: rgba(255, 255, 255, 0.06) !important;
+	}
+
+	html.bg-dark-slate .nav-item {
+		color: #e8e8e8 !important;
+	}
+
+	html.bg-dark-slate .nav-item:hover {
+		background: rgba(255, 255, 255, 0.05) !important;
+		border-color: rgba(255, 255, 255, 0.08) !important;
+	}
+
+	html.bg-dark-slate .nav-item.active {
+		background: rgba(255, 255, 255, 0.08) !important;
+		color: var(--theme-primary) !important;
+		border-color: rgba(255, 255, 255, 0.1) !important;
+	}
+
+	/* 2. 搜索引擎下拉菜单及项 */
+	html.bg-dark-slate .engine-dropdown {
+		background: rgba(30, 33, 34, 0.9) !important;
+		border-color: rgba(255, 255, 255, 0.08) !important;
+		box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.4) !important;
+	}
+
+	html.bg-dark-slate .engine-item {
+		color: #e8e8e8 !important;
+	}
+
+	html.bg-dark-slate .engine-item:hover {
+		background: rgba(255, 255, 255, 0.06) !important;
+	}
+
+	html.bg-dark-slate .engine-item.active {
+		background: rgba(255, 255, 255, 0.08) !important;
+		color: var(--theme-primary) !important;
+	}
+
+	html.bg-dark-slate .current-engine-btn:hover {
+		background: rgba(255, 255, 255, 0.04) !important;
+	}
+
+	/* 3. 搜索键盘提示与分割线 */
+	html.bg-dark-slate .kbd-hint {
+		background: rgba(255, 255, 255, 0.06) !important;
+		border-color: rgba(255, 255, 255, 0.08) !important;
+		color: #9ba1a3 !important;
+	}
+
+	html.bg-dark-slate .search-wrapper .divider {
+		background: rgba(255, 255, 255, 0.08) !important;
+	}
+
+	html.bg-dark-slate .clear-btn:hover {
+		background: rgba(255, 255, 255, 0.06) !important;
+		color: #e8e8e8 !important;
+	}
+
+	/* 4. 管理后台模态弹窗 */
+	html.bg-dark-slate .modal-box {
+		background: rgba(38, 41, 43, 0.95) !important;
+		border-color: rgba(255, 255, 255, 0.08) !important;
+		color: #e8e8e8 !important;
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+	}
+
+	html.bg-dark-slate .modal-box h3 {
+		color: #e8e8e8 !important;
+	}
+
+	html.bg-dark-slate .modal-btn.secondary {
+		background: rgba(255, 255, 255, 0.04) !important;
+		color: #e8e8e8 !important;
+	}
+
+	html.bg-dark-slate .modal-btn.secondary:hover {
+		background: rgba(255, 255, 255, 0.08) !important;
+	}
+
+	/* 5. 美化面板特殊适配（如：分割折线、滑块、列表） */
+	html.bg-dark-slate .modal-box div[style*="border-bottom: 1px dashed"] {
+		border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+	}
+
+	html.bg-dark-slate .admin-form input[type="range"] {
+		background: rgba(255, 255, 255, 0.12) !important;
+	}
+
+	html.bg-dark-slate #fontUploadStatus,
+	html.bg-dark-slate #bgUploadStatus {
+		color: #9ba1a3 !important;
+	}
+
+	/* 6. 后台管理页面其他局部修饰 */
+	html.bg-dark-slate .header-divider {
+		background: rgba(255, 255, 255, 0.1) !important;
+	}
+
+	html.bg-dark-slate .back-home-btn:hover {
+		background: rgba(255, 255, 255, 0.08) !important;
+	}
+
+	html.bg-dark-slate .category-item:hover {
+		background: rgba(255, 255, 255, 0.08) !important;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+	}
+
+	html.bg-dark-slate .admin-link-card-clicks {
+		background: rgba(255, 255, 255, 0.05) !important;
+	}
+
+	html.bg-dark-slate .admin-link-card-footer {
+		border-top-color: rgba(255, 255, 255, 0.06) !important;
+	}
+
+	html.bg-dark-slate .admin-form-box {
+		border-top-color: rgba(255, 255, 255, 0.06) !important;
+	}
+
+	html.bg-dark-slate .section-header {
+		border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+	}
+	
+	html.bg-dark-slate .category-badge {
+		background: rgba(255, 255, 255, 0.05) !important;
+		color: #9ba1a3 !important;
+	}
+
+	html.bg-dark-slate .category-title-wrapper {
+		border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+	}
+
+	html.bg-dark-slate .admin-form input:focus,
+	html.bg-dark-slate .admin-form select:focus {
+		background: rgba(255, 255, 255, 0.08) !important;
+		border-color: var(--theme-primary-hover) !important;
+		box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05) !important;
+	}
+
+	html.bg-dark-slate .custom-select-trigger:hover,
+	html.bg-dark-slate .custom-select-wrapper.open .custom-select-trigger {
+		background: rgba(255, 255, 255, 0.08) !important;
+		border-color: var(--theme-primary-hover) !important;
+	}
+
+	/* ================= 暗调模式下管理页和卡片的 hover/选中 细节适配 ================= */
+	
+	/* 管理卡片 hover (去变色，亮边框) */
+	html.bg-dark-slate .admin-link-card:hover {
+		border-color: rgba(255, 255, 255, 0.15) !important;
+		background: rgba(255, 255, 255, 0.06) !important;
+		box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5) !important;
+	}
+
+	/* 分类列表项 category-item 暗调下 hover */
+	html.bg-dark-slate .category-item:hover {
+		background: rgba(255, 255, 255, 0.06) !important;
+		border-color: rgba(255, 255, 255, 0.12) !important;
+	}
+
+	/* 首页 link-card hover (去变色，亮边框) */
+	html.bg-dark-slate a.link-card:hover {
+		border-color: rgba(255, 255, 255, 0.15) !important;
+		background: rgba(255, 255, 255, 0.06) !important;
+		box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5) !important;
+	}
+
+	/* 搜索框 input / icon-picker-search 暗调下配色 */
+	html.bg-dark-slate .search-wrapper input,
+	html.bg-dark-slate .icon-picker-search {
+		color: #e8e8e8 !important;
+	}
+	html.bg-dark-slate .search-wrapper input::placeholder,
+	html.bg-dark-slate .icon-picker-search::placeholder {
+		color: #717779 !important;
+	}
+	
+	/* 解决暗调模式下搜索框整体及其 focus-within / hover 状态下的适配 */
+	html.bg-dark-slate .search-wrapper {
+		background: rgba(255, 255, 255, 0.03) !important;
+		border-color: rgba(255, 255, 255, 0.06) !important;
+		box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+	}
+	html.bg-dark-slate .search-wrapper:hover {
+		border-color: rgba(255, 255, 255, 0.12) !important;
+		background: rgba(255, 255, 255, 0.05) !important;
+	}
+	html.bg-dark-slate .search-wrapper:focus-within {
+		background: rgba(255, 255, 255, 0.06) !important;
+		border-color: var(--theme-primary-hover) !important;
+		box-shadow: 0 12px 40px -15px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.03) !important;
+	}
+
+	/* 主选择框 trigger 暗色聚焦 */
+	html.bg-dark-slate .custom-select-trigger:focus-within {
+		border-color: var(--theme-primary-hover) !important;
+	}
+
+	/* 搜索引擎按钮 & 各类 secondary-btn hover 样式 */
+	html.bg-dark-slate .action-btn.secondary:hover,
+	html.bg-dark-slate .back-home-btn:hover,
+	html.bg-dark-slate .tab-btn:hover {
+		background: rgba(255, 255, 255, 0.08) !important;
+		border-color: rgba(255, 255, 255, 0.15) !important;
+		color: #fff !important;
+	}
+
+	/* ================= 全局毛玻璃虚化覆盖与渐变控制 ================= */
+	.admin-header,
+	.admin-section,
+	.modal-box,
+	.sidebar-container,
+	.category-item,
+	a.link-card,
+	.admin-link-card,
+	.custom-select-trigger,
+	.custom-options-container {
+		backdrop-filter: blur(var(--card-blur-radius, 20px)) !important;
+		-webkit-backdrop-filter: blur(var(--card-blur-radius, 20px)) !important;
+		
+		/* 核心：添加对 backdrop-filter 的柔和过渡效果 */
+		transition: backdrop-filter 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
+		            -webkit-backdrop-filter 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+		            background-color 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+		            border-color 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+		            box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+	}
+
+	/* 自定义滚动条 */
+	::-webkit-scrollbar {
+		width: 5px;
+		height: 5px;
+	}
+
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: rgba(0, 0, 0, 0.1);
+		border-radius: var(--radius-sm);
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		background: rgba(0, 0, 0, 0.18);
+	}
+
+	a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.app-container {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		position: relative;
+	}
+</style>
+
+<!-- 客户端首屏无感渲染个性化美化层 -->
+<script>
+	import { storage, dbStorage } from '../scripts/storage';
+	
+	let activeBgObjectURL = '';
+	let activeFontObjectURL = '';
+
+	async function applyAppearance() {
+		const config = storage.getAppearance();
+		const doc = document.documentElement;
+		const body = document.body;
+		if (!body) return;
+
+		// 1. 动态应用卡片不透明度和模糊度 CSS 自定义变量
+		doc.style.setProperty('--card-bg-opacity', String(config.cardOpacity));
+		doc.style.setProperty('--card-blur-radius', `${config.cardBlur}px`);
+		
+		if (config.bgStyle === 'dark-slate') {
+			doc.style.setProperty('--card-bg', `rgba(38, 41, 43, ${config.cardOpacity})`);
+			doc.style.setProperty('--color-bg', '#1e2122');
+			doc.style.setProperty('--color-text-main', '#e8e8e8');
+			doc.style.setProperty('--color-text-sub', '#9ba1a3');
+		} else {
+			doc.style.setProperty('--card-bg', `rgba(255, 255, 255, ${config.cardOpacity})`);
+			doc.style.removeProperty('--color-bg');
+			doc.style.removeProperty('--color-text-main');
+			doc.style.removeProperty('--color-text-sub');
+		}
+
+		// 2. 动态应用莫兰迪高亮主题主色
+		doc.style.setProperty('--theme-primary', `var(--theme-${config.primaryColor})`);
+		doc.style.setProperty('--theme-primary-hover', `var(--theme-${config.primaryColor}-hover, var(--theme-${config.primaryColor}))`);
+
+		// 3. 动态应用背景风格及壁纸图片
+		doc.classList.remove('bg-morandi-glow', 'bg-solid-cream', 'bg-dark-slate', 'bg-custom-url', 'bg-custom-file');
+		doc.classList.add(`bg-${config.bgStyle}`);
+		body.classList.remove('bg-morandi-glow', 'bg-solid-cream', 'bg-dark-slate', 'bg-custom-url', 'bg-custom-file');
+		body.classList.add(`bg-${config.bgStyle}`);
+
+		// 清理旧的内存壁纸引用
+		if (activeBgObjectURL) {
+			URL.revokeObjectURL(activeBgObjectURL);
+			activeBgObjectURL = '';
+		}
+
+		if (config.bgStyle === 'custom-url' && config.customBgUrl) {
+			const urlVal = `url("${config.customBgUrl}")`;
+			doc.style.setProperty('--custom-bg-image-url', urlVal);
+			body.style.backgroundImage = urlVal;
+		} else if (config.bgStyle === 'custom-file') {
+			try {
+				const blob = await dbStorage.getAsset('custom-bg-file');
+				if (blob) {
+					activeBgObjectURL = URL.createObjectURL(blob);
+					const urlVal = `url("${activeBgObjectURL}")`;
+					doc.style.setProperty('--custom-bg-image-url', urlVal);
+					body.style.backgroundImage = urlVal;
+				} else {
+					// 降级保护
+					doc.classList.remove('bg-custom-file');
+					doc.classList.add('bg-morandi-glow');
+					body.classList.remove('bg-custom-file');
+					body.classList.add('bg-morandi-glow');
+					body.style.backgroundImage = '';
+					doc.style.removeProperty('--custom-bg-image-url');
+				}
+			} catch (e) {
+				console.error('Failed to load local background image from IndexedDB:', e);
+				body.style.backgroundImage = '';
+				doc.style.removeProperty('--custom-bg-image-url');
+			}
+		} else {
+			body.style.backgroundImage = '';
+			doc.style.removeProperty('--custom-bg-image-url');
+		}
+
+		// 4. 动态应用全局字体风格与动态注册
+		doc.classList.remove('font-morandi-sans', 'font-system-sans', 'font-custom-link', 'font-custom-file');
+		doc.classList.add(`font-${config.fontStyle || 'system-sans'}`);
+
+		// 获取/创建样式注入容器
+		let customStyleTag = document.getElementById('custom-fonts-style');
+		if (customStyleTag) {
+			customStyleTag.innerHTML = '';
+		} else {
+			customStyleTag = document.createElement('style');
+			customStyleTag.id = 'custom-fonts-style';
+			document.head.appendChild(customStyleTag);
+		}
+
+		if (config.fontStyle === 'custom-link' && config.fontCustomLink) {
+			const linkUrl = config.fontCustomLink.trim();
+			const familyName = config.fontFamilyName?.trim() || 'OnlineCustomFont';
+			
+			doc.style.setProperty('--font-family-custom', familyName);
+
+			if (linkUrl.includes('.css') || linkUrl.includes('fonts.googleapis.com')) {
+				let fontLink = document.getElementById('online-font-link') as HTMLLinkElement;
+				if (!fontLink) {
+					fontLink = document.createElement('link');
+					fontLink.id = 'online-font-link';
+					fontLink.rel = 'stylesheet';
+					document.head.appendChild(fontLink);
+				}
+				fontLink.href = linkUrl;
+			} else {
+				customStyleTag.innerHTML = `
+					@font-face {
+						font-family: "${familyName}";
+						src: url("${linkUrl}");
+						font-display: swap;
+					}
+				`;
+				document.getElementById('online-font-link')?.remove();
+			}
+		} else if (config.fontStyle === 'custom-file') {
+			const familyName = config.fontFamilyName?.trim() || 'LocalCustomFont';
+			doc.style.setProperty('--font-family-custom', familyName);
+
+			try {
+				const blob = await dbStorage.getAsset('custom-font-file');
+				if (blob) {
+					if (activeFontObjectURL) {
+						URL.revokeObjectURL(activeFontObjectURL);
+					}
+					activeFontObjectURL = URL.createObjectURL(blob);
+					customStyleTag.innerHTML = `
+						@font-face {
+							font-family: "${familyName}";
+							src: url("${activeFontObjectURL}");
+							font-display: swap;
+						}
+					`;
+				}
+			} catch (e) {
+				console.error('Failed to load local font file from IndexedDB:', e);
+			}
+		} else {
+			document.getElementById('online-font-link')?.remove();
+		}
+	}
+
+	// 首屏立即渲染，防抖闪
+	if (document.body) {
+		applyAppearance();
+	} else {
+		document.addEventListener('DOMContentLoaded', applyAppearance);
+	}
+
+	// 接收全局的个性化设定变更通知，即时响应渲染更新
+	window.addEventListener('appearance-updated', applyAppearance);
+</script>

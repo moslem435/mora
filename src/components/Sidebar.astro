@@ -1,0 +1,468 @@
+---
+// Sidebar.astro
+---
+
+<!-- 侧边栏折叠触发器 -->
+<button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="切换侧边栏" type="button">
+  <i data-lucide="menu" class="toggle-icon"></i>
+</button>
+
+<aside class="sidebar-container" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-area">
+      <div class="logo-dot"></div>
+      <span class="logo-text">Personal Hub</span>
+    </div>
+  </div>
+  
+  <div class="sidebar-body">
+    <!-- 时间日期模块 -->
+    <div class="time-widget">
+      <div class="clock-time" id="clockTime">00:00:00</div>
+      <div class="clock-date" id="clockDate">加载中...</div>
+    </div>
+    
+    <!-- 治愈系模拟天气 -->
+    <div class="weather-widget" id="weatherWidget" title="点击刷新诗意气象">
+      <div class="weather-main">
+        <i data-lucide="sun-dim" class="weather-icon" id="weatherIcon"></i>
+        <div class="weather-temp" id="weatherTemp">18°C</div>
+      </div>
+      <div class="weather-info">
+        <span class="weather-status" id="weatherStatus">多云转晴</span>
+        <span class="weather-divider">•</span>
+        <span class="weather-wind" id="weatherWind">微风拂面</span>
+      </div>
+      <div class="weather-quote" id="weatherQuote">“静水流深，晴空万里。”</div>
+    </div>
+    
+    <!-- 客户端动态生成分类导航 -->
+    <div class="menu-section">
+      <h4 class="section-title">快速定位</h4>
+      <nav class="sidebar-nav" id="sidebarNav">
+        <!-- 由 JS 填充 -->
+      </nav>
+    </div>
+  </div>
+  
+  <div class="sidebar-footer">
+    <!-- 后台管理链接 -->
+    <a href="/admin" class="admin-link-btn">
+      <i data-lucide="settings" class="btn-icon"></i>
+      <span>后台管理</span>
+    </a>
+  </div>
+</aside>
+
+<style is:global>
+  /* 触发按钮 */
+  .sidebar-toggle-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 999;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: 0 4px 15px -5px rgba(0, 0, 0, 0.08);
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    backdrop-filter: blur(10px);
+  }
+
+  .sidebar-toggle-btn:hover {
+    background: var(--card-bg-hover);
+    transform: scale(1.05);
+    border-color: var(--theme-primary);
+    box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.12);
+  }
+
+  .toggle-icon {
+    width: 17px;
+    height: 17px;
+    color: var(--color-text-main);
+  }
+
+  /* 侧边栏容器 */
+  .sidebar-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--card-border);
+    z-index: 990;
+    display: flex;
+    flex-direction: column;
+    padding: 80px 18px 20px 18px;
+    transform: translateX(-100%);
+    box-shadow: 10px 0 40px -20px rgba(0,0,0,0.04);
+    transition: var(--transition-smooth);
+  }
+
+  .sidebar-container.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-header {
+    margin-bottom: 24px;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--theme-primary);
+    box-shadow: 0 0 10px var(--theme-primary);
+  }
+
+  .logo-text {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--color-text-main);
+  }
+
+  .sidebar-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .sidebar-body::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 时间挂件 */
+  .time-widget {
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(0,0,0,0.015);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    text-align: center;
+    box-shadow: 0 4px 15px -10px rgba(0,0,0,0.02);
+  }
+
+  .clock-time {
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: var(--color-text-main);
+    font-family: 'Outfit', monospace;
+  }
+
+  .clock-date {
+    font-size: 11px;
+    color: var(--color-text-sub);
+    margin-top: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  /* 天气挂件 */
+  .weather-widget {
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(0,0,0,0.015);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    user-select: none;
+    box-shadow: 0 4px 15px -10px rgba(0,0,0,0.02);
+  }
+
+  .weather-widget:hover {
+    background: rgba(255, 255, 255, 0.65);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -10px rgba(0,0,0,0.05);
+  }
+
+  .weather-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .weather-icon {
+    width: 22px;
+    height: 22px;
+    color: var(--theme-yellow);
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .weather-widget:hover .weather-icon {
+    transform: rotate(15deg) scale(1.1);
+  }
+
+  .weather-temp {
+    font-size: 19px;
+    font-weight: 500;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .weather-info {
+    font-size: 11px;
+    color: var(--color-text-sub);
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .weather-quote {
+    font-size: 11px;
+    font-style: italic;
+    color: var(--color-text-sub);
+    text-align: center;
+    margin-top: 2px;
+    opacity: 0.8;
+  }
+
+  /* 分类定位 */
+  .menu-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--color-text-sub);
+    font-weight: 600;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  /* 导航项 */
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--color-text-main);
+    transition: var(--transition-smooth);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+  }
+
+  .nav-item:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: translateX(4px);
+    border-color: var(--card-border);
+  }
+
+  .nav-item.active {
+    background: rgba(154, 168, 173, 0.15);
+    color: var(--theme-primary);
+    font-weight: 600;
+    border-color: rgba(154, 168, 173, 0.2);
+  }
+
+  .nav-item-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--theme-color);
+  }
+
+  /* 页脚 */
+  .sidebar-footer {
+    margin-top: auto;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 14px;
+  }
+
+  .admin-link-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 550;
+    color: var(--color-text-main);
+    transition: var(--transition-smooth);
+  }
+
+  .admin-link-btn:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--theme-primary);
+    box-shadow: 0 6px 15px -5px rgba(0,0,0,0.05);
+    transform: translateY(-2px);
+  }
+
+  .btn-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--theme-primary);
+    transition: transform 0.8s ease;
+  }
+
+  .admin-link-btn:hover .btn-icon {
+    transform: rotate(45deg);
+  }
+</style>
+
+<script>
+  import { storage } from '../scripts/storage';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const clockTime = document.getElementById('clockTime');
+    const clockDate = document.getElementById('clockDate');
+    const sidebarNav = document.getElementById('sidebarNav');
+    const weatherWidget = document.getElementById('weatherWidget');
+
+    // 1. 折叠控制与状态记忆
+    const isSidebarOpen = localStorage.getItem('nav_sidebar_open') === 'true';
+    if (isSidebarOpen && sidebar && sidebarToggle) {
+      sidebar.classList.add('open');
+      sidebarToggle.style.left = '270px';
+      sidebarToggle.innerHTML = `<i data-lucide="x" class="toggle-icon"></i>`;
+    }
+
+    sidebarToggle?.addEventListener('click', () => {
+      const isOpen = sidebar?.classList.toggle('open');
+      localStorage.setItem('nav_sidebar_open', String(isOpen));
+
+      if (isOpen) {
+        sidebarToggle.innerHTML = `<i data-lucide="x" class="toggle-icon"></i>`;
+        sidebarToggle.style.left = '270px';
+      } else {
+        sidebarToggle.innerHTML = `<i data-lucide="menu" class="toggle-icon"></i>`;
+        sidebarToggle.style.left = '20px';
+      }
+
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    });
+
+    // 2. 动态时钟
+    function updateClock() {
+      const now = new Date();
+      const hrs = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      const secs = String(now.getSeconds()).padStart(2, '0');
+      if (clockTime) clockTime.textContent = `${hrs}:${mins}:${secs}`;
+      
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const date = now.getDate();
+      const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+      const day = days[now.getDay()];
+      if (clockDate) clockDate.textContent = `${year}年${month}月${date}日 ${day}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // 3. 诗意天气系统
+    const weatherQuotes = [
+      "“静水流深，晴空万里。”",
+      "“林下清风，心旷神怡。”",
+      "“和风细雨，润物无声。”",
+      "“微风轻拂，云卷云舒。”",
+      "“晓看红湿处，花重锦官城。”",
+      "“山气日夕佳，飞鸟相与还。”"
+    ];
+    
+    const weatherData = [
+      { temp: "22°C", status: "微风拂面", wind: "舒适", icon: "wind" },
+      { temp: "18°C", status: "多云转晴", wind: "和煦", icon: "sun-dim" },
+      { temp: "20°C", status: "和风细雨", wind: "润泽", icon: "cloud-drizzle" },
+      { temp: "24°C", status: "晴空朗朗", wind: "明媚", icon: "sun" }
+    ];
+
+    function rotateWeather() {
+      const randomWeather = weatherData[Math.floor(Math.random() * weatherData.length)];
+      const randomQuote = weatherQuotes[Math.floor(Math.random() * weatherQuotes.length)];
+      
+      const tempEl = document.getElementById('weatherTemp');
+      const statusEl = document.getElementById('weatherStatus');
+      const windEl = document.getElementById('weatherWind');
+      const quoteEl = document.getElementById('weatherQuote');
+      const iconEl = document.getElementById('weatherIcon');
+
+      if (tempEl) tempEl.textContent = randomWeather.temp;
+      if (statusEl) statusEl.textContent = randomWeather.status;
+      if (windEl) windEl.textContent = randomWeather.wind;
+      if (quoteEl) quoteEl.textContent = randomQuote;
+      if (iconEl) {
+        iconEl.setAttribute('data-lucide', randomWeather.icon);
+        if ((window as any).lucide) (window as any).lucide.createIcons();
+      }
+    }
+    rotateWeather();
+    weatherWidget?.addEventListener('click', rotateWeather);
+
+    // 4. 客户端渲染导航菜单
+    function renderNav() {
+      if (!sidebarNav) return;
+      sidebarNav.innerHTML = '';
+      
+      const categories = storage.getCategories().sort((a, b) => a.order - b.order);
+      
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'nav-item';
+        btn.setAttribute('type', 'button');
+        btn.setAttribute('style', `--theme-color: var(--theme-${cat.color})`);
+        btn.innerHTML = `
+          <i data-lucide="${cat.icon}" class="nav-item-icon"></i>
+          <span>${cat.name}</span>
+        `;
+        
+        btn.addEventListener('click', () => {
+          const target = document.getElementById(cat.id);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+          }
+        });
+        
+        sidebarNav.appendChild(btn);
+      });
+
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }
+
+    renderNav();
+    window.addEventListener('categories-updated', renderNav);
+  });
+</script>

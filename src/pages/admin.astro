@@ -1,0 +1,2658 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="管理控制台 - 个人导航聚合页">
+  <div class="admin-container">
+    
+    <!-- 头部工具栏 -->
+    <header class="admin-header">
+      <div class="header-logo">
+        <a href="/" class="back-home-btn">
+          <i data-lucide="arrow-left" class="btn-icon"></i>
+          <span>返回主页</span>
+        </a>
+        <div class="header-divider"></div>
+        <h1 class="header-title">导航管理控制台</h1>
+      </div>
+      
+      <div class="action-group">
+        <!-- 个性化美化设置 -->
+        <button id="openAppearanceBtn" class="action-btn secondary" title="个性化美化设置" type="button">
+          <i data-lucide="palette"></i>
+          <span>美化设置</span>
+        </button>
+        
+        <!-- 导入导出 -->
+        <button id="exportBtn" class="action-btn secondary" title="导出数据为 JSON 文件" type="button">
+          <i data-lucide="download"></i>
+          <span>导出备份</span>
+        </button>
+        <button id="importBtn" class="action-btn secondary" title="从 JSON 文件导入数据" type="button">
+          <i data-lucide="upload"></i>
+          <span>导入备份</span>
+        </button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" />
+        
+        <!-- 重置 -->
+        <button id="resetBtn" class="action-btn danger" title="重置项目到出厂种子配置" type="button">
+          <i data-lucide="rotate-ccw"></i>
+          <span>恢复默认</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      
+      <!-- 左列：分类管理 -->
+      <section class="admin-section category-section">
+        <div class="section-header">
+          <i data-lucide="folder-open" class="section-icon"></i>
+          <h2>分类管理</h2>
+        </div>
+        
+        <!-- 分类列表 -->
+        <div class="category-list" id="categoryList">
+          <!-- 动态加载 -->
+        </div>
+
+        <!-- 新建分类 -->
+        <div class="admin-form-box">
+          <h3>新建分类</h3>
+          <form id="addCatForm" class="admin-form" novalidate>
+            <div class="form-group">
+              <label for="catName">分类名称</label>
+              <input type="text" id="catName" required placeholder="如：工作效率、常用社交" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="catIcon">Lucide 图标名</label>
+                <div class="icon-picker-wrapper" id="catIconWrapper">
+                  <input type="text" id="catIcon" required placeholder="如: wrench, star" value="folder" autocomplete="off" />
+                  <div class="icon-picker-dropdown">
+                    <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
+                    <div class="icon-picker-grid"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="catColor">莫兰迪色</label>
+                <select id="catColor">
+                  <option value="blue">烟雨蓝</option>
+                  <option value="green">烟草绿</option>
+                  <option value="purple">丁香灰</option>
+                  <option value="pink">珊瑚粉</option>
+                  <option value="orange">燕麦杏</option>
+                  <option value="yellow">芥末黄</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="submit-btn">
+              <i data-lucide="plus"></i>
+              <span>添加分类</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- 右列：链接管理 -->
+      <section class="admin-section links-section">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <i data-lucide="link-2" class="section-icon"></i>
+            <h2>链接管理</h2>
+          </div>
+          <button id="openAddLinkBtn" class="action-btn secondary" style="margin: 0; padding: 6px 12px; font-size: 12.5px; border-radius: 8px; gap: 6px;" type="button">
+            <i data-lucide="plus" style="width: 13px; height: 13px;"></i>
+            <span>添加卡片</span>
+          </button>
+        </div>
+
+        <!-- 分类选择 Tab 栏 -->
+        <div class="category-tabs" id="categoryTabs">
+          <!-- 动态加载 Tab 按钮 -->
+        </div>
+
+        <!-- 链接列表（卡片网格风格） -->
+        <div class="admin-links-grid" id="linksList">
+          <!-- 动态加载 -->
+        </div>
+
+      </section>
+
+    </div>
+  </div>
+
+  <!-- 编辑分类弹窗 -->
+  <div class="modal" id="editCatModal">
+    <div class="modal-box">
+      <h3>修改分类</h3>
+      <form id="editCatForm" class="admin-form" novalidate>
+        <input type="hidden" id="editCatId" />
+        <div class="form-group">
+          <label for="editCatName">分类名称</label>
+          <input type="text" id="editCatName" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editCatIcon">Lucide 图标名</label>
+            <div class="icon-picker-wrapper" id="editCatIconWrapper">
+              <input type="text" id="editCatIcon" required autocomplete="off" />
+              <div class="icon-picker-dropdown">
+                <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
+                <div class="icon-picker-grid"></div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="editCatColor">莫兰迪色</label>
+            <select id="editCatColor">
+              <option value="blue">烟雨蓝</option>
+              <option value="green">烟草绿</option>
+              <option value="purple">丁香灰</option>
+              <option value="pink">珊瑚粉</option>
+              <option value="orange">燕麦杏</option>
+              <option value="yellow">芥末黄</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="modal-btn secondary" id="closeCatModal">取消</button>
+          <button type="submit" class="modal-btn primary">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 新增链接弹窗 -->
+  <div class="modal" id="addLinkModal">
+    <div class="modal-box">
+      <h3>添加新卡片</h3>
+      <form id="addLinkForm" class="admin-form" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="linkTitle">卡片名称</label>
+            <input type="text" id="linkTitle" required placeholder="如：GitHub" />
+          </div>
+          <div class="form-group">
+            <label for="linkCatId">所属分类</label>
+            <select id="linkCatId" required>
+              <!-- 动态加载分类选项 -->
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="linkUrl">链接 URL</label>
+          <input type="url" id="linkUrl" required placeholder="https://example.com" />
+        </div>
+        <div class="form-group">
+          <label for="linkDesc">描述信息</label>
+          <input type="text" id="linkDesc" required placeholder="请用一句话简短介绍网站功能..." />
+        </div>
+        <div class="form-group">
+          <label for="linkIcon">Lucide 图标名</label>
+          <div class="icon-picker-wrapper" id="linkIconWrapper">
+            <input type="text" id="linkIcon" required placeholder="如: github, chrome, globe (留空默认 external-link)" value="external-link" autocomplete="off" />
+            <div class="icon-picker-dropdown">
+              <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
+              <div class="icon-picker-grid"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="modal-btn secondary" id="closeAddLinkModal">取消</button>
+          <button type="submit" class="modal-btn primary">确认添加</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 编辑链接弹窗 -->
+  <div class="modal" id="editLinkModal">
+    <div class="modal-box">
+      <h3>修改链接卡片</h3>
+      <form id="editLinkForm" class="admin-form" novalidate>
+        <input type="hidden" id="editLinkId" />
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editLinkTitle">卡片名称</label>
+            <input type="text" id="editLinkTitle" required />
+          </div>
+          <div class="form-group">
+            <label for="editLinkCatId">所属分类</label>
+            <select id="editLinkCatId" required></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editLinkUrl">链接 URL</label>
+          <input type="url" id="editLinkUrl" required />
+        </div>
+        <div class="form-group">
+          <label for="editLinkDesc">描述信息</label>
+          <input type="text" id="editLinkDesc" required />
+        </div>
+        <div class="form-group">
+          <label for="editLinkIcon">Lucide 图标</label>
+          <div class="icon-picker-wrapper" id="editLinkIconWrapper">
+            <input type="text" id="editLinkIcon" required autocomplete="off" />
+            <div class="icon-picker-dropdown">
+              <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
+              <div class="icon-picker-grid"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="modal-btn secondary" id="closeLinkModal">取消</button>
+          <button type="submit" class="modal-btn primary">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 个性化美化设置弹窗 -->
+  <div class="modal" id="appearanceModal">
+    <div class="modal-box" style="max-width: 420px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px; border-bottom: 1px dashed rgba(0, 0, 0, 0.06); padding-bottom: 12px;">
+        <i data-lucide="palette" style="color: var(--theme-primary); width: 18px; height: 18px;"></i>
+        <h3 style="margin: 0; font-size: 15px;">个性化美化设置</h3>
+      </div>
+      
+      <form id="appearanceForm" class="admin-form">
+        <!-- 字体风格 -->
+        <div class="form-group">
+          <label for="fontStyle">全局字体风格</label>
+          <select id="fontStyle">
+            <option value="system-sans">本地微软雅黑 (清晰易读)</option>
+            <option value="morandi-sans">思源莫兰迪体 (第一版)</option>
+            <option value="custom-link">自定义在线字体链接</option>
+            <option value="custom-file">本地上传字体包文件</option>
+          </select>
+        </div>
+
+        <!-- 在线字体链接配置组 -->
+        <div class="form-group" id="customFontLinkGroup" style="display: none;">
+          <label for="fontCustomLink">在线字体地址 (CSS/WOFF2)</label>
+          <input type="url" id="fontCustomLink" placeholder="输入 https://... 字体或 Google Fonts 链接" />
+        </div>
+        
+        <!-- 自定义字体 FontFamily 命名 -->
+        <div class="form-group" id="customFontFamilyGroup" style="display: none;">
+          <label for="fontFamilyName">自定义字体族名称 (Font-Family)</label>
+          <input type="text" id="fontFamilyName" placeholder="如: Noto Serif SC" />
+        </div>
+
+        <!-- 本地上传字体包组 -->
+        <div class="form-group" id="customFontFileGroup" style="display: none;">
+          <label for="fontCustomFile">本地上传字体包 (.ttf/.otf/.woff2)</label>
+          <div style="position: relative; display: flex; align-items: center; gap: 10px;">
+            <input type="file" id="fontCustomFile" accept=".ttf,.otf,.woff,.woff2" style="display: none;" />
+            <button type="button" id="uploadFontBtn" class="action-btn secondary" style="margin: 0; width: 100%; justify-content: center; border-radius: 8px;">
+              <i data-lucide="upload-cloud" style="width: 14px; height: 14px;"></i>
+              <span>选择字体文件 (.woff2/.ttf)</span>
+            </button>
+          </div>
+          <span id="fontUploadStatus" style="font-size: 11px; color: var(--color-text-sub); display: block; margin-top: 4px; font-family: monospace;">未上传本地文件</span>
+        </div>
+
+        <!-- 背景风格 -->
+        <div class="form-group">
+          <label for="bgStyle">全局背景风格</label>
+          <select id="bgStyle">
+            <option value="morandi-glow">莫兰迪流光 (推荐)</option>
+            <option value="solid-cream">暖米纯色</option>
+            <option value="dark-slate">静谧深空暗调</option>
+            <option value="custom-url">在线壁纸图片链接</option>
+            <option value="custom-file">本地上传壁纸图片</option>
+          </select>
+        </div>
+        
+        <!-- 在线图片链接 -->
+        <div class="form-group" id="customBgUrlGroup" style="display: none;">
+          <label for="customBgUrl">壁纸图片 URL</label>
+          <input type="url" id="customBgUrl" placeholder="输入高清图片链接 https://..." />
+        </div>
+
+        <!-- 本地上传壁纸组 -->
+        <div class="form-group" id="customBgFileGroup" style="display: none;">
+          <label for="bgCustomFile">本地上传壁纸</label>
+          <div style="position: relative; display: flex; align-items: center; gap: 10px;">
+            <input type="file" id="bgCustomFile" accept="image/*" style="display: none;" />
+            <button type="button" id="uploadBgBtn" class="action-btn secondary" style="margin: 0; width: 100%; justify-content: center; border-radius: 8px;">
+              <i data-lucide="image" style="width: 14px; height: 14px;"></i>
+              <span>选择背景图片 (.jpg/.png/.webp)</span>
+            </button>
+          </div>
+          <span id="bgUploadStatus" style="font-size: 11px; color: var(--color-text-sub); display: block; margin-top: 4px; font-family: monospace;">未上传本地文件</span>
+        </div>
+
+        <!-- 全站高亮主色 -->
+        <div class="form-group">
+          <label for="primaryColor">全站高亮主色</label>
+          <select id="primaryColor">
+            <option value="blue">烟雨蓝</option>
+            <option value="green">烟草绿</option>
+            <option value="purple">丁香灰</option>
+            <option value="pink">珊瑚粉</option>
+            <option value="orange">燕麦杏</option>
+            <option value="yellow">芥末黄</option>
+          </select>
+        </div>
+
+        <!-- 卡片不透明度 -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="cardOpacity">卡片不透明度</label>
+            <span id="opacityVal" style="font-size: 11px; font-family: monospace; font-weight: 600; color: var(--color-text-sub);">0.65</span>
+          </div>
+          <input type="range" id="cardOpacity" min="0.2" max="0.95" step="0.05" value="0.65" style="width: 100%; cursor: pointer;" />
+        </div>
+
+        <!-- 毛玻璃虚化度 -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="cardBlur">毛玻璃虚化度</label>
+            <span id="blurVal" style="font-size: 11px; font-family: monospace; font-weight: 600; color: var(--color-text-sub);">20px</span>
+          </div>
+          <input type="range" id="cardBlur" min="0" max="40" step="1" value="20" style="width: 100%; cursor: pointer;" />
+        </div>
+
+        <div class="modal-buttons" style="margin-top: 18px;">
+          <button type="button" class="modal-btn primary" id="closeAppearanceModal" style="width: 100%; text-align: center; font-weight: 550;">完成设置</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 自定义确认弹窗 (Custom Confirm Modal) -->
+  <div class="modal" id="customConfirmModal">
+    <div class="modal-box" style="max-width: 380px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+        <i data-lucide="help-circle" id="confirmIcon" style="color: var(--theme-primary); width: 22px; height: 22px;"></i>
+        <h3 id="confirmTitle" style="margin: 0; font-size: 15px;">确认操作</h3>
+      </div>
+      <p id="confirmMessage" style="font-size: 13px; color: var(--color-text-sub); line-height: 1.6; margin-bottom: 20px;">确定要执行此操作吗？</p>
+      <div class="modal-buttons">
+        <button type="button" class="modal-btn secondary" id="confirmCancelBtn">取消</button>
+        <button type="button" class="modal-btn primary" id="confirmOkBtn" style="background: var(--theme-primary);">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 全局自定义通知系统 (Custom Toast Container) -->
+  <div id="toastContainer" class="toast-container"></div>
+</Layout>
+
+<style is:global>
+  /* 确保全局莫兰迪变量应用在后台管理页 */
+  .admin-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px 80px 20px;
+  }
+
+  /* 头部工具栏 */
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 18px 24px;
+    margin-bottom: 30px;
+    box-shadow: var(--card-shadow);
+    backdrop-filter: blur(10px);
+  }
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .back-home-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 550;
+    color: var(--color-text-main);
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: var(--transition-smooth);
+  }
+
+  .back-home-btn:hover {
+    background: rgba(0, 0, 0, 0.06);
+    transform: translateX(-3px);
+  }
+
+  .back-home-btn .btn-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .header-divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  .header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    letter-spacing: 0.5px;
+  }
+
+  .action-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition-smooth);
+  }
+
+  .action-btn i {
+    width: 14px;
+    height: 14px;
+  }
+
+  .action-btn.secondary {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--card-border);
+    color: var(--color-text-main);
+  }
+
+  .action-btn.secondary:hover {
+    background: #fff;
+    border-color: var(--theme-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+
+  .action-btn.danger {
+    background: rgba(196, 117, 117, 0.1);
+    border: 1px solid rgba(196, 117, 117, 0.2);
+    color: #b35959;
+  }
+
+  .action-btn.danger:hover {
+    background: rgba(196, 117, 117, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(196, 117, 117, 0.08);
+  }
+
+  /* 双栏布局 */
+  .admin-content {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 30px;
+    align-items: start;
+  }
+
+  .admin-sidebar-column {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .admin-section {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 26px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    backdrop-filter: blur(10px);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+  }
+
+  .section-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--theme-primary);
+  }
+
+  .section-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-main);
+  }
+
+  /* 分类列表（卡片化设计） */
+  .category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .category-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-left: 4px solid var(--theme-color); /* 莫兰迪色左侧条 */
+    border-radius: 10px;
+    transition: var(--transition-smooth);
+    
+    /* 强制开启 GPU 硬件加速防抖动 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform, background-color, box-shadow;
+    backface-visibility: hidden;
+  }
+
+  .category-item:hover {
+    background: var(--card-bg-hover);
+    transform: translate3d(4px, 0, 0); /* 3D 平移 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+
+  .cat-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .cat-icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    color: var(--theme-color);
+  }
+
+  .cat-icon-box i {
+    width: 15px;
+    height: 15px;
+  }
+
+  .cat-name-text {
+    font-size: 13.5px;
+    font-weight: 550;
+    color: var(--color-text-main);
+  }
+
+  .cat-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* 通用小图标按钮 */
+  .icon-btn {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--card-border);
+    cursor: pointer;
+    padding: 7px;
+    border-radius: 8px;
+    color: var(--color-text-sub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+  }
+
+  .icon-btn:hover {
+    background: #fff;
+    color: var(--theme-primary);
+    border-color: var(--theme-primary-hover);
+    transform: translateY(-1px);
+  }
+
+  .icon-btn.delete-btn:hover {
+    background: rgba(196, 117, 117, 0.08);
+    color: #b35959;
+    border-color: rgba(196, 117, 117, 0.2);
+  }
+
+  .icon-btn i {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* 表单输入框容器 */
+  .admin-form-box {
+    border-top: 1px dashed rgba(0, 0, 0, 0.06);
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .admin-form-box h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-main);
+  }
+
+  .admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .admin-form label {
+    font-size: 12px;
+    color: var(--color-text-sub);
+    font-weight: 555;
+  }
+
+  .admin-form input, 
+  .admin-form select {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--card-border);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--color-text-main);
+    outline: none;
+    transition: var(--transition-smooth);
+    font-family: inherit;
+  }
+
+  .admin-form input:focus, 
+  .admin-form select:focus {
+    border-color: var(--theme-primary-hover);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(163, 179, 182, 0.2);
+  }
+
+  .submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background: var(--theme-primary);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    box-shadow: 0 4px 10px rgba(163, 179, 182, 0.2);
+  }
+
+  .submit-btn:hover {
+    background: var(--theme-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(163, 179, 182, 0.3);
+  }
+
+  .submit-btn i {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* 链接过滤 Tabs */
+  .category-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--color-text-sub);
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--card-border);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+  }
+
+  .tab-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-main);
+    transform: translateY(-1px);
+  }
+
+  .tab-btn.active {
+    background: var(--theme-primary);
+    color: #fff;
+    font-weight: 550;
+    border-color: var(--theme-primary);
+    box-shadow: 0 4px 10px rgba(163, 179, 182, 0.25);
+  }
+
+  .tab-btn i {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* 链接卡片网格列表 */
+  .admin-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .admin-link-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 135px;
+    position: relative;
+    transition: var(--transition-smooth);
+    
+    /* 强制开启 GPU 硬件加速防抖动 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform, box-shadow, border-color, background-color;
+    backface-visibility: hidden;
+  }
+
+  .admin-link-card:hover {
+    transform: translate3d(0, -3px, 0); /* 3D 平移 */
+    box-shadow: var(--card-shadow-hover);
+  }
+
+  .admin-link-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .admin-link-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--theme-color);
+    transition: var(--transition-smooth);
+  }
+
+  .admin-link-card:hover .admin-link-card-icon {
+    transform: rotateZ(6deg);
+  }
+
+  .admin-link-card-icon i {
+    width: 20px;
+    height: 20px;
+  }
+
+  .admin-link-card-title {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--color-text-main);
+  }
+
+  .admin-link-card-desc {
+    font-size: 13px;
+    color: var(--color-text-sub);
+    line-height: 1.5;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .admin-link-card-url {
+    color: var(--theme-blue);
+    text-decoration: underline;
+    font-family: 'Outfit', -apple-system, sans-serif;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .admin-link-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px dashed rgba(0, 0, 0, 0.05);
+    padding-top: 10px;
+    margin-top: auto;
+  }
+
+  .admin-link-card-clicks {
+    font-family: 'Outfit', monospace;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--color-text-sub);
+    background: rgba(0, 0, 0, 0.04);
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+
+  .admin-link-card-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  /* ================= 自定义下拉选择框样式 ================= */
+  .custom-select-wrapper {
+    position: relative;
+    user-select: none;
+    width: 100%;
+  }
+
+  /* 强力强制隐藏包裹的原生 select */
+  .custom-select-wrapper select {
+    display: none !important;
+  }
+
+  .custom-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--card-border);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--color-text-main);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    
+    transform: translate3d(0, 0, 0);
+    will-change: border-color, background-color, box-shadow;
+  }
+
+  .custom-select-trigger:hover {
+    border-color: var(--theme-primary-hover);
+    background: #fff;
+  }
+
+  .custom-select-wrapper.open .custom-select-trigger {
+    border-color: var(--theme-primary-hover);
+    box-shadow: 0 0 0 3px rgba(163, 179, 182, 0.25);
+    background: #fff;
+  }
+
+  .custom-select-trigger-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .custom-select-trigger .chevron-icon {
+    width: 14px;
+    height: 14px;
+    opacity: 0.55;
+    transition: var(--transition-smooth);
+    will-change: transform;
+  }
+
+  .custom-select-wrapper.open .chevron-icon {
+    transform: rotate(180deg);
+    opacity: 0.85;
+  }
+
+  /* 下拉菜单容器 */
+  .custom-options-container {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 100%;
+    width: max-content;
+    max-width: 280px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(226, 222, 211, 0.8);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px -8px rgba(67, 67, 67, 0.08), 0 0 1px rgba(0, 0, 0, 0.05);
+    padding: 6px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    opacity: 0;
+    
+    /* 1. 彻底去除 scale3d 变形，改用极小幅度的 translate3d 垂直推动防抖 */
+    transform: translate3d(0, -6px, 0);
+    pointer-events: none;
+    
+    /* 2. 仅对透明度和位置进行极平滑过渡 */
+    transition: opacity 0.22s cubic-bezier(0.25, 1, 0.5, 1), transform 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+    
+    /* 3. 强制开启硬件加速与 3D 合成层渲染上下文 */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  /* 精美细滚动条 */
+  .custom-options-container::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .custom-options-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-options-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 2px;
+  }
+
+  .custom-options-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.15);
+  }
+
+  .custom-select-wrapper.open .custom-options-container {
+    opacity: 1;
+    transform: translate3d(0, 0, 0); /* 归位到 0，不进行 scale */
+    pointer-events: auto;
+  }
+
+  .custom-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--color-text-main);
+    cursor: pointer;
+    
+    /* 4. 只对背景色和投影过渡，彻底消除平移导致的文字亚像素发虚抖动 */
+    transition: background-color 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    
+    /* 5. 强制 3D 渲染上下文以阻止合成层变换时的像素闪烁 */
+    transform: translate3d(0, 0, 0);
+    will-change: background-color;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .custom-option:hover {
+    background: rgba(0, 0, 0, 0.045);
+    /* 移除了可能引发整行文本渲染抖动的横向 translate 位移 */
+  }
+
+  .custom-option.selected {
+    background: rgba(154, 168, 173, 0.12);
+    font-weight: 600;
+    color: var(--theme-primary);
+  }
+
+  /* 莫兰迪小色点 */
+  .select-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  /* 分类小图标 */
+  .select-cat-icon {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .custom-option:hover .select-cat-icon {
+    transform: scale3d(1.1, 1.1, 1);
+  }
+
+  /* 模态编辑弹窗 */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(67, 67, 67, 0.25);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+    
+    /* 硬件加速以避免高斯模糊引发页面抖动 */
+    transform: translate3d(0, 0, 0);
+    will-change: opacity;
+    backface-visibility: hidden;
+  }
+
+  .modal.open {
+    display: flex;
+  }
+
+  .modal-box {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 26px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    animation: zoomIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    
+    /* 强力 3D 加速防止弹窗缩放时内部字重抖动发虚 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+  }
+
+  .modal-box h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--color-text-main);
+  }
+
+  .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .modal-btn {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition-smooth);
+  }
+
+  .modal-btn.primary {
+    background: var(--theme-primary);
+    color: #fff;
+  }
+
+  .modal-btn.primary:hover {
+    background: var(--theme-primary-hover);
+    transform: translateY(-1px);
+  }
+
+  .modal-btn.secondary {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--color-text-main);
+  }
+
+  .modal-btn.secondary:hover {
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  @keyframes zoomIn {
+    from { opacity: 0; transform: translate3d(0, 0, 0) scale3d(0.95, 0.95, 1); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translate3d(0, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+
+  /* 响应式 */
+  @media (max-width: 900px) {
+    .admin-content {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* 个性化滑块美化 */
+  .admin-form input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.08);
+    outline: none;
+    border: none !important; /* 彻底去除边框 */
+    padding: 0;
+    margin: 8px 0;
+    transition: background 0.3s;
+  }
+
+  .admin-form input[type="range"]:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important; /* 彻底消除 focus 时的外框投影 */
+  }
+
+  /* 针对 Chrome, Safari, Opera 和 Edge 的 track */
+  .admin-form input[type="range"]::-webkit-slider-runnable-track {
+    border: none !important;
+    background: transparent;
+  }
+
+  /* 针对 Chrome, Safari, Opera 和 Edge 的 thumb */
+  .admin-form input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--theme-primary);
+    cursor: pointer;
+    border: none !important; /* 彻底去除滑块按钮边框 */
+    transition: transform 0.15s, background-color 0.15s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .admin-form input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale3d(1.2, 1.2, 1);
+    background: var(--theme-primary-hover);
+  }
+
+  /* 针对 Firefox 的 track */
+  .admin-form input[type="range"]::-moz-range-track {
+    border: none !important;
+    background: transparent;
+  }
+
+  /* 针对 Firefox 的 thumb */
+  .admin-form input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: none !important; /* 彻底去除 Firefox 滑块按钮边框 */
+    border-radius: 50%;
+    background: var(--theme-primary);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: transform 0.15s, background-color 0.15s;
+  }
+
+  .admin-form input[type="range"]::-moz-range-thumb:hover {
+    transform: scale3d(1.2, 1.2, 1);
+    background: var(--theme-primary-hover);
+  }
+
+  /* 针对 IE 的 track & thumb */
+  .admin-form input[type="range"]::-ms-track {
+    border: none !important;
+    color: transparent;
+    background: transparent;
+  }
+  .admin-form input[type="range"]::-ms-thumb {
+    border: none !important;
+  }
+
+  /* ================= 自定义通知与确认弹窗设计 ================= */
+  .toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9999;
+    pointer-events: none;
+  }
+
+  .custom-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid var(--card-border);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 1px 1px rgba(0, 0, 0, 0.03);
+    color: var(--color-text-main);
+    font-size: 13px;
+    font-weight: 550;
+    min-width: 200px;
+    max-width: 350px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    
+    transform: translate3d(0, -20px, 0);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .custom-toast.show {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+
+  .custom-toast.fade-out {
+    transform: translate3d(0, -10px, 0) scale(0.95);
+    opacity: 0;
+  }
+
+  .custom-toast.success {
+    border-left: 4px solid var(--theme-green);
+  }
+  .custom-toast.success i {
+    color: var(--theme-green);
+  }
+
+  .custom-toast.error {
+    border-left: 4px solid #c47575;
+  }
+  .custom-toast.error i {
+    color: #c47575;
+  }
+
+  .custom-toast.info {
+    border-left: 4px solid var(--theme-blue);
+  }
+  .custom-toast.info i {
+    color: var(--theme-blue);
+  }
+
+  /* 暗调模式下的 Toast */
+  html.bg-dark-slate .custom-toast {
+    background: rgba(38, 41, 43, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #e8e8e8 !important;
+    box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  /* ================= 可搜索图标库选择器设计 ================= */
+  .icon-picker-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .icon-picker-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    min-width: 280px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(226, 222, 211, 0.8);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px -8px rgba(67, 67, 67, 0.08), 0 0 1px rgba(0, 0, 0, 0.05);
+    padding: 10px;
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 240px;
+  }
+
+  .icon-picker-wrapper.open .icon-picker-dropdown {
+    display: flex;
+  }
+
+  .icon-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+    gap: 6px;
+    overflow-y: auto;
+    max-height: 180px;
+    padding-right: 4px;
+  }
+
+  .icon-picker-grid::-webkit-scrollbar {
+    width: 4px;
+  }
+  .icon-picker-grid::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .icon-picker-grid::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 2px;
+  }
+
+  .icon-picker-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    color: var(--color-text-main);
+  }
+
+  .icon-picker-item:hover {
+    background: var(--theme-primary);
+    color: #fff;
+    border-color: var(--theme-primary);
+    transform: scale(1.1);
+  }
+
+  .icon-picker-item.active {
+    background: var(--theme-primary);
+    color: #fff;
+    border-color: var(--theme-primary);
+  }
+
+  .icon-picker-item i {
+    width: 18px;
+    height: 18px;
+  }
+
+  .icon-picker-empty {
+    text-align: center;
+    color: var(--color-text-sub);
+    font-size: 12px;
+    padding: 20px 0;
+  }
+
+  html.bg-dark-slate .icon-picker-dropdown {
+    background: rgba(38, 41, 43, 0.95);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.4);
+  }
+
+  html.bg-dark-slate .icon-picker-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.02);
+    color: #e8e8e8;
+  }
+</style>
+
+<script>
+  import { storage, dbStorage } from '../scripts/storage';
+
+  function initAdminConsole() {
+    // DOM 元素获取
+    const categoryList = document.getElementById('categoryList');
+    const categoryTabs = document.getElementById('categoryTabs');
+    const linksList = document.getElementById('linksList');
+    const linkCatId = document.getElementById('linkCatId') as HTMLSelectElement;
+    const editLinkCatId = document.getElementById('editLinkCatId') as HTMLSelectElement;
+
+    const addCatForm = document.getElementById('addCatForm') as HTMLFormElement;
+    const addLinkForm = document.getElementById('addLinkForm') as HTMLFormElement;
+
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFile = document.getElementById('importFile') as HTMLInputElement;
+    const resetBtn = document.getElementById('resetBtn');
+
+    const editCatModal = document.getElementById('editCatModal');
+    const editCatForm = document.getElementById('editCatForm') as HTMLFormElement;
+    const closeCatModal = document.getElementById('closeCatModal');
+
+    const editLinkModal = document.getElementById('editLinkModal');
+    const editLinkForm = document.getElementById('editLinkForm') as HTMLFormElement;
+    const closeLinkModal = document.getElementById('closeLinkModal');
+
+    const openAddLinkBtn = document.getElementById('openAddLinkBtn');
+    const addLinkModal = document.getElementById('addLinkModal');
+    const closeAddLinkModal = document.getElementById('closeAddLinkModal');
+
+    // ================= 自定义通知与 Confirm 确认窗口核心逻辑 =================
+    function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `custom-toast ${type}`;
+      
+      let iconName = 'info';
+      if (type === 'success') iconName = 'check-circle';
+      if (type === 'error') iconName = 'alert-triangle';
+
+      toast.innerHTML = `
+        <i data-lucide="${iconName}" style="width: 16px; height: 16px;"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+
+      if ((window as any).lucide) {
+        try {
+          (window as any).lucide.createIcons();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      requestAnimationFrame(() => {
+        toast.classList.add('show');
+      });
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('fade-out');
+        toast.addEventListener('transitionend', () => {
+          toast.remove();
+        });
+      }, 3500);
+    }
+
+    let confirmResolve: ((value: boolean) => void) | null = null;
+    
+    function showConfirm(title: string, message: string, danger = false): Promise<boolean> {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('customConfirmModal');
+        const titleEl = document.getElementById('confirmTitle');
+        const msgEl = document.getElementById('confirmMessage');
+        const iconEl = document.getElementById('confirmIcon');
+        
+        if (!modal || !titleEl || !msgEl) {
+          resolve(false);
+          return;
+        }
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        
+        if (iconEl) {
+          iconEl.setAttribute('data-lucide', danger ? 'alert-triangle' : 'help-circle');
+          iconEl.style.color = danger ? '#c47575' : 'var(--theme-primary)';
+          if ((window as any).lucide) {
+            try {
+              (window as any).lucide.createIcons();
+            } catch (err) {
+              console.error(err);
+            }
+          }
+        }
+
+        modal.classList.add('open');
+        confirmResolve = resolve;
+      });
+    }
+
+    // 绑定 Confirm 按钮的事件监听 (只在这里绑定一次)
+    document.getElementById('confirmOkBtn')?.addEventListener('click', () => {
+      const modal = document.getElementById('customConfirmModal');
+      modal?.classList.remove('open');
+      if (confirmResolve) {
+        confirmResolve(true);
+        confirmResolve = null;
+      }
+    });
+
+    document.getElementById('confirmCancelBtn')?.addEventListener('click', () => {
+      const modal = document.getElementById('customConfirmModal');
+      modal?.classList.remove('open');
+      if (confirmResolve) {
+        confirmResolve(false);
+        confirmResolve = null;
+      }
+    });
+
+    // 手动表单校验，消除原生黄色/白色验证气泡，使用极致丝滑 Toast + 红色警告高亮提示
+    function validateForm(form: HTMLFormElement): boolean {
+      const inputs = form.querySelectorAll('input[required], select[required]');
+      for (const input of Array.from(inputs)) {
+        const element = input as HTMLInputElement | HTMLSelectElement;
+        if (!element.value.trim()) {
+          const formGroup = element.closest('.form-group');
+          const label = formGroup?.querySelector('label')?.textContent || '必填字段';
+          showToast(`请填写「${label}」！`, 'error');
+          element.focus();
+          
+          // 给输入框/选择框加一个红色高亮警告边框
+          const originalBorder = element.style.borderColor;
+          const originalShadow = element.style.boxShadow;
+          element.style.borderColor = '#c47575';
+          element.style.boxShadow = '0 0 0 3px rgba(196, 117, 117, 0.22)';
+          
+          setTimeout(() => {
+            element.style.borderColor = originalBorder;
+            element.style.boxShadow = originalShadow;
+          }, 2000);
+          
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // 个性化美化设置 DOM 获取
+    const appearanceForm = document.getElementById('appearanceForm') as HTMLFormElement;
+    const fontStyleSelect = document.getElementById('fontStyle') as HTMLSelectElement;
+    const bgStyleSelect = document.getElementById('bgStyle') as HTMLSelectElement;
+    const customBgUrlGroup = document.getElementById('customBgUrlGroup') as HTMLElement;
+    const customBgUrlInput = document.getElementById('customBgUrl') as HTMLInputElement;
+    const primaryColorSelect = document.getElementById('primaryColor') as HTMLSelectElement;
+    const cardOpacityInput = document.getElementById('cardOpacity') as HTMLInputElement;
+    const cardBlurInput = document.getElementById('cardBlur') as HTMLInputElement;
+    const opacityVal = document.getElementById('opacityVal') as HTMLElement;
+    const blurVal = document.getElementById('blurVal') as HTMLElement;
+
+    const customFontLinkGroup = document.getElementById('customFontLinkGroup') as HTMLElement;
+    const customFontFamilyGroup = document.getElementById('customFontFamilyGroup') as HTMLElement;
+    const customFontFileGroup = document.getElementById('customFontFileGroup') as HTMLElement;
+    const fontCustomLinkInput = document.getElementById('fontCustomLink') as HTMLInputElement;
+    const fontFamilyNameInput = document.getElementById('fontFamilyName') as HTMLInputElement;
+    const fontCustomFileInput = document.getElementById('fontCustomFile') as HTMLInputElement;
+    const uploadFontBtn = document.getElementById('uploadFontBtn') as HTMLElement;
+    const fontUploadStatus = document.getElementById('fontUploadStatus') as HTMLElement;
+
+    const customBgFileGroup = document.getElementById('customBgFileGroup') as HTMLElement;
+    const bgCustomFileInput = document.getElementById('bgCustomFile') as HTMLInputElement;
+    const uploadBgBtn = document.getElementById('uploadBgBtn') as HTMLElement;
+    const bgUploadStatus = document.getElementById('bgUploadStatus') as HTMLElement;
+
+    let activeTabCatId = 'all';
+
+    storage.init();
+
+    // 1. 自定义下拉菜单渲染引擎 (将 HTML 默认 select 静默替换为极精美的高透毛玻璃下拉菜单)
+    function convertSelectToCustom(selectId: string, type: 'color' | 'category') {
+      const select = document.getElementById(selectId) as HTMLSelectElement;
+      if (!select) return;
+
+      // 检测是否已经存在转换过的自定义下拉外壳
+      const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
+        ? select.parentElement as HTMLElement
+        : null;
+
+      if (wrapper) {
+        // 说明已经转换过，仅更新其选项容器内的 options HTML 即可 (针对分类下拉框动态添加分类刷新)
+        const container = wrapper.querySelector('.custom-options-container');
+        if (container) {
+          container.innerHTML = generateOptionsHtml(select, type);
+          bindOptionsEvents(wrapper, select, type);
+        }
+        updateTriggerDisplay(wrapper, select, type);
+        return;
+      }
+
+      // 首次转换：隐藏原 select 控件
+      select.style.display = 'none';
+
+      // 建立外壳 wrapper 并将 select 移入
+      const newWrapper = document.createElement('div');
+      newWrapper.className = 'custom-select-wrapper';
+      select.parentNode?.insertBefore(newWrapper, select);
+      newWrapper.appendChild(select);
+
+      // 建立触发器 (显示当前选中)
+      const trigger = document.createElement('div');
+      trigger.className = 'custom-select-trigger';
+      trigger.innerHTML = `
+        <div class="custom-select-trigger-content"></div>
+        <i data-lucide="chevron-down" class="chevron-icon"></i>
+      `;
+      newWrapper.appendChild(trigger);
+
+      // 建立选项容器
+      const optionsContainer = document.createElement('div');
+      optionsContainer.className = 'custom-options-container';
+      optionsContainer.innerHTML = generateOptionsHtml(select, type);
+      newWrapper.appendChild(optionsContainer);
+
+      // 绑定触发器事件
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        // 互斥：收起页面上其他自定义下拉框
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+          if (w !== newWrapper) w.classList.remove('open');
+        });
+
+        newWrapper.classList.toggle('open');
+      });
+
+      // 绑定选项点击及同步事件
+      bindOptionsEvents(newWrapper, select, type);
+      updateTriggerDisplay(newWrapper, select, type);
+
+      // 智能拦截并绑定所属表单的 reset 事件以联动复位自定义 UI 的展示
+      const form = select.form;
+      if (form) {
+        if (!form.dataset.hasResetSelectListener) {
+          form.dataset.hasResetSelectListener = 'true';
+          form.addEventListener('reset', () => {
+            // 表单 reset 会在事件循环下一帧完成，需要在 setTimeout 里更新展示
+            setTimeout(() => {
+              form.querySelectorAll('select').forEach(sel => {
+                const s = sel as HTMLSelectElement;
+                const w = s.parentElement?.classList.contains('custom-select-wrapper')
+                  ? s.parentElement as HTMLElement
+                  : null;
+                if (w) {
+                  const t = s.id.toLowerCase().includes('color') ? 'color' : 'category';
+                  updateTriggerDisplay(w, s, t);
+                  // 同步更新选项高亮
+                  const opts = w.querySelectorAll('.custom-option');
+                  opts.forEach(opt => {
+                    const val = opt.getAttribute('data-value') || '';
+                    if (val === s.value) {
+                      opt.classList.add('selected');
+                    } else {
+                      opt.classList.remove('selected');
+                    }
+                  });
+                }
+              });
+            }, 10);
+          });
+        }
+      }
+    }
+
+    // 生成下拉选项 HTML
+    function generateOptionsHtml(select: HTMLSelectElement, type: 'color' | 'category') {
+      const categories = storage.getCategories();
+      return Array.from(select.options).map(opt => {
+        const val = opt.value;
+        const text = opt.textContent || '';
+        const isSelected = opt.selected ? 'selected' : '';
+
+        if (type === 'color') {
+          return `
+            <div class="custom-option ${isSelected}" data-value="${val}">
+              <div class="select-color-dot" style="background: var(--theme-${val})"></div>
+              <span>${text}</span>
+            </div>
+          `;
+        } else {
+          const cat = categories.find(c => c.id === val);
+          const icon = cat ? cat.icon : 'folder';
+          const color = cat ? cat.color : 'blue';
+          return `
+            <div class="custom-option ${isSelected}" data-value="${val}">
+              <i data-lucide="${icon}" class="select-cat-icon" style="color: var(--theme-${color})"></i>
+              <span>${text}</span>
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    // 绑定选项的点击更新同步逻辑
+    function bindOptionsEvents(wrapper: HTMLElement, select: HTMLSelectElement, type: 'color' | 'category') {
+      const options = wrapper.querySelectorAll('.custom-option');
+      options.forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const val = opt.getAttribute('data-value') || '';
+
+          options.forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+
+          select.value = val;
+          select.dispatchEvent(new Event('change')); // 触发 change 通知
+
+          updateTriggerDisplay(wrapper, select, type);
+          wrapper.classList.remove('open');
+        });
+      });
+    }
+
+    // 更新触发器内展示的内容 (包括图标/圆点及文字)
+    function updateTriggerDisplay(wrapper: HTMLElement, select: HTMLSelectElement, type: 'color' | 'category') {
+      const triggerContent = wrapper.querySelector('.custom-select-trigger-content');
+      if (!triggerContent) return;
+
+      const selectedOpt = select.options[select.selectedIndex];
+      if (!selectedOpt) {
+        triggerContent.innerHTML = '<span>请选择...</span>';
+        return;
+      }
+
+      const val = selectedOpt.value;
+      const text = selectedOpt.textContent || '';
+
+      if (type === 'color') {
+        triggerContent.innerHTML = `
+          <div class="select-color-dot" style="background: var(--theme-${val})"></div>
+          <span>${text}</span>
+        `;
+      } else {
+        const categories = storage.getCategories();
+        const cat = categories.find(c => c.id === val);
+        const icon = cat ? cat.icon : 'folder';
+        const color = cat ? cat.color : 'blue';
+        triggerContent.innerHTML = `
+          <i data-lucide="${icon}" class="select-cat-icon" style="color: var(--theme-${color})"></i>
+          <span>${text}</span>
+        `;
+      }
+
+      // 实时渲染生成的矢量图标
+      if ((window as any).lucide) {
+        try {
+          (window as any).lucide.createIcons();
+        } catch (err) {
+          console.error('Lucide trigger rendering failed:', err);
+        }
+      }
+    }
+
+    // 点击页面任意外部空白处关闭下拉框和图标选择器
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+        w.classList.remove('open');
+      });
+      document.querySelectorAll('.icon-picker-wrapper').forEach(w => {
+        w.classList.remove('open');
+      });
+    });
+
+    // 常用 Lucide 图标名称列表
+    const POPULAR_LUCIDE_ICONS = [
+      'folder', 'star', 'wrench', 'coffee', 'code-xml', 'external-link',
+      'github', 'chrome', 'globe', 'compass', 'notebook-tabs', 'languages',
+      'image-minus', 'play', 'ticket', 'message-square-more', 'file-text',
+      'palette', 'framer', 'settings', 'user', 'search', 'home', 'arrow-left',
+      'plus', 'pencil', 'trash-2', 'palette', 'download', 'upload', 'rotate-ccw',
+      'help-circle', 'check-circle', 'alert-triangle', 'info', 'book', 'bookmark',
+      'calendar', 'camera', 'check', 'clipboard', 'clock', 'cloud', 'database',
+      'eye', 'eye-off', 'gift', 'heart', 'key', 'link', 'list', 'lock', 'mail',
+      'map', 'map-pin', 'menu', 'mic', 'music', 'paperclip', 'phone', 'send',
+      'share-2', 'shopping-cart', 'smile', 'terminal', 'thumbs-up', 'tv', 'video',
+      'wifi', 'zap', 'alert-circle', 'bell', 'briefcase', 'activity', 'cpu', 'hard-drive',
+      'monitor', 'smartphone', 'tablet', 'battery', 'bluetooth', 'wifi-off'
+    ];
+
+    // 初始化图标选择器
+    function initIconPicker(wrapperId: string, inputId: string) {
+      const wrapper = document.getElementById(wrapperId);
+      const input = document.getElementById(inputId) as HTMLInputElement;
+      if (!wrapper || !input) return;
+
+      const dropdown = wrapper.querySelector('.icon-picker-dropdown') as HTMLElement;
+      const searchInput = wrapper.querySelector('.icon-picker-search') as HTMLInputElement;
+      const grid = wrapper.querySelector('.icon-picker-grid') as HTMLElement;
+
+      if (!dropdown || !searchInput || !grid) return;
+
+      // 填充初始图标
+      renderIconGrid('');
+
+      // 输入框聚焦时显示下拉
+      input.addEventListener('focus', (e) => {
+        e.stopPropagation();
+        // 关闭其他选择器和下拉框
+        document.querySelectorAll('.icon-picker-wrapper').forEach(w => {
+          if (w !== wrapper) w.classList.remove('open');
+        });
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+          w.classList.remove('open');
+        });
+        wrapper.classList.add('open');
+      });
+
+      // 阻止下拉框内点击关闭
+      dropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      // 搜索过滤
+      searchInput.addEventListener('input', () => {
+        const val = searchInput.value.trim().toLowerCase();
+        renderIconGrid(val);
+      });
+
+      // 点击输入框也阻止冒泡
+      input.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      function renderIconGrid(query: string) {
+        grid.innerHTML = '';
+        const filtered = POPULAR_LUCIDE_ICONS.filter(icon => icon.includes(query));
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '<div class="icon-picker-empty">无匹配图标</div>';
+          return;
+        }
+
+        filtered.forEach(icon => {
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'icon-picker-item';
+          if (input.value.trim() === icon) {
+            item.classList.add('active');
+          }
+          item.title = icon;
+          item.innerHTML = `<i data-lucide="${icon}"></i>`;
+          
+          item.addEventListener('click', () => {
+            input.value = icon;
+            // 触发 input 的 change 事件
+            input.dispatchEvent(new Event('input'));
+            input.dispatchEvent(new Event('change'));
+            
+            // 更新高亮
+            wrapper.querySelectorAll('.icon-picker-item').forEach(btn => btn.classList.remove('active'));
+            item.classList.add('active');
+            
+            // 关闭下拉框
+            wrapper.classList.remove('open');
+            searchInput.value = '';
+            renderIconGrid('');
+          });
+
+          grid.appendChild(item);
+        });
+
+        if ((window as any).lucide) {
+          try {
+            (window as any).lucide.createIcons({
+              attrs: {
+                class: 'lucide-icon'
+              },
+              node: grid
+            });
+          } catch (err) {
+            console.error('Lucide picker rendering failed:', err);
+          }
+        }
+      }
+    }
+
+    // 2. 健壮的 Lucide 图标加载保障机制
+    function renderIconsSafe() {
+      const runLucide = () => {
+        try {
+          if ((window as any).lucide) {
+            (window as any).lucide.createIcons();
+          } else {
+            setTimeout(runLucide, 50); // 轮询直至加载完毕
+          }
+        } catch (err) {
+          console.error('Lucide safe rendering failed:', err);
+        }
+      };
+      runLucide();
+    }
+
+    // 刷新整个视图，对核心模块渲染进行异常隔离，保障程序健壮性
+    function refreshAll() {
+      try {
+        renderCategories();
+      } catch (e) {
+        console.error('Failed to render categories:', e);
+      }
+      
+      try {
+        renderTabs();
+      } catch (e) {
+        console.error('Failed to render tabs:', e);
+      }
+      
+      try {
+        renderLinks();
+      } catch (e) {
+        console.error('Failed to render links:', e);
+      }
+      
+      try {
+        populateCategorySelects();
+      } catch (e) {
+        console.error('Failed to populate category selects:', e);
+      }
+
+      // 在原生 select 选项装填后，触发自定义下拉转换引擎
+      const selects = [
+        { id: 'catColor', type: 'color' as const },
+        { id: 'editCatColor', type: 'color' as const },
+        { id: 'linkCatId', type: 'category' as const },
+        { id: 'editLinkCatId', type: 'category' as const },
+        { id: 'fontStyle', type: 'color' as const },
+        { id: 'bgStyle', type: 'color' as const },
+        { id: 'primaryColor', type: 'color' as const }
+      ];
+
+      selects.forEach(item => {
+        try {
+          convertSelectToCustom(item.id, item.type);
+        } catch (e) {
+          console.error(`Failed to convert select "${item.id}":`, e);
+        }
+      });
+
+      try {
+        initAppearanceForm();
+      } catch (e) {
+        console.error('Failed to initAppearanceForm:', e);
+      }
+
+      try {
+        renderIconsSafe();
+      } catch (e) {
+        console.error('Failed to execute renderIconsSafe:', e);
+      }
+    }
+
+    function getDomain(urlStr: string) {
+      try {
+        const url = new URL(urlStr);
+        return url.hostname;
+      } catch (e) {
+        return '';
+      }
+    }
+
+    // 填充原生下拉框选项 (自定义引擎在其后拦截并渲染新界面)
+    function populateCategorySelects() {
+      const categories = storage.getCategories().sort((a, b) => a.order - b.order);
+      
+      const optionsHtml = categories.map(cat => 
+        `<option value="${cat.id}">${cat.name}</option>`
+      ).join('');
+
+      if (linkCatId) linkCatId.innerHTML = optionsHtml;
+      if (editLinkCatId) editLinkCatId.innerHTML = optionsHtml;
+    }
+
+    // 渲染分类
+    function renderCategories() {
+      if (!categoryList) return;
+      categoryList.innerHTML = '';
+      
+      const categories = storage.getCategories().sort((a, b) => a.order - b.order);
+      
+      categories.forEach(cat => {
+        const catItem = document.createElement('div');
+        catItem.className = 'category-item';
+        catItem.setAttribute('style', `--theme-color: var(--theme-${cat.color})`);
+        
+        catItem.innerHTML = `
+          <div class="cat-info">
+            <div class="cat-icon-box" style="--theme-color: var(--theme-${cat.color})">
+              <i data-lucide="${cat.icon || 'folder'}"></i>
+            </div>
+            <span class="cat-name-text">${cat.name}</span>
+          </div>
+          <div class="cat-actions">
+            <button class="icon-btn edit-cat-btn" data-id="${cat.id}" title="编辑分类" type="button">
+              <i data-lucide="pencil"></i>
+            </button>
+            <button class="icon-btn delete-btn delete-cat-btn" data-id="${cat.id}" title="删除分类" type="button">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+        `;
+
+        catItem.querySelector('.edit-cat-btn')?.addEventListener('click', () => {
+          openEditCategory(cat.id);
+        });
+
+        catItem.querySelector('.delete-cat-btn')?.addEventListener('click', async () => {
+          const ok = await showConfirm(
+            '删除分类',
+            `确定要删除分类“${cat.name}”及其底下的所有链接卡片吗？该操作不可逆！`,
+            true
+          );
+          if (ok) {
+            storage.deleteCategory(cat.id);
+            refreshAll();
+            window.dispatchEvent(new CustomEvent('categories-updated'));
+            showToast('分类已成功删除', 'success');
+          }
+        });
+
+        categoryList.appendChild(catItem);
+      });
+    }
+
+    // 渲染 Tab
+    function renderTabs() {
+      if (!categoryTabs) return;
+      categoryTabs.innerHTML = '';
+
+      const categories = storage.getCategories().sort((a, b) => a.order - b.order);
+
+      const allBtn = document.createElement('button');
+      allBtn.className = `tab-btn ${activeTabCatId === 'all' ? 'active' : ''}`;
+      allBtn.setAttribute('type', 'button');
+      allBtn.innerHTML = `<i data-lucide="layers"></i><span>显示全部</span>`;
+      allBtn.addEventListener('click', () => {
+        activeTabCatId = 'all';
+        renderTabs();
+        renderLinks();
+      });
+      categoryTabs.appendChild(allBtn);
+
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `tab-btn ${activeTabCatId === cat.id ? 'active' : ''}`;
+        btn.setAttribute('type', 'button');
+        btn.innerHTML = `<i data-lucide="${cat.icon}"></i><span>${cat.name}</span>`;
+        
+        btn.addEventListener('click', () => {
+          activeTabCatId = cat.id;
+          renderTabs();
+          renderLinks();
+        });
+        categoryTabs.appendChild(btn);
+      });
+    }
+
+    // 渲染卡片链接列表
+    function renderLinks() {
+      if (!linksList) return;
+      linksList.innerHTML = '';
+
+      const categories = storage.getCategories();
+      const allLinks = storage.getLinks().sort((a, b) => a.order - b.order);
+
+      const filteredLinks = activeTabCatId === 'all'
+        ? allLinks
+        : allLinks.filter(l => l.categoryId === activeTabCatId);
+
+      if (filteredLinks.length === 0) {
+        linksList.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--color-text-sub); padding: 40px 0;">该分类下暂无卡片。</div>`;
+        return;
+      }
+
+      filteredLinks.forEach(link => {
+        const cat = categories.find(c => c.id === link.categoryId);
+        const catColor = cat ? cat.color : 'blue';
+        const domain = getDomain(link.url);
+
+        const card = document.createElement('div');
+        card.className = 'admin-link-card';
+        card.setAttribute('style', `--theme-color: var(--theme-${catColor})`);
+        card.innerHTML = `
+          <div>
+            <div class="admin-link-card-header">
+              <div class="admin-link-card-icon" style="--theme-color: var(--theme-${catColor})">
+                <img 
+                  src="https://www.google.com/s2/favicons?sz=64&domain=${domain}" 
+                  class="admin-card-favicon"
+                  onload="this.style.display='block'; this.nextElementSibling.style.display='none';"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                  style="display: none; width: 24px; height: 24px; border-radius: 5px; object-fit: contain;"
+                  alt=""
+                />
+                <i data-lucide="${link.icon || 'external-link'}"></i>
+              </div>
+              <span class="admin-link-card-title">${link.title}</span>
+            </div>
+            <p class="admin-link-card-desc" title="${link.description}">${link.description}</p>
+            <a href="${link.url}" target="_blank" class="admin-link-card-url" title="${link.url}">${link.url}</a>
+          </div>
+          <div class="admin-link-card-footer">
+            <span class="admin-link-card-clicks">${link.clicks || 0} 次点击</span>
+            <div class="admin-link-card-actions">
+              <button class="icon-btn edit-link-btn" data-id="${link.id}" title="编辑卡片" type="button">
+                <i data-lucide="pencil"></i>
+              </button>
+              <button class="icon-btn delete-btn delete-link-btn" data-id="${link.id}" title="删除卡片" type="button">
+                <i data-lucide="trash-2"></i>
+              </button>
+            </div>
+          </div>
+        `;
+
+        card.querySelector('.edit-link-btn')?.addEventListener('click', () => {
+          openEditLink(link.id);
+        });
+
+        card.querySelector('.delete-link-btn')?.addEventListener('click', async () => {
+          const ok = await showConfirm(
+            '删除链接卡片',
+            `确定要删除“${link.title}”卡片吗？`,
+            true
+          );
+          if (ok) {
+            storage.deleteLink(link.id);
+            refreshAll();
+            showToast('链接已成功删除', 'success');
+          }
+        });
+
+        linksList.appendChild(card);
+      });
+    }
+
+    addCatForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!validateForm(addCatForm)) return;
+      const name = (document.getElementById('catName') as HTMLInputElement).value.trim();
+      const icon = (document.getElementById('catIcon') as HTMLInputElement).value.trim();
+      const color = (document.getElementById('catColor') as HTMLSelectElement).value;
+
+      storage.addCategory({ name, icon, color });
+      addCatForm.reset();
+      
+      const defaultIcon = document.getElementById('catIcon') as HTMLInputElement;
+      if (defaultIcon) defaultIcon.value = 'folder';
+
+      refreshAll();
+      window.dispatchEvent(new CustomEvent('categories-updated'));
+      showToast('分类添加成功', 'success');
+    });
+
+    addLinkForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!validateForm(addLinkForm)) return;
+      const title = (document.getElementById('linkTitle') as HTMLInputElement).value.trim();
+      const categoryId = (document.getElementById('linkCatId') as HTMLSelectElement).value;
+      const url = (document.getElementById('linkUrl') as HTMLInputElement).value.trim();
+      const description = (document.getElementById('linkDesc') as HTMLInputElement).value.trim();
+      const icon = (document.getElementById('linkIcon') as HTMLInputElement).value.trim();
+
+      storage.addLink({ title, categoryId, url, description, icon });
+      addLinkForm.reset();
+      
+      const defaultIcon = document.getElementById('linkIcon') as HTMLInputElement;
+      if (defaultIcon) defaultIcon.value = 'external-link';
+
+      refreshAll();
+      showToast('链接卡片添加成功', 'success');
+
+      // 成功添加后关闭弹窗
+      addLinkModal?.classList.remove('open');
+
+      // 复位自定义选择框的展示
+      const select = document.getElementById('linkCatId') as HTMLSelectElement;
+      if (select) {
+        const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
+          ? select.parentElement as HTMLElement
+          : null;
+        if (wrapper) {
+          updateTriggerDisplay(wrapper, select, 'category');
+        }
+      }
+    });
+
+    function openEditCategory(id: string) {
+      const categories = storage.getCategories();
+      const cat = categories.find(c => c.id === id);
+      if (!cat) return;
+
+      (document.getElementById('editCatId') as HTMLInputElement).value = cat.id;
+      (document.getElementById('editCatName') as HTMLInputElement).value = cat.name;
+      (document.getElementById('editCatIcon') as HTMLInputElement).value = cat.icon;
+      
+      const select = document.getElementById('editCatColor') as HTMLSelectElement;
+      if (select) {
+        select.value = cat.color;
+        // 触发自定义下拉框的同步展示
+        const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
+          ? select.parentElement as HTMLElement
+          : null;
+        if (wrapper) {
+          updateTriggerDisplay(wrapper, select, 'color');
+          // 同步更新选项高亮
+          wrapper.querySelectorAll('.custom-option').forEach(opt => {
+            const val = opt.getAttribute('data-value') || '';
+            if (val === cat.color) {
+              opt.classList.add('selected');
+            } else {
+              opt.classList.remove('selected');
+            }
+          });
+        }
+      }
+
+      editCatModal?.classList.add('open');
+    }
+
+    editCatForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!validateForm(editCatForm)) return;
+      const id = (document.getElementById('editCatId') as HTMLInputElement).value;
+      const name = (document.getElementById('editCatName') as HTMLInputElement).value.trim();
+      const icon = (document.getElementById('editCatIcon') as HTMLInputElement).value.trim();
+      const color = (document.getElementById('editCatColor') as HTMLSelectElement).value;
+
+      const categories = storage.getCategories();
+      const cat = categories.find(c => c.id === id);
+      if (cat) {
+        storage.updateCategory({ ...cat, name, icon, color });
+        editCatModal?.classList.remove('open');
+        refreshAll();
+        showToast('分类修改已保存', 'success');
+        window.dispatchEvent(new CustomEvent('categories-updated'));
+      }
+    });
+
+    closeCatModal?.addEventListener('click', () => {
+      editCatModal?.classList.remove('open');
+    });
+
+    function openEditLink(id: string) {
+      const links = storage.getLinks();
+      const link = links.find(l => l.id === id);
+      if (!link) return;
+
+      (document.getElementById('editLinkId') as HTMLInputElement).value = link.id;
+      (document.getElementById('editLinkTitle') as HTMLInputElement).value = link.title;
+      (document.getElementById('editLinkUrl') as HTMLInputElement).value = link.url;
+      (document.getElementById('editLinkDesc') as HTMLInputElement).value = link.description;
+      (document.getElementById('editLinkIcon') as HTMLInputElement).value = link.icon;
+
+      const catSelect = document.getElementById('editLinkCatId') as HTMLSelectElement;
+      if (catSelect) {
+        catSelect.value = link.categoryId;
+        const wrapper = catSelect.parentElement?.classList.contains('custom-select-wrapper')
+          ? catSelect.parentElement as HTMLElement
+          : null;
+        if (wrapper) {
+          updateTriggerDisplay(wrapper, catSelect, 'category');
+          // 同步更新选项高亮
+          wrapper.querySelectorAll('.custom-option').forEach(opt => {
+            const val = opt.getAttribute('data-value') || '';
+            if (val === link.categoryId) {
+              opt.classList.add('selected');
+            } else {
+              opt.classList.remove('selected');
+            }
+          });
+        }
+      }
+
+      editLinkModal?.classList.add('open');
+    }
+
+    editLinkForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!validateForm(editLinkForm)) return;
+      const id = (document.getElementById('editLinkId') as HTMLInputElement).value;
+      const title = (document.getElementById('editLinkTitle') as HTMLInputElement).value.trim();
+      const categoryId = (document.getElementById('editLinkCatId') as HTMLSelectElement).value;
+      const url = (document.getElementById('editLinkUrl') as HTMLInputElement).value.trim();
+      const description = (document.getElementById('editLinkDesc') as HTMLInputElement).value.trim();
+      const icon = (document.getElementById('editLinkIcon') as HTMLInputElement).value.trim();
+
+      const links = storage.getLinks();
+      const link = links.find(l => l.id === id);
+      if (link) {
+        storage.updateLink({ ...link, title, categoryId, url, description, icon });
+        editLinkModal?.classList.remove('open');
+        refreshAll();
+        showToast('链接修改已保存', 'success');
+      }
+    });
+
+    closeLinkModal?.addEventListener('click', () => {
+      editLinkModal?.classList.remove('open');
+    });
+
+    exportBtn?.addEventListener('click', () => {
+      const dataStr = storage.exportData();
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `personal_nav_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    importBtn?.addEventListener('click', () => {
+      importFile?.click();
+    });
+
+    importFile?.addEventListener('change', () => {
+      const file = importFile.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const success = storage.importData(text);
+        if (success) {
+          showToast('数据导入成功！', 'success');
+          refreshAll();
+          window.dispatchEvent(new CustomEvent('categories-updated'));
+        } else {
+          showToast('数据解析失败，请检查备份文件是否为有效的导航页 JSON 数据！', 'error');
+        }
+      };
+      reader.readAsText(file);
+      importFile.value = '';
+    });
+
+    resetBtn?.addEventListener('click', async () => {
+      const ok = await showConfirm(
+        '恢复默认',
+        '确定要恢复默认配置吗？你目前添加的自定义分类和链接将被完全清空！',
+        true
+      );
+      if (ok) {
+        storage.resetToDefault();
+        activeTabCatId = 'all';
+        refreshAll();
+        window.dispatchEvent(new CustomEvent('categories-updated'));
+        showToast('已恢复为默认配置', 'success');
+      }
+    });
+
+    // 美化设置模态弹窗的打开与关闭绑定
+    const appearanceModal = document.getElementById('appearanceModal');
+    const openAppearanceBtn = document.getElementById('openAppearanceBtn');
+    const closeAppearanceModal = document.getElementById('closeAppearanceModal');
+
+    openAppearanceBtn?.addEventListener('click', () => {
+      initAppearanceForm(); // 唤出前先读取和对齐最新配置值
+      appearanceModal?.classList.add('open');
+    });
+
+    closeAppearanceModal?.addEventListener('click', () => {
+      appearanceModal?.classList.remove('open');
+    });
+
+    // 绑定添加新卡片弹窗的打开与关闭 (智能填充当前分类选项)
+    openAddLinkBtn?.addEventListener('click', () => {
+      if (activeTabCatId !== 'all') {
+        const select = document.getElementById('linkCatId') as HTMLSelectElement;
+        if (select) {
+          select.value = activeTabCatId;
+          const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
+            ? select.parentElement as HTMLElement
+            : null;
+          if (wrapper) {
+            updateTriggerDisplay(wrapper, select, 'category');
+            wrapper.querySelectorAll('.custom-option').forEach(opt => {
+              const val = opt.getAttribute('data-value') || '';
+              if (val === activeTabCatId) {
+                opt.classList.add('selected');
+              } else {
+                opt.classList.remove('selected');
+              }
+            });
+          }
+        }
+      }
+      addLinkModal?.classList.add('open');
+    });
+
+    closeAddLinkModal?.addEventListener('click', () => {
+      addLinkModal?.classList.remove('open');
+      addLinkForm?.reset();
+      
+      // 取消时复位自定义下拉选择框的展示
+      const select = document.getElementById('linkCatId') as HTMLSelectElement;
+      if (select) {
+        const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
+          ? select.parentElement as HTMLElement
+          : null;
+        if (wrapper) {
+          updateTriggerDisplay(wrapper, select, 'category');
+        }
+      }
+    });
+
+    // 3. 个性化美化设置表单管理与同步逻辑
+    // 3. 个性化美化设置：全局即时保存与应用
+    function saveAndApplyAppearance() {
+      const config = {
+        fontStyle: fontStyleSelect?.value as any || 'system-sans',
+        fontCustomLink: fontCustomLinkInput?.value.trim() || '',
+        fontFamilyName: fontFamilyNameInput?.value.trim() || '',
+        bgStyle: bgStyleSelect?.value as any || 'morandi-glow',
+        customBgUrl: customBgUrlInput?.value.trim() || '',
+        primaryColor: primaryColorSelect?.value || 'blue',
+        cardOpacity: cardOpacityInput ? parseFloat(cardOpacityInput.value) : 0.65,
+        cardBlur: cardBlurInput ? parseInt(cardBlurInput.value) : 20
+      };
+      storage.saveAppearance(config);
+      // 触发全局事件以同步全站的 UI 变量
+      window.dispatchEvent(new CustomEvent('appearance-updated'));
+    }
+
+    // 绑定本地上传触发按钮
+    uploadFontBtn?.addEventListener('click', () => fontCustomFileInput?.click());
+    uploadBgBtn?.addEventListener('click', () => bgCustomFileInput?.click());
+
+    // 本地字体上传事件
+    fontCustomFileInput?.addEventListener('change', async () => {
+      const file = fontCustomFileInput.files?.[0];
+      if (!file) return;
+
+      if (fontUploadStatus) {
+        fontUploadStatus.textContent = `加载中: ${file.name} (${Math.round(file.size / 1024)} KB)...`;
+      }
+
+      try {
+        await dbStorage.saveAsset('custom-font-file', file);
+        if (fontUploadStatus) {
+          fontUploadStatus.textContent = `已载入: ${file.name} (${Math.round(file.size / 1024)} KB)`;
+        }
+        
+        // 自动将字体族名称命名为无后缀的文件名，防止留空
+        const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || 'LocalCustomFont';
+        if (fontFamilyNameInput && !fontFamilyNameInput.value.trim()) {
+          fontFamilyNameInput.value = baseName;
+        }
+
+        saveAndApplyAppearance();
+      } catch (e: any) {
+        console.error(e);
+        if (fontUploadStatus) {
+          fontUploadStatus.textContent = `加载失败: ${e.message || e}`;
+        }
+      }
+    });
+
+    // 本地背景壁纸上传事件
+    bgCustomFileInput?.addEventListener('change', async () => {
+      const file = bgCustomFileInput.files?.[0];
+      if (!file) return;
+
+      if (bgUploadStatus) {
+        bgUploadStatus.textContent = `加载中: ${file.name} (${Math.round(file.size / 1024 / 1024 * 100) / 100} MB)...`;
+      }
+
+      try {
+        await dbStorage.saveAsset('custom-bg-file', file);
+        if (bgUploadStatus) {
+          bgUploadStatus.textContent = `已载入: ${file.name} (${Math.round(file.size / 1024 / 1024 * 100) / 100} MB)`;
+        }
+        saveAndApplyAppearance();
+      } catch (e: any) {
+        console.error(e);
+        if (bgUploadStatus) {
+          bgUploadStatus.textContent = `加载失败: ${e.message || e}`;
+        }
+      }
+    });
+
+    // 绑定即时监听器 (只绑定一次)
+    cardOpacityInput?.addEventListener('input', () => {
+      if (opacityVal) {
+        const percent = Math.round(parseFloat(cardOpacityInput.value) * 100);
+        opacityVal.textContent = `${percent}%`;
+      }
+      saveAndApplyAppearance(); // 拖动滑块时即时更新不透明度
+    });
+
+    cardBlurInput?.addEventListener('input', () => {
+      if (blurVal) {
+        const percent = Math.round((parseInt(cardBlurInput.value) / 40) * 100);
+        blurVal.textContent = `${percent}%`;
+      }
+      saveAndApplyAppearance(); // 拖动滑块时即时更新模糊度
+    });
+
+    fontStyleSelect?.addEventListener('change', () => {
+      if (customFontLinkGroup) {
+        customFontLinkGroup.style.display = fontStyleSelect.value === 'custom-link' ? 'block' : 'none';
+      }
+      if (customFontFamilyGroup) {
+        customFontFamilyGroup.style.display = (fontStyleSelect.value === 'custom-link' || fontStyleSelect.value === 'custom-file') ? 'block' : 'none';
+      }
+      if (customFontFileGroup) {
+        customFontFileGroup.style.display = fontStyleSelect.value === 'custom-file' ? 'block' : 'none';
+      }
+      saveAndApplyAppearance();
+    });
+
+    fontCustomLinkInput?.addEventListener('input', saveAndApplyAppearance);
+    fontFamilyNameInput?.addEventListener('input', saveAndApplyAppearance);
+    primaryColorSelect?.addEventListener('change', saveAndApplyAppearance);
+
+    bgStyleSelect?.addEventListener('change', () => {
+      if (customBgUrlGroup) {
+        customBgUrlGroup.style.display = bgStyleSelect.value === 'custom-url' ? 'block' : 'none';
+      }
+      if (customBgFileGroup) {
+        customBgFileGroup.style.display = bgStyleSelect.value === 'custom-file' ? 'block' : 'none';
+      }
+      saveAndApplyAppearance();
+    });
+
+    customBgUrlInput?.addEventListener('input', saveAndApplyAppearance);
+    customBgUrlInput?.addEventListener('change', saveAndApplyAppearance);
+
+    // 阻止美化设置表单的默认提交刷新行为
+    appearanceForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+    });
+
+    // 纯粹的配置值同步读取及展示逻辑 (会在 refreshAll 里重复调用 by 动态对齐)
+    function initAppearanceForm() {
+      const config = storage.getAppearance();
+      if (fontStyleSelect) fontStyleSelect.value = config.fontStyle || 'system-sans';
+      if (fontCustomLinkInput) fontCustomLinkInput.value = config.fontCustomLink || '';
+      if (fontFamilyNameInput) fontFamilyNameInput.value = config.fontFamilyName || '';
+      if (bgStyleSelect) bgStyleSelect.value = config.bgStyle;
+      if (customBgUrlInput) customBgUrlInput.value = config.customBgUrl || '';
+      if (primaryColorSelect) primaryColorSelect.value = config.primaryColor;
+      if (cardOpacityInput) {
+        cardOpacityInput.value = String(config.cardOpacity);
+        if (opacityVal) {
+          const percent = Math.round(config.cardOpacity * 100);
+          opacityVal.textContent = `${percent}%`;
+        }
+      }
+      if (cardBlurInput) {
+        cardBlurInput.value = String(config.cardBlur);
+        if (blurVal) {
+          const percent = Math.round((config.cardBlur / 40) * 100);
+          blurVal.textContent = `${percent}%`;
+        }
+      }
+
+      // 控制表单配置项在不同模式下的动态显隐
+      if (customBgUrlGroup) {
+        customBgUrlGroup.style.display = config.bgStyle === 'custom-url' ? 'block' : 'none';
+      }
+      if (customBgFileGroup) {
+        customBgFileGroup.style.display = config.bgStyle === 'custom-file' ? 'block' : 'none';
+      }
+      if (customFontLinkGroup) {
+        customFontLinkGroup.style.display = config.fontStyle === 'custom-link' ? 'block' : 'none';
+      }
+      if (customFontFamilyGroup) {
+        customFontFamilyGroup.style.display = (config.fontStyle === 'custom-link' || config.fontStyle === 'custom-file') ? 'block' : 'none';
+      }
+      if (customFontFileGroup) {
+        customFontFileGroup.style.display = config.fontStyle === 'custom-file' ? 'block' : 'none';
+      }
+
+      // 读取 IndexedDB 中的已上传资产更新前端文本
+      dbStorage.getAsset('custom-bg-file').then(file => {
+        if (bgUploadStatus) {
+          bgUploadStatus.textContent = file 
+            ? `已载入: ${(file as File).name || '已上传壁纸'} (${Math.round(file.size / 1024 / 1024 * 100) / 100} MB)`
+            : '未上传本地文件';
+        }
+      }).catch(() => {});
+
+      dbStorage.getAsset('custom-font-file').then(file => {
+        if (fontUploadStatus) {
+          fontUploadStatus.textContent = file 
+            ? `已载入: ${(file as File).name || '已上传字体'} (${Math.round(file.size / 1024)} KB)`
+            : '未上传本地文件';
+        }
+      }).catch(() => {});
+
+      // 同步自定义下拉 UI 的触发显示及选中高亮
+      setTimeout(() => {
+        ['bgStyle', 'primaryColor', 'fontStyle'].forEach(id => {
+          const s = document.getElementById(id) as HTMLSelectElement;
+          if (s) {
+            const w = s.parentElement?.classList.contains('custom-select-wrapper')
+              ? s.parentElement as HTMLElement
+              : null;
+            if (w) {
+              updateTriggerDisplay(w, s, 'color');
+              w.querySelectorAll('.custom-option').forEach(opt => {
+                const val = opt.getAttribute('data-value') || '';
+                if (val === s.value) {
+                  opt.classList.add('selected');
+                } else {
+                  opt.classList.remove('selected');
+                }
+              });
+            }
+          }
+        });
+      }, 50);
+    }
+
+    // 初始化图标选择器
+    initIconPicker('catIconWrapper', 'catIcon');
+    initIconPicker('editCatIconWrapper', 'editCatIcon');
+    initIconPicker('linkIconWrapper', 'linkIcon');
+    initIconPicker('editLinkIconWrapper', 'editLinkIcon');
+
+    refreshAll();
+  }
+
+  // 稳健的安全初始化触发器，适配 DOMContentLoaded 提前触发的情况
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdminConsole);
+  } else {
+    initAdminConsole();
+  }
+</script>
