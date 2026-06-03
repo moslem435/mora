@@ -52,34 +52,10 @@ import Layout from '../layouts/Layout.astro';
       </div>
       
       <div class="action-group">
-        <!-- 会员管理 (默认隐藏，仅超级管理员可用) -->
-        <button id="openUsersBtn" class="action-btn secondary" title="会员管理" type="button" style="display: none;">
-          <i data-lucide="users"></i>
-          <span>会员管理</span>
-        </button>
-
-        <!-- 个性化美化设置 -->
-        <button id="openAppearanceBtn" class="action-btn secondary" title="个性化美化设置" type="button">
-          <i data-lucide="palette"></i>
-          <span>美化设置</span>
-        </button>
-        
-        <!-- 导入导出 -->
-        <button id="exportBtn" class="action-btn secondary" title="导出数据为 JSON 文件" type="button">
-          <i data-lucide="download"></i>
-          <span>导出备份</span>
-        </button>
-        <button id="importBtn" class="action-btn secondary" title="从 JSON 文件导入数据" type="button">
-          <i data-lucide="upload"></i>
-          <span>导入备份</span>
-        </button>
-        <input type="file" id="importFile" accept=".json" style="display: none;" />
-        
-        <!-- 重置 -->
-        <button id="resetBtn" class="action-btn danger" title="重置项目到出厂种子配置" type="button">
-          <i data-lucide="rotate-ccw"></i>
-          <span>恢复默认</span>
-        </button>
+        <a href="/settings" class="action-btn secondary" title="账号、美化与备份设置">
+          <i data-lucide="settings"></i>
+          <span>设置</span>
+        </a>
       </div>
     </header>
 
@@ -290,123 +266,6 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </div>
 
-  <!-- 个性化美化设置弹窗 -->
-  <div class="modal" id="appearanceModal">
-    <div class="modal-box" style="max-width: 420px;">
-      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px; border-bottom: 1px dashed rgba(0, 0, 0, 0.06); padding-bottom: 12px;">
-        <i data-lucide="palette" style="color: var(--theme-primary); width: 18px; height: 18px;"></i>
-        <h3 style="margin: 0; font-size: 15px;">个性化美化设置</h3>
-      </div>
-      
-      <form id="appearanceForm" class="admin-form">
-        <!-- 字体风格 -->
-        <div class="form-group">
-          <label for="fontStyle">全局字体风格</label>
-          <select id="fontStyle">
-            <option value="system-sans">本地系统黑体 (极速加载)</option>
-            <option value="morandi-sans">思源莫兰迪黑体 (经典优雅)</option>
-            <option value="inter">MiSans 极简黑体 (中英双语)</option>
-            <option value="outfit">HarmonyOS 科技体 (中英双语)</option>
-            <option value="geist">得意黑 潮玩极客体 (中英双语)</option>
-            <option value="custom-link">自定义在线字体链接</option>
-            <option value="custom-file">本地上传字体包文件</option>
-          </select>
-        </div>
-
-        <!-- 在线字体链接配置组 -->
-        <div class="form-group" id="customFontLinkGroup" style="display: none;">
-          <label for="fontCustomLink">在线字体地址 (CSS/WOFF2)</label>
-          <input type="url" id="fontCustomLink" placeholder="输入 https://... 字体或 Google Fonts 链接" />
-        </div>
-        
-        <!-- 自定义字体 FontFamily 命名 -->
-        <div class="form-group" id="customFontFamilyGroup" style="display: none;">
-          <label for="fontFamilyName">自定义字体族名称 (Font-Family)</label>
-          <input type="text" id="fontFamilyName" placeholder="如: Noto Serif SC" />
-        </div>
-
-        <!-- 本地上传字体包组 -->
-        <div class="form-group" id="customFontFileGroup" style="display: none;">
-          <label for="fontCustomFile">本地上传字体包 (.ttf/.otf/.woff2)</label>
-          <div style="position: relative; display: flex; align-items: center; gap: 10px;">
-            <input type="file" id="fontCustomFile" accept=".ttf,.otf,.woff,.woff2" style="display: none;" />
-            <button type="button" id="uploadFontBtn" class="action-btn secondary" style="margin: 0; width: 100%; justify-content: center; border-radius: 8px;">
-              <i data-lucide="upload-cloud" style="width: 14px; height: 14px;"></i>
-              <span>选择字体文件 (.woff2/.ttf)</span>
-            </button>
-          </div>
-          <span id="fontUploadStatus" style="font-size: 11px; color: var(--color-text-sub); display: block; margin-top: 4px; font-family: monospace;">未上传本地文件</span>
-        </div>
-
-        <!-- 背景风格 -->
-        <div class="form-group">
-          <label for="bgStyle">全局背景风格</label>
-          <select id="bgStyle">
-            <option value="morandi-glow">莫兰迪流光 (推荐)</option>
-            <option value="solid-cream">暖米纯色</option>
-            <option value="dark-slate">静谧深空暗调</option>
-            <option value="custom-url">在线壁纸图片链接</option>
-            <option value="custom-file">本地上传壁纸图片</option>
-          </select>
-        </div>
-        
-        <!-- 在线图片链接 -->
-        <div class="form-group" id="customBgUrlGroup" style="display: none;">
-          <label for="customBgUrl">壁纸图片 URL</label>
-          <input type="url" id="customBgUrl" placeholder="输入高清图片链接 https://..." />
-        </div>
-
-        <!-- 本地上传壁纸组 -->
-        <div class="form-group" id="customBgFileGroup" style="display: none;">
-          <label for="bgCustomFile">本地上传壁纸</label>
-          <div style="position: relative; display: flex; align-items: center; gap: 10px;">
-            <input type="file" id="bgCustomFile" accept="image/*" style="display: none;" />
-            <button type="button" id="uploadBgBtn" class="action-btn secondary" style="margin: 0; width: 100%; justify-content: center; border-radius: 8px;">
-              <i data-lucide="image" style="width: 14px; height: 14px;"></i>
-              <span>选择背景图片 (.jpg/.png/.webp)</span>
-            </button>
-          </div>
-          <span id="bgUploadStatus" style="font-size: 11px; color: var(--color-text-sub); display: block; margin-top: 4px; font-family: monospace;">未上传本地文件</span>
-        </div>
-
-        <!-- 全站高亮主色 -->
-        <div class="form-group">
-          <label for="primaryColor">全站高亮主色</label>
-          <select id="primaryColor">
-            <option value="blue">烟雨蓝</option>
-            <option value="green">烟草绿</option>
-            <option value="purple">丁香灰</option>
-            <option value="pink">珊瑚粉</option>
-            <option value="orange">燕麦杏</option>
-            <option value="yellow">芥末黄</option>
-          </select>
-        </div>
-
-        <!-- 卡片不透明度 -->
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <label for="cardOpacity">卡片不透明度</label>
-            <span id="opacityVal" style="font-size: 11px; font-family: monospace; font-weight: 600; color: var(--color-text-sub);">0.65</span>
-          </div>
-          <input type="range" id="cardOpacity" min="0.2" max="0.95" step="0.05" value="0.65" style="width: 100%; cursor: pointer;" />
-        </div>
-
-        <!-- 毛玻璃虚化度 -->
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <label for="cardBlur">毛玻璃虚化度</label>
-            <span id="blurVal" style="font-size: 11px; font-family: monospace; font-weight: 600; color: var(--color-text-sub);">20px</span>
-          </div>
-          <input type="range" id="cardBlur" min="0" max="40" step="1" value="20" style="width: 100%; cursor: pointer;" />
-        </div>
-
-        <div class="modal-buttons" style="margin-top: 18px;">
-          <button type="button" class="modal-btn primary" id="closeAppearanceModal" style="width: 100%; text-align: center; font-weight: 550;">完成设置</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- 自定义确认弹窗 (Custom Confirm Modal) -->
   <div class="modal" id="customConfirmModal">
     <div class="modal-box" style="max-width: 380px;">
@@ -418,36 +277,6 @@ import Layout from '../layouts/Layout.astro';
       <div class="modal-buttons">
         <button type="button" class="modal-btn secondary" id="confirmCancelBtn">取消</button>
         <button type="button" class="modal-btn primary" id="confirmOkBtn" style="background: var(--theme-primary);">确定</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 会员管理弹窗 (仅超级管理员可用) -->
-  <div class="modal" id="usersModal">
-    <div class="modal-box" style="max-width: 600px; width: 90%;">
-      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px; border-bottom: 1px dashed rgba(0, 0, 0, 0.06); padding-bottom: 12px;">
-        <i data-lucide="users" style="color: var(--theme-primary); width: 18px; height: 18px;"></i>
-        <h3 style="margin: 0; font-size: 15px;">会员权限管理中心</h3>
-      </div>
-      
-      <!-- 会员表格 -->
-      <div class="users-table-wrapper" style="max-height: 380px; overflow-y: auto; margin-bottom: 16px;">
-        <table class="users-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
-          <thead>
-            <tr style="text-align: left; border-bottom: 1px solid rgba(0,0,0,0.06); color: var(--color-text-sub);">
-              <th style="padding: 10px 8px; font-weight: 550;">会员邮箱</th>
-              <th style="padding: 10px 8px; font-weight: 550;">加入时间</th>
-              <th style="padding: 10px 8px; font-weight: 550; text-align: right;">角色权限</th>
-            </tr>
-          </thead>
-          <tbody id="usersListBody">
-            <!-- 动态载入 -->
-          </tbody>
-        </table>
-      </div>
-
-      <div class="modal-buttons">
-        <button type="button" class="modal-btn primary" id="closeUsersModal" style="width: 100%; text-align: center; font-weight: 550;">关闭</button>
       </div>
     </div>
   </div>
@@ -1622,11 +1451,9 @@ import Layout from '../layouts/Layout.astro';
 </style>
 
 <script>
-  import { storage, dbStorage, supabase, isSupabaseConfigured } from '../scripts/storage';
+  import { storage, supabase, isSupabaseConfigured } from '../scripts/storage';
 
   function initAdminConsole() {
-    let userAllowUpload = false;
-
     // DOM 元素获取
     const categoryList = document.getElementById('categoryList');
     const categoryTabs = document.getElementById('categoryTabs');
@@ -1637,10 +1464,6 @@ import Layout from '../layouts/Layout.astro';
     const addCatForm = document.getElementById('addCatForm') as HTMLFormElement;
     const addLinkForm = document.getElementById('addLinkForm') as HTMLFormElement;
 
-    const exportBtn = document.getElementById('exportBtn');
-    const importBtn = document.getElementById('importBtn');
-    const importFile = document.getElementById('importFile') as HTMLInputElement;
-    const resetBtn = document.getElementById('resetBtn');
 
     const editCatModal = document.getElementById('editCatModal');
     const editCatForm = document.getElementById('editCatForm') as HTMLFormElement;
@@ -1654,11 +1477,6 @@ import Layout from '../layouts/Layout.astro';
     const addLinkModal = document.getElementById('openAddLinkBtn')?.closest('.admin-section')?.querySelector('#addLinkModal') || document.getElementById('addLinkModal');
     const closeAddLinkModal = document.getElementById('closeAddLinkModal');
 
-    // 会员管理 DOM 元素
-    const openUsersBtn = document.getElementById('openUsersBtn');
-    const usersModal = document.getElementById('usersModal');
-    const closeUsersModal = document.getElementById('closeUsersModal');
-    const usersListBody = document.getElementById('usersListBody');
 
     // ================= Supabase 身份校验与认证管理 =================
     async function checkAuth() {
@@ -1668,7 +1486,6 @@ import Layout from '../layouts/Layout.astro';
       if (!isSupabaseConfigured) {
         if (authContainer) authContainer.style.display = 'none';
         if (adminContainer) adminContainer.style.display = 'block';
-        userAllowUpload = true; // 纯离线模式默认允许本地
         return;
       }
 
@@ -1676,58 +1493,10 @@ import Layout from '../layouts/Layout.astro';
       if (session) {
         if (authContainer) authContainer.style.display = 'none';
         if (adminContainer) adminContainer.style.display = 'block';
-        renderLogoutButton(session.user.email);
-
-        // 管理员判定与菜单显示
-        storage.getCurrentUserRole().then(role => {
-          if (role === 'admin' && openUsersBtn) {
-            openUsersBtn.style.display = 'flex';
-          }
-        }).catch(err => console.error(err));
-
-        // 拉取当前用户的上传文件权限
-        storage.getCurrentUserUploadPermission().then(allowed => {
-          userAllowUpload = allowed;
-        }).catch(err => {
-          console.error(err);
-          userAllowUpload = false;
-        });
       } else {
         if (authContainer) authContainer.style.display = 'flex';
         if (adminContainer) adminContainer.style.display = 'none';
       }
-    }
-
-    function renderLogoutButton(email: string | undefined) {
-      const headerLogo = document.querySelector('.header-logo');
-      if (!headerLogo || document.getElementById('logoutBtn')) return;
-
-      const divider = document.createElement('div');
-      divider.className = 'header-divider';
-      
-      const logoutBtn = document.createElement('button');
-      logoutBtn.id = 'logoutBtn';
-      logoutBtn.className = 'action-btn danger';
-      logoutBtn.style.padding = '6px 12px';
-      logoutBtn.style.fontSize = '12px';
-      logoutBtn.style.borderRadius = '8px';
-      logoutBtn.innerHTML = `
-        <i data-lucide="log-out" style="width: 13px; height: 13px;"></i>
-        <span>退出 (${email || '已登录'})</span>
-      `;
-
-      logoutBtn.addEventListener('click', async () => {
-        const confirm = await showConfirm('确认退出', '确定要退出当前登录并清除本地缓存吗？');
-        if (confirm) {
-          await supabase!.auth.signOut();
-          storage.resetToDefault();
-          window.location.reload();
-        }
-      });
-
-      headerLogo.appendChild(divider);
-      headerLogo.appendChild(logoutBtn);
-      if ((window as any).lucide) (window as any).lucide.createIcons();
     }
 
     const authForm = document.getElementById('authForm');
@@ -1780,92 +1549,6 @@ import Layout from '../layouts/Layout.astro';
     });
 
     checkAuth();
-
-    // ================= 会员管理面板业务控制 =================
-    openUsersBtn?.addEventListener('click', async () => {
-      await renderUsersList();
-      usersModal?.classList.add('open');
-    });
-
-    closeUsersModal?.addEventListener('click', () => {
-      usersModal?.classList.remove('open');
-    });
-
-    async function renderUsersList() {
-      if (!usersListBody) return;
-      usersListBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">载入会员列表中...</td></tr>';
-      
-      const profiles = await storage.getAllProfiles();
-      usersListBody.innerHTML = '';
-      
-      if (profiles.length === 0) {
-        usersListBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">暂无注册会员数据。</td></tr>';
-        return;
-      }
-
-      profiles.forEach(profile => {
-        const tr = document.createElement('tr');
-        const joinDate = new Date(profile.created_at).toLocaleDateString('zh-CN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        });
-        
-        tr.innerHTML = `
-          <td style="padding: 12px 8px; font-weight:500;">${profile.email}</td>
-          <td style="padding: 12px 8px; color: var(--color-text-sub);">${joinDate}</td>
-          <td style="padding: 12px 8px; text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-            <select class="role-select" data-id="${profile.id}">
-              <option value="user" ${profile.role === 'user' ? 'selected' : ''}>普通会员</option>
-              <option value="admin" ${profile.role === 'admin' ? 'selected' : ''}>超级管理员</option>
-            </select>
-            <select class="upload-select" data-id="${profile.id}">
-              <option value="false" ${!profile.allow_upload ? 'selected' : ''}>禁止上传</option>
-              <option value="true" ${profile.allow_upload ? 'selected' : ''}>允许上传</option>
-            </select>
-          </td>
-        `;
-
-        const select = tr.querySelector('.role-select') as HTMLSelectElement;
-        const uploadSelect = tr.querySelector('.upload-select') as HTMLSelectElement;
-
-        select?.addEventListener('change', async () => {
-          const newRole = select.value as 'admin' | 'user';
-          const allowUpload = uploadSelect.value === 'true';
-          try {
-            showToast('正在修改用户权限...', 'info');
-            await storage.updateUserProfileRole(profile.id, newRole, allowUpload);
-            showToast('权限修改成功！', 'success');
-            
-            // 如果自己修改了自己，刷新页面
-            const { data: { session } } = await supabase!.auth.getSession();
-            if (session?.user?.id === profile.id) {
-              window.location.reload();
-            }
-          } catch (err: any) {
-            showToast(`修改失败: ${err.message || err}`, 'error');
-            select.value = profile.role;
-          }
-        });
-
-        uploadSelect?.addEventListener('change', async () => {
-          const newRole = select.value as 'admin' | 'user';
-          const allowUpload = uploadSelect.value === 'true';
-          try {
-            showToast('正在修改文件上传权限...', 'info');
-            await storage.updateUserProfileRole(profile.id, newRole, allowUpload);
-            showToast('文件上传权限修改成功！', 'success');
-          } catch (err: any) {
-            showToast(`修改失败: ${err.message || err}`, 'error');
-            uploadSelect.value = String(!!profile.allow_upload);
-          }
-        });
-
-        usersListBody.appendChild(tr);
-      });
-
-      if ((window as any).lucide) (window as any).lucide.createIcons();
-    }
 
     // ================= 自定义通知与 Confirm 确认窗口核心逻辑 =================
     function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
@@ -1986,32 +1669,6 @@ import Layout from '../layouts/Layout.astro';
       }
       return true;
     }
-
-    // 个性化美化设置 DOM 获取
-    const appearanceForm = document.getElementById('appearanceForm') as HTMLFormElement;
-    const fontStyleSelect = document.getElementById('fontStyle') as HTMLSelectElement;
-    const bgStyleSelect = document.getElementById('bgStyle') as HTMLSelectElement;
-    const customBgUrlGroup = document.getElementById('customBgUrlGroup') as HTMLElement;
-    const customBgUrlInput = document.getElementById('customBgUrl') as HTMLInputElement;
-    const primaryColorSelect = document.getElementById('primaryColor') as HTMLSelectElement;
-    const cardOpacityInput = document.getElementById('cardOpacity') as HTMLInputElement;
-    const cardBlurInput = document.getElementById('cardBlur') as HTMLInputElement;
-    const opacityVal = document.getElementById('opacityVal') as HTMLElement;
-    const blurVal = document.getElementById('blurVal') as HTMLElement;
-
-    const customFontLinkGroup = document.getElementById('customFontLinkGroup') as HTMLElement;
-    const customFontFamilyGroup = document.getElementById('customFontFamilyGroup') as HTMLElement;
-    const customFontFileGroup = document.getElementById('customFontFileGroup') as HTMLElement;
-    const fontCustomLinkInput = document.getElementById('fontCustomLink') as HTMLInputElement;
-    const fontFamilyNameInput = document.getElementById('fontFamilyName') as HTMLInputElement;
-    const fontCustomFileInput = document.getElementById('fontCustomFile') as HTMLInputElement;
-    const uploadFontBtn = document.getElementById('uploadFontBtn') as HTMLElement;
-    const fontUploadStatus = document.getElementById('fontUploadStatus') as HTMLElement;
-
-    const customBgFileGroup = document.getElementById('customBgFileGroup') as HTMLElement;
-    const bgCustomFileInput = document.getElementById('bgCustomFile') as HTMLInputElement;
-    const uploadBgBtn = document.getElementById('uploadBgBtn') as HTMLElement;
-    const bgUploadStatus = document.getElementById('bgUploadStatus') as HTMLElement;
 
     let activeTabCatId = 'all';
 
@@ -2371,10 +2028,7 @@ import Layout from '../layouts/Layout.astro';
         { id: 'catColor', type: 'color' as const },
         { id: 'editCatColor', type: 'color' as const },
         { id: 'linkCatId', type: 'category' as const },
-        { id: 'editLinkCatId', type: 'category' as const },
-        { id: 'fontStyle', type: 'color' as const },
-        { id: 'bgStyle', type: 'color' as const },
-        { id: 'primaryColor', type: 'color' as const }
+        { id: 'editLinkCatId', type: 'category' as const }
       ];
 
       selects.forEach(item => {
@@ -2385,11 +2039,6 @@ import Layout from '../layouts/Layout.astro';
         }
       });
 
-      try {
-        initAppearanceForm();
-      } catch (e) {
-        console.error('Failed to initAppearanceForm:', e);
-      }
 
       try {
         renderIconsSafe();
@@ -2752,73 +2401,6 @@ import Layout from '../layouts/Layout.astro';
       editLinkModal?.classList.remove('open');
     });
 
-    exportBtn?.addEventListener('click', () => {
-      const dataStr = storage.exportData();
-      const blob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `personal_nav_backup_${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    });
-
-    importBtn?.addEventListener('click', () => {
-      importFile?.click();
-    });
-
-    importFile?.addEventListener('change', () => {
-      const file = importFile.files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result as string;
-        const success = storage.importData(text);
-        if (success) {
-          showToast('数据导入成功！', 'success');
-          refreshAll();
-          window.dispatchEvent(new CustomEvent('categories-updated'));
-        } else {
-          showToast('数据解析失败，请检查备份文件是否为有效的导航页 JSON 数据！', 'error');
-        }
-      };
-      reader.readAsText(file);
-      importFile.value = '';
-    });
-
-    resetBtn?.addEventListener('click', async () => {
-      const ok = await showConfirm(
-        '恢复默认',
-        '确定要恢复默认配置吗？你目前添加的自定义分类和链接将被完全清空！',
-        true
-      );
-      if (ok) {
-        storage.resetToDefault();
-        activeTabCatId = 'all';
-        refreshAll();
-        window.dispatchEvent(new CustomEvent('categories-updated'));
-        showToast('已恢复为默认配置', 'success');
-      }
-    });
-
-    // 美化设置模态弹窗的打开与关闭绑定
-    const appearanceModal = document.getElementById('appearanceModal');
-    const openAppearanceBtn = document.getElementById('openAppearanceBtn');
-    const closeAppearanceModal = document.getElementById('closeAppearanceModal');
-
-    openAppearanceBtn?.addEventListener('click', () => {
-      initAppearanceForm(); // 唤出前先读取和对齐最新配置值
-      appearanceModal?.classList.add('open');
-    });
-
-    closeAppearanceModal?.addEventListener('click', () => {
-      appearanceModal?.classList.remove('open');
-    });
-
     // 绑定添加新卡片弹窗的打开与关闭 (智能填充当前分类选项)
     openAddLinkBtn?.addEventListener('click', () => {
       if (activeTabCatId !== 'all') {
@@ -2859,278 +2441,6 @@ import Layout from '../layouts/Layout.astro';
         }
       }
     });
-
-    // 3. 个性化美化设置表单管理与同步逻辑
-    // 3. 个性化美化设置：全局即时保存与应用
-    function saveAndApplyAppearance() {
-      const config = {
-        fontStyle: fontStyleSelect?.value as any || 'system-sans',
-        fontCustomLink: fontCustomLinkInput?.value.trim() || '',
-        fontFamilyName: fontFamilyNameInput?.value.trim() || '',
-        bgStyle: bgStyleSelect?.value as any || 'morandi-glow',
-        customBgUrl: customBgUrlInput?.value.trim() || '',
-        primaryColor: primaryColorSelect?.value || 'blue',
-        cardOpacity: cardOpacityInput ? parseFloat(cardOpacityInput.value) : 0.65,
-        cardBlur: cardBlurInput ? parseInt(cardBlurInput.value) : 20
-      };
-      storage.saveAppearance(config);
-      // 触发全局事件以同步全站的 UI 变量
-      window.dispatchEvent(new CustomEvent('appearance-updated'));
-    }
-
-    // 绑定本地上传触发按钮
-    uploadFontBtn?.addEventListener('click', () => {
-      if (!userAllowUpload) {
-        showToast('您暂无上传物理文件权限，请联系管理员开通', 'error');
-        return;
-      }
-      fontCustomFileInput?.click();
-    });
-    uploadBgBtn?.addEventListener('click', () => {
-      if (!userAllowUpload) {
-        showToast('您暂无上传物理文件权限，请联系管理员开通', 'error');
-        return;
-      }
-      bgCustomFileInput?.click();
-    });
-
-    // 本地字体上传事件
-    fontCustomFileInput?.addEventListener('change', async () => {
-      const file = fontCustomFileInput.files?.[0];
-      if (!file) return;
-
-      if (fontUploadStatus) {
-        fontUploadStatus.textContent = `加载中: ${file.name} (${Math.round(file.size / 1024)} KB)...`;
-      }
-
-      try {
-        const fileUrl = await dbStorage.saveAsset('custom-font-file', file);
-        
-        // 如果成功上传到云端，转换模式为 custom-link 并填入 URL 实现跨设备同步
-        if (fileUrl) {
-          if (fontCustomLinkInput) fontCustomLinkInput.value = fileUrl;
-          if (fontStyleSelect) fontStyleSelect.value = 'custom-link';
-          
-          // 更新自定义下拉框显示
-          const s = document.getElementById('fontStyle') as HTMLSelectElement;
-          if (s) {
-            const w = s.parentElement?.classList.contains('custom-select-wrapper') ? s.parentElement as HTMLElement : null;
-            if (w) updateTriggerDisplay(w, s, 'color');
-          }
-          
-          // 动态显示在线字体输入配置
-          if (customFontLinkGroup) customFontLinkGroup.style.display = 'block';
-          if (customFontFamilyGroup) customFontFamilyGroup.style.display = 'block';
-        }
-
-        if (fontUploadStatus) {
-          fontUploadStatus.textContent = `已载入: ${file.name} (${Math.round(file.size / 1024)} KB)`;
-        }
-        
-        // 自动将字体族名称命名为无后缀的文件名，防止留空
-        const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || 'LocalCustomFont';
-        if (fontFamilyNameInput && !fontFamilyNameInput.value.trim()) {
-          fontFamilyNameInput.value = baseName;
-        }
-
-        saveAndApplyAppearance();
-      } catch (e: any) {
-        console.error(e);
-        if (fontUploadStatus) {
-          fontUploadStatus.textContent = `加载失败: ${e.message || e}`;
-        }
-      }
-    });
-
-    // 本地背景壁纸上传事件
-    bgCustomFileInput?.addEventListener('change', async () => {
-      const file = bgCustomFileInput.files?.[0];
-      if (!file) return;
-
-      if (bgUploadStatus) {
-        bgUploadStatus.textContent = `加载中: ${file.name} (${Math.round(file.size / 1024 / 1024 * 100) / 100} MB)...`;
-      }
-
-      try {
-        const fileUrl = await dbStorage.saveAsset('custom-bg-file', file);
-        
-        // 如果成功上传到云端，转换模式为 custom-url 并填入 URL 实现跨设备同步
-        if (fileUrl) {
-          if (customBgUrlInput) customBgUrlInput.value = fileUrl;
-          if (bgStyleSelect) bgStyleSelect.value = 'custom-url';
-          
-          // 更新自定义下拉框显示
-          const s = document.getElementById('bgStyle') as HTMLSelectElement;
-          if (s) {
-            const w = s.parentElement?.classList.contains('custom-select-wrapper') ? s.parentElement as HTMLElement : null;
-            if (w) updateTriggerDisplay(w, s, 'color');
-          }
-          
-          // 动态显示在线背景输入配置
-          if (customBgUrlGroup) customBgUrlGroup.style.display = 'block';
-        }
-
-        if (bgUploadStatus) {
-          bgUploadStatus.textContent = `已载入: ${file.name} (${Math.round(file.size / 1024 / 1024 * 100) / 100} MB)`;
-        }
-        saveAndApplyAppearance();
-      } catch (e: any) {
-        console.error(e);
-        if (bgUploadStatus) {
-          bgUploadStatus.textContent = `加载失败: ${e.message || e}`;
-        }
-      }
-    });
-
-    // 绑定即时监听器 (只绑定一次)
-    cardOpacityInput?.addEventListener('input', () => {
-      if (opacityVal) {
-        const percent = Math.round(parseFloat(cardOpacityInput.value) * 100);
-        opacityVal.textContent = `${percent}%`;
-      }
-      saveAndApplyAppearance(); // 拖动滑块时即时更新不透明度
-    });
-
-    cardBlurInput?.addEventListener('input', () => {
-      if (blurVal) {
-        const percent = Math.round((parseInt(cardBlurInput.value) / 40) * 100);
-        blurVal.textContent = `${percent}%`;
-      }
-      saveAndApplyAppearance(); // 拖动滑块时即时更新模糊度
-    });
-
-    fontStyleSelect?.addEventListener('change', () => {
-      if (fontStyleSelect.value === 'custom-file' && !userAllowUpload) {
-        showToast('您暂无上传物理文件权限，请联系管理员开通', 'error');
-        const config = storage.getAppearance();
-        fontStyleSelect.value = config.fontStyle === 'custom-file' ? 'system-sans' : (config.fontStyle || 'system-sans');
-        const w = fontStyleSelect.parentElement?.classList.contains('custom-select-wrapper') ? fontStyleSelect.parentElement as HTMLElement : null;
-        if (w) updateTriggerDisplay(w, fontStyleSelect, 'color');
-        return;
-      }
-      if (customFontLinkGroup) {
-        customFontLinkGroup.style.display = fontStyleSelect.value === 'custom-link' ? 'block' : 'none';
-      }
-      if (customFontFamilyGroup) {
-        customFontFamilyGroup.style.display = (fontStyleSelect.value === 'custom-link' || fontStyleSelect.value === 'custom-file') ? 'block' : 'none';
-      }
-      if (customFontFileGroup) {
-        customFontFileGroup.style.display = fontStyleSelect.value === 'custom-file' ? 'block' : 'none';
-      }
-      saveAndApplyAppearance();
-    });
-
-    fontCustomLinkInput?.addEventListener('input', saveAndApplyAppearance);
-    fontFamilyNameInput?.addEventListener('input', saveAndApplyAppearance);
-    primaryColorSelect?.addEventListener('change', saveAndApplyAppearance);
-
-    bgStyleSelect?.addEventListener('change', () => {
-      if (bgStyleSelect.value === 'custom-file' && !userAllowUpload) {
-        showToast('您暂无上传物理文件权限，请联系管理员开通', 'error');
-        const config = storage.getAppearance();
-        bgStyleSelect.value = config.bgStyle === 'custom-file' ? 'morandi-glow' : config.bgStyle;
-        const w = bgStyleSelect.parentElement?.classList.contains('custom-select-wrapper') ? bgStyleSelect.parentElement as HTMLElement : null;
-        if (w) updateTriggerDisplay(w, bgStyleSelect, 'color');
-        return;
-      }
-      if (customBgUrlGroup) {
-        customBgUrlGroup.style.display = bgStyleSelect.value === 'custom-url' ? 'block' : 'none';
-      }
-      if (customBgFileGroup) {
-        customBgFileGroup.style.display = bgStyleSelect.value === 'custom-file' ? 'block' : 'none';
-      }
-      saveAndApplyAppearance();
-    });
-
-    customBgUrlInput?.addEventListener('input', saveAndApplyAppearance);
-    customBgUrlInput?.addEventListener('change', saveAndApplyAppearance);
-
-    // 阻止美化设置表单的默认提交刷新行为
-    appearanceForm?.addEventListener('submit', (e) => {
-      e.preventDefault();
-    });
-
-    // 纯粹的配置值同步读取及展示逻辑 (会在 refreshAll 里重复调用 by 动态对齐)
-    function initAppearanceForm() {
-      const config = storage.getAppearance();
-      if (fontStyleSelect) fontStyleSelect.value = config.fontStyle || 'system-sans';
-      if (fontCustomLinkInput) fontCustomLinkInput.value = config.fontCustomLink || '';
-      if (fontFamilyNameInput) fontFamilyNameInput.value = config.fontFamilyName || '';
-      if (bgStyleSelect) bgStyleSelect.value = config.bgStyle;
-      if (customBgUrlInput) customBgUrlInput.value = config.customBgUrl || '';
-      if (primaryColorSelect) primaryColorSelect.value = config.primaryColor;
-      if (cardOpacityInput) {
-        cardOpacityInput.value = String(config.cardOpacity);
-        if (opacityVal) {
-          const percent = Math.round(config.cardOpacity * 100);
-          opacityVal.textContent = `${percent}%`;
-        }
-      }
-      if (cardBlurInput) {
-        cardBlurInput.value = String(config.cardBlur);
-        if (blurVal) {
-          const percent = Math.round((config.cardBlur / 40) * 100);
-          blurVal.textContent = `${percent}%`;
-        }
-      }
-
-      // 控制表单配置项在不同模式下的动态显隐
-      if (customBgUrlGroup) {
-        customBgUrlGroup.style.display = config.bgStyle === 'custom-url' ? 'block' : 'none';
-      }
-      if (customBgFileGroup) {
-        customBgFileGroup.style.display = config.bgStyle === 'custom-file' ? 'block' : 'none';
-      }
-      if (customFontLinkGroup) {
-        customFontLinkGroup.style.display = config.fontStyle === 'custom-link' ? 'block' : 'none';
-      }
-      if (customFontFamilyGroup) {
-        customFontFamilyGroup.style.display = (config.fontStyle === 'custom-link' || config.fontStyle === 'custom-file') ? 'block' : 'none';
-      }
-      if (customFontFileGroup) {
-        customFontFileGroup.style.display = config.fontStyle === 'custom-file' ? 'block' : 'none';
-      }
-
-      // 读取 IndexedDB 中的已上传资产更新前端文本
-      dbStorage.getAsset('custom-bg-file').then(file => {
-        if (bgUploadStatus) {
-          bgUploadStatus.textContent = file 
-            ? `已载入: ${(file as File).name || '已上传壁纸'} (${Math.round(file.size / 1024 / 1024 * 100) / 100} MB)`
-            : '未上传本地文件';
-        }
-      }).catch(() => {});
-
-      dbStorage.getAsset('custom-font-file').then(file => {
-        if (fontUploadStatus) {
-          fontUploadStatus.textContent = file 
-            ? `已载入: ${(file as File).name || '已上传字体'} (${Math.round(file.size / 1024)} KB)`
-            : '未上传本地文件';
-        }
-      }).catch(() => {});
-
-      // 同步自定义下拉 UI 的触发显示及选中高亮
-      setTimeout(() => {
-        ['bgStyle', 'primaryColor', 'fontStyle'].forEach(id => {
-          const s = document.getElementById(id) as HTMLSelectElement;
-          if (s) {
-            const w = s.parentElement?.classList.contains('custom-select-wrapper')
-              ? s.parentElement as HTMLElement
-              : null;
-            if (w) {
-              updateTriggerDisplay(w, s, 'color');
-              w.querySelectorAll('.custom-option').forEach(opt => {
-                const val = opt.getAttribute('data-value') || '';
-                if (val === s.value) {
-                  opt.classList.add('selected');
-                } else {
-                  opt.classList.remove('selected');
-                }
-              });
-            }
-          }
-        });
-      }, 50);
-    }
 
     // 初始化图标选择器
     initIconPicker('catIconWrapper', 'catIcon');
