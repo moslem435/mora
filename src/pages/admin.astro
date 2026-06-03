@@ -2,7 +2,42 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="管理控制台 - 个人导航聚合页">
+<Layout title="Mora 管理控制台">
+  <!-- 身份验证面板（毛玻璃磨砂效果） -->
+  <div id="authContainer" class="auth-container" style="display: none;">
+    <div class="auth-card">
+      <div class="auth-header">
+        <i data-lucide="shield-check" class="auth-icon"></i>
+        <h2>管理身份验证</h2>
+        <p>请输入管理员邮箱和密码进行身份登录</p>
+      </div>
+      <form id="authForm" class="admin-form" novalidate>
+        <div class="form-group">
+          <label for="authEmail">管理员邮箱</label>
+          <input type="email" id="authEmail" required placeholder="name@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group" style="margin-bottom: 6px;">
+          <label for="authPassword">管理员密码</label>
+          <input type="password" id="authPassword" required placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button type="submit" id="loginBtn" class="submit-btn" style="width: 100%; height: 42px;">
+          <i data-lucide="log-in"></i>
+          <span>登录控制台</span>
+        </button>
+        <button type="button" id="signUpBtn" class="action-btn secondary" style="width: 100%; height: 42px; justify-content: center; margin-top: 10px; border-radius: 10px;">
+          <i data-lucide="user-plus"></i>
+          <span>注册新管理员</span>
+        </button>
+      </form>
+      <div class="auth-footer">
+        <a href="/" class="back-home-link">
+          <i data-lucide="arrow-left" style="width: 12px; height: 12px;"></i>
+          <span>返回导航主页</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <div class="admin-container">
     
     <!-- 头部工具栏 -->
@@ -13,10 +48,16 @@ import Layout from '../layouts/Layout.astro';
           <span>返回主页</span>
         </a>
         <div class="header-divider"></div>
-        <h1 class="header-title">导航管理控制台</h1>
+        <h1 class="header-title">Mora 管理控制台</h1>
       </div>
       
       <div class="action-group">
+        <!-- 会员管理 (默认隐藏，仅超级管理员可用) -->
+        <button id="openUsersBtn" class="action-btn secondary" title="会员管理" type="button" style="display: none;">
+          <i data-lucide="users"></i>
+          <span>会员管理</span>
+        </button>
+
         <!-- 个性化美化设置 -->
         <button id="openAppearanceBtn" class="action-btn secondary" title="个性化美化设置" type="button">
           <i data-lucide="palette"></i>
@@ -262,8 +303,11 @@ import Layout from '../layouts/Layout.astro';
         <div class="form-group">
           <label for="fontStyle">全局字体风格</label>
           <select id="fontStyle">
-            <option value="system-sans">本地微软雅黑 (清晰易读)</option>
-            <option value="morandi-sans">思源莫兰迪体 (第一版)</option>
+            <option value="system-sans">本地系统黑体 (极速加载)</option>
+            <option value="morandi-sans">思源莫兰迪黑体 (经典优雅)</option>
+            <option value="inter">MiSans 极简黑体 (中英双语)</option>
+            <option value="outfit">HarmonyOS 科技体 (中英双语)</option>
+            <option value="geist">得意黑 潮玩极客体 (中英双语)</option>
             <option value="custom-link">自定义在线字体链接</option>
             <option value="custom-file">本地上传字体包文件</option>
           </select>
@@ -374,6 +418,36 @@ import Layout from '../layouts/Layout.astro';
       <div class="modal-buttons">
         <button type="button" class="modal-btn secondary" id="confirmCancelBtn">取消</button>
         <button type="button" class="modal-btn primary" id="confirmOkBtn" style="background: var(--theme-primary);">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 会员管理弹窗 (仅超级管理员可用) -->
+  <div class="modal" id="usersModal">
+    <div class="modal-box" style="max-width: 600px; width: 90%;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px; border-bottom: 1px dashed rgba(0, 0, 0, 0.06); padding-bottom: 12px;">
+        <i data-lucide="users" style="color: var(--theme-primary); width: 18px; height: 18px;"></i>
+        <h3 style="margin: 0; font-size: 15px;">会员权限管理中心</h3>
+      </div>
+      
+      <!-- 会员表格 -->
+      <div class="users-table-wrapper" style="max-height: 380px; overflow-y: auto; margin-bottom: 16px;">
+        <table class="users-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="text-align: left; border-bottom: 1px solid rgba(0,0,0,0.06); color: var(--color-text-sub);">
+              <th style="padding: 10px 8px; font-weight: 550;">会员邮箱</th>
+              <th style="padding: 10px 8px; font-weight: 550;">加入时间</th>
+              <th style="padding: 10px 8px; font-weight: 550; text-align: right;">角色权限</th>
+            </tr>
+          </thead>
+          <tbody id="usersListBody">
+            <!-- 动态载入 -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-buttons">
+        <button type="button" class="modal-btn primary" id="closeUsersModal" style="width: 100%; text-align: center; font-weight: 550;">关闭</button>
       </div>
     </div>
   </div>
@@ -1411,12 +1485,148 @@ import Layout from '../layouts/Layout.astro';
     border-color: rgba(255, 255, 255, 0.02);
     color: #e8e8e8;
   }
+
+  /* ================= 身份验证登录卡片样式 ================= */
+  .auth-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+  }
+  
+  .auth-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--card-shadow-hover), 0 20px 50px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    animation: authCardFadeIn 0.5s cubic-bezier(0.25, 1, 0.5, 1) both;
+  }
+
+  @keyframes authCardFadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .auth-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .auth-icon {
+    width: 36px;
+    height: 36px;
+    color: var(--theme-primary);
+    margin-bottom: 6px;
+  }
+
+  .auth-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-main);
+  }
+
+  .auth-header p {
+    font-size: 13px;
+    color: var(--color-text-sub);
+  }
+
+  .auth-footer {
+    display: flex;
+    justify-content: center;
+    border-top: 1px dashed rgba(0, 0, 0, 0.06);
+    padding-top: 16px;
+    margin-top: 6px;
+  }
+
+  html.bg-dark-slate .auth-footer {
+    border-top-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .back-home-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--color-text-sub);
+    transition: var(--transition-smooth);
+  }
+
+  .back-home-link:hover {
+    color: var(--theme-primary);
+    transform: translateX(-2px);
+  }
+
+  /* 会员管理表格样式 */
+  .users-table th {
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  .users-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    color: var(--color-text-main);
+  }
+  html.bg-dark-slate .users-table tr {
+    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  }
+  html.bg-dark-slate .users-table td {
+    border-bottom-color: rgba(255, 255, 255, 0.03) !important;
+  }
+  
+  /* 管理员角色微章 */
+  .role-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+  }
+  .role-badge.admin {
+    background: rgba(154, 168, 173, 0.15);
+    color: var(--theme-blue);
+    border: 1px solid rgba(154, 168, 173, 0.25);
+  }
+  .role-badge.user {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--color-text-sub);
+  }
+  html.bg-dark-slate .role-badge.user {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .role-select {
+    font-size: 12px !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    background: rgba(255,255,255,0.8);
+    border: 1px solid var(--card-border);
+    cursor: pointer;
+  }
 </style>
 
 <script>
-  import { storage, dbStorage } from '../scripts/storage';
+  import { storage, dbStorage, supabase, isSupabaseConfigured } from '../scripts/storage';
 
   function initAdminConsole() {
+    let userAllowUpload = false;
+
     // DOM 元素获取
     const categoryList = document.getElementById('categoryList');
     const categoryTabs = document.getElementById('categoryTabs');
@@ -1441,8 +1651,221 @@ import Layout from '../layouts/Layout.astro';
     const closeLinkModal = document.getElementById('closeLinkModal');
 
     const openAddLinkBtn = document.getElementById('openAddLinkBtn');
-    const addLinkModal = document.getElementById('addLinkModal');
+    const addLinkModal = document.getElementById('openAddLinkBtn')?.closest('.admin-section')?.querySelector('#addLinkModal') || document.getElementById('addLinkModal');
     const closeAddLinkModal = document.getElementById('closeAddLinkModal');
+
+    // 会员管理 DOM 元素
+    const openUsersBtn = document.getElementById('openUsersBtn');
+    const usersModal = document.getElementById('usersModal');
+    const closeUsersModal = document.getElementById('closeUsersModal');
+    const usersListBody = document.getElementById('usersListBody');
+
+    // ================= Supabase 身份校验与认证管理 =================
+    async function checkAuth() {
+      const authContainer = document.getElementById('authContainer');
+      const adminContainer = document.querySelector('.admin-container') as HTMLElement;
+      
+      if (!isSupabaseConfigured) {
+        if (authContainer) authContainer.style.display = 'none';
+        if (adminContainer) adminContainer.style.display = 'block';
+        userAllowUpload = true; // 纯离线模式默认允许本地
+        return;
+      }
+
+      const { data: { session } } = await supabase!.auth.getSession();
+      if (session) {
+        if (authContainer) authContainer.style.display = 'none';
+        if (adminContainer) adminContainer.style.display = 'block';
+        renderLogoutButton(session.user.email);
+
+        // 管理员判定与菜单显示
+        storage.getCurrentUserRole().then(role => {
+          if (role === 'admin' && openUsersBtn) {
+            openUsersBtn.style.display = 'flex';
+          }
+        }).catch(err => console.error(err));
+
+        // 拉取当前用户的上传文件权限
+        storage.getCurrentUserUploadPermission().then(allowed => {
+          userAllowUpload = allowed;
+        }).catch(err => {
+          console.error(err);
+          userAllowUpload = false;
+        });
+      } else {
+        if (authContainer) authContainer.style.display = 'flex';
+        if (adminContainer) adminContainer.style.display = 'none';
+      }
+    }
+
+    function renderLogoutButton(email: string | undefined) {
+      const headerLogo = document.querySelector('.header-logo');
+      if (!headerLogo || document.getElementById('logoutBtn')) return;
+
+      const divider = document.createElement('div');
+      divider.className = 'header-divider';
+      
+      const logoutBtn = document.createElement('button');
+      logoutBtn.id = 'logoutBtn';
+      logoutBtn.className = 'action-btn danger';
+      logoutBtn.style.padding = '6px 12px';
+      logoutBtn.style.fontSize = '12px';
+      logoutBtn.style.borderRadius = '8px';
+      logoutBtn.innerHTML = `
+        <i data-lucide="log-out" style="width: 13px; height: 13px;"></i>
+        <span>退出 (${email || '已登录'})</span>
+      `;
+
+      logoutBtn.addEventListener('click', async () => {
+        const confirm = await showConfirm('确认退出', '确定要退出当前登录并清除本地缓存吗？');
+        if (confirm) {
+          await supabase!.auth.signOut();
+          storage.resetToDefault();
+          window.location.reload();
+        }
+      });
+
+      headerLogo.appendChild(divider);
+      headerLogo.appendChild(logoutBtn);
+      if ((window as any).lucide) (window as any).lucide.createIcons();
+    }
+
+    const authForm = document.getElementById('authForm');
+    const authEmail = document.getElementById('authEmail') as HTMLInputElement;
+    const authPassword = document.getElementById('authPassword') as HTMLInputElement;
+    const signUpBtn = document.getElementById('signUpBtn');
+
+    authForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+      
+      if (!email || !password) return;
+
+      showToast('正在登录...', 'info');
+      const { error } = await supabase!.auth.signInWithPassword({ email, password });
+      if (error) {
+        showToast(`登录失败: ${error.message}`, 'error');
+      } else {
+        showToast('登录成功，正在加载云端数据...', 'success');
+        await storage.syncFromCloud();
+        window.location.reload();
+      }
+    });
+
+    signUpBtn?.addEventListener('click', async () => {
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+      
+      if (!email || !password) {
+        showToast('请先输入邮箱和密码', 'info');
+        return;
+      }
+      if (password.length < 6) {
+        showToast('密码长度至少为 6 位', 'info');
+        return;
+      }
+
+      showToast('正在注册...', 'info');
+      const { error, data } = await supabase!.auth.signUp({ email, password });
+      if (error) {
+        showToast(`注册失败: ${error.message}`, 'error');
+      } else {
+        showToast('注册成功！如果开启了邮箱验证，请查收确认邮件。', 'success');
+        if (data?.session) {
+          await storage.saveAppearanceCloud(storage.getAppearance());
+          window.location.reload();
+        }
+      }
+    });
+
+    checkAuth();
+
+    // ================= 会员管理面板业务控制 =================
+    openUsersBtn?.addEventListener('click', async () => {
+      await renderUsersList();
+      usersModal?.classList.add('open');
+    });
+
+    closeUsersModal?.addEventListener('click', () => {
+      usersModal?.classList.remove('open');
+    });
+
+    async function renderUsersList() {
+      if (!usersListBody) return;
+      usersListBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">载入会员列表中...</td></tr>';
+      
+      const profiles = await storage.getAllProfiles();
+      usersListBody.innerHTML = '';
+      
+      if (profiles.length === 0) {
+        usersListBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">暂无注册会员数据。</td></tr>';
+        return;
+      }
+
+      profiles.forEach(profile => {
+        const tr = document.createElement('tr');
+        const joinDate = new Date(profile.created_at).toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        
+        tr.innerHTML = `
+          <td style="padding: 12px 8px; font-weight:500;">${profile.email}</td>
+          <td style="padding: 12px 8px; color: var(--color-text-sub);">${joinDate}</td>
+          <td style="padding: 12px 8px; text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+            <select class="role-select" data-id="${profile.id}">
+              <option value="user" ${profile.role === 'user' ? 'selected' : ''}>普通会员</option>
+              <option value="admin" ${profile.role === 'admin' ? 'selected' : ''}>超级管理员</option>
+            </select>
+            <select class="upload-select" data-id="${profile.id}">
+              <option value="false" ${!profile.allow_upload ? 'selected' : ''}>禁止上传</option>
+              <option value="true" ${profile.allow_upload ? 'selected' : ''}>允许上传</option>
+            </select>
+          </td>
+        `;
+
+        const select = tr.querySelector('.role-select') as HTMLSelectElement;
+        const uploadSelect = tr.querySelector('.upload-select') as HTMLSelectElement;
+
+        select?.addEventListener('change', async () => {
+          const newRole = select.value as 'admin' | 'user';
+          const allowUpload = uploadSelect.value === 'true';
+          try {
+            showToast('正在修改用户权限...', 'info');
+            await storage.updateUserProfileRole(profile.id, newRole, allowUpload);
+            showToast('权限修改成功！', 'success');
+            
+            // 如果自己修改了自己，刷新页面
+            const { data: { session } } = await supabase!.auth.getSession();
+            if (session?.user?.id === profile.id) {
+              window.location.reload();
+            }
+          } catch (err: any) {
+            showToast(`修改失败: ${err.message || err}`, 'error');
+            select.value = profile.role;
+          }
+        });
+
+        uploadSelect?.addEventListener('change', async () => {
+          const newRole = select.value as 'admin' | 'user';
+          const allowUpload = uploadSelect.value === 'true';
+          try {
+            showToast('正在修改文件上传权限...', 'info');
+            await storage.updateUserProfileRole(profile.id, newRole, allowUpload);
+            showToast('文件上传权限修改成功！', 'success');
+          } catch (err: any) {
+            showToast(`修改失败: ${err.message || err}`, 'error');
+            uploadSelect.value = String(!!profile.allow_upload);
+          }
+        });
+
+        usersListBody.appendChild(tr);
+      });
+
+      if ((window as any).lucide) (window as any).lucide.createIcons();
+    }
 
     // ================= 自定义通知与 Confirm 确认窗口核心逻辑 =================
     function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
@@ -2036,7 +2459,8 @@ import Layout from '../layouts/Layout.astro';
             true
           );
           if (ok) {
-            storage.deleteCategory(cat.id);
+            showToast('正在删除...', 'info');
+            await storage.deleteCategoryCloud(cat.id);
             refreshAll();
             window.dispatchEvent(new CustomEvent('categories-updated'));
             showToast('分类已成功删除', 'success');
@@ -2148,7 +2572,8 @@ import Layout from '../layouts/Layout.astro';
             true
           );
           if (ok) {
-            storage.deleteLink(link.id);
+            showToast('正在删除...', 'info');
+            await storage.deleteLinkCloud(link.id);
             refreshAll();
             showToast('链接已成功删除', 'success');
           }
@@ -2158,14 +2583,15 @@ import Layout from '../layouts/Layout.astro';
       });
     }
 
-    addCatForm?.addEventListener('submit', (e) => {
+    addCatForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!validateForm(addCatForm)) return;
       const name = (document.getElementById('catName') as HTMLInputElement).value.trim();
       const icon = (document.getElementById('catIcon') as HTMLInputElement).value.trim();
       const color = (document.getElementById('catColor') as HTMLSelectElement).value;
 
-      storage.addCategory({ name, icon, color });
+      showToast('正在添加分类...', 'info');
+      await storage.addCategoryCloud({ name, icon, color });
       addCatForm.reset();
       
       const defaultIcon = document.getElementById('catIcon') as HTMLInputElement;
@@ -2176,7 +2602,7 @@ import Layout from '../layouts/Layout.astro';
       showToast('分类添加成功', 'success');
     });
 
-    addLinkForm?.addEventListener('submit', (e) => {
+    addLinkForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!validateForm(addLinkForm)) return;
       const title = (document.getElementById('linkTitle') as HTMLInputElement).value.trim();
@@ -2185,7 +2611,8 @@ import Layout from '../layouts/Layout.astro';
       const description = (document.getElementById('linkDesc') as HTMLInputElement).value.trim();
       const icon = (document.getElementById('linkIcon') as HTMLInputElement).value.trim();
 
-      storage.addLink({ title, categoryId, url, description, icon });
+      showToast('正在添加链接卡片...', 'info');
+      await storage.addLinkCloud({ title, categoryId, url, description, icon });
       addLinkForm.reset();
       
       const defaultIcon = document.getElementById('linkIcon') as HTMLInputElement;
@@ -2242,7 +2669,7 @@ import Layout from '../layouts/Layout.astro';
       editCatModal?.classList.add('open');
     }
 
-    editCatForm?.addEventListener('submit', (e) => {
+    editCatForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!validateForm(editCatForm)) return;
       const id = (document.getElementById('editCatId') as HTMLInputElement).value;
@@ -2253,7 +2680,8 @@ import Layout from '../layouts/Layout.astro';
       const categories = storage.getCategories();
       const cat = categories.find(c => c.id === id);
       if (cat) {
-        storage.updateCategory({ ...cat, name, icon, color });
+        showToast('正在保存分类...', 'info');
+        await storage.updateCategoryCloud({ ...cat, name, icon, color });
         editCatModal?.classList.remove('open');
         refreshAll();
         showToast('分类修改已保存', 'success');
@@ -2299,7 +2727,7 @@ import Layout from '../layouts/Layout.astro';
       editLinkModal?.classList.add('open');
     }
 
-    editLinkForm?.addEventListener('submit', (e) => {
+    editLinkForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!validateForm(editLinkForm)) return;
       const id = (document.getElementById('editLinkId') as HTMLInputElement).value;
@@ -2312,7 +2740,8 @@ import Layout from '../layouts/Layout.astro';
       const links = storage.getLinks();
       const link = links.find(l => l.id === id);
       if (link) {
-        storage.updateLink({ ...link, title, categoryId, url, description, icon });
+        showToast('正在保存修改...', 'info');
+        await storage.updateLinkCloud({ ...link, title, categoryId, url, description, icon });
         editLinkModal?.classList.remove('open');
         refreshAll();
         showToast('链接修改已保存', 'success');
@@ -2450,8 +2879,20 @@ import Layout from '../layouts/Layout.astro';
     }
 
     // 绑定本地上传触发按钮
-    uploadFontBtn?.addEventListener('click', () => fontCustomFileInput?.click());
-    uploadBgBtn?.addEventListener('click', () => bgCustomFileInput?.click());
+    uploadFontBtn?.addEventListener('click', () => {
+      if (!userAllowUpload) {
+        showToast('您暂无上传物理文件权限，请联系管理员开通', 'error');
+        return;
+      }
+      fontCustomFileInput?.click();
+    });
+    uploadBgBtn?.addEventListener('click', () => {
+      if (!userAllowUpload) {
+        showToast('您暂无上传物理文件权限，请联系管理员开通', 'error');
+        return;
+      }
+      bgCustomFileInput?.click();
+    });
 
     // 本地字体上传事件
     fontCustomFileInput?.addEventListener('change', async () => {
@@ -2463,7 +2904,25 @@ import Layout from '../layouts/Layout.astro';
       }
 
       try {
-        await dbStorage.saveAsset('custom-font-file', file);
+        const fileUrl = await dbStorage.saveAsset('custom-font-file', file);
+        
+        // 如果成功上传到云端，转换模式为 custom-link 并填入 URL 实现跨设备同步
+        if (fileUrl) {
+          if (fontCustomLinkInput) fontCustomLinkInput.value = fileUrl;
+          if (fontStyleSelect) fontStyleSelect.value = 'custom-link';
+          
+          // 更新自定义下拉框显示
+          const s = document.getElementById('fontStyle') as HTMLSelectElement;
+          if (s) {
+            const w = s.parentElement?.classList.contains('custom-select-wrapper') ? s.parentElement as HTMLElement : null;
+            if (w) updateTriggerDisplay(w, s, 'color');
+          }
+          
+          // 动态显示在线字体输入配置
+          if (customFontLinkGroup) customFontLinkGroup.style.display = 'block';
+          if (customFontFamilyGroup) customFontFamilyGroup.style.display = 'block';
+        }
+
         if (fontUploadStatus) {
           fontUploadStatus.textContent = `已载入: ${file.name} (${Math.round(file.size / 1024)} KB)`;
         }
@@ -2493,7 +2952,24 @@ import Layout from '../layouts/Layout.astro';
       }
 
       try {
-        await dbStorage.saveAsset('custom-bg-file', file);
+        const fileUrl = await dbStorage.saveAsset('custom-bg-file', file);
+        
+        // 如果成功上传到云端，转换模式为 custom-url 并填入 URL 实现跨设备同步
+        if (fileUrl) {
+          if (customBgUrlInput) customBgUrlInput.value = fileUrl;
+          if (bgStyleSelect) bgStyleSelect.value = 'custom-url';
+          
+          // 更新自定义下拉框显示
+          const s = document.getElementById('bgStyle') as HTMLSelectElement;
+          if (s) {
+            const w = s.parentElement?.classList.contains('custom-select-wrapper') ? s.parentElement as HTMLElement : null;
+            if (w) updateTriggerDisplay(w, s, 'color');
+          }
+          
+          // 动态显示在线背景输入配置
+          if (customBgUrlGroup) customBgUrlGroup.style.display = 'block';
+        }
+
         if (bgUploadStatus) {
           bgUploadStatus.textContent = `已载入: ${file.name} (${Math.round(file.size / 1024 / 1024 * 100) / 100} MB)`;
         }
@@ -2524,6 +3000,14 @@ import Layout from '../layouts/Layout.astro';
     });
 
     fontStyleSelect?.addEventListener('change', () => {
+      if (fontStyleSelect.value === 'custom-file' && !userAllowUpload) {
+        showToast('您暂无上传物理文件权限，请联系管理员开通', 'error');
+        const config = storage.getAppearance();
+        fontStyleSelect.value = config.fontStyle === 'custom-file' ? 'system-sans' : (config.fontStyle || 'system-sans');
+        const w = fontStyleSelect.parentElement?.classList.contains('custom-select-wrapper') ? fontStyleSelect.parentElement as HTMLElement : null;
+        if (w) updateTriggerDisplay(w, fontStyleSelect, 'color');
+        return;
+      }
       if (customFontLinkGroup) {
         customFontLinkGroup.style.display = fontStyleSelect.value === 'custom-link' ? 'block' : 'none';
       }
@@ -2541,6 +3025,14 @@ import Layout from '../layouts/Layout.astro';
     primaryColorSelect?.addEventListener('change', saveAndApplyAppearance);
 
     bgStyleSelect?.addEventListener('change', () => {
+      if (bgStyleSelect.value === 'custom-file' && !userAllowUpload) {
+        showToast('您暂无上传物理文件权限，请联系管理员开通', 'error');
+        const config = storage.getAppearance();
+        bgStyleSelect.value = config.bgStyle === 'custom-file' ? 'morandi-glow' : config.bgStyle;
+        const w = bgStyleSelect.parentElement?.classList.contains('custom-select-wrapper') ? bgStyleSelect.parentElement as HTMLElement : null;
+        if (w) updateTriggerDisplay(w, bgStyleSelect, 'color');
+        return;
+      }
       if (customBgUrlGroup) {
         customBgUrlGroup.style.display = bgStyleSelect.value === 'custom-url' ? 'block' : 'none';
       }

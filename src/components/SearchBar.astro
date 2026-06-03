@@ -7,29 +7,27 @@
     <!-- 搜索引擎选择器 -->
     <div class="engine-selector">
       <button class="current-engine-btn" id="engineBtn" type="button">
-        <i data-lucide="search" class="engine-icon" id="currentEngineIcon"></i>
-        <span class="engine-name" id="currentEngineName">搜索</span>
+        <span class="current-engine-icon-wrapper" id="currentEngineIconWrapper">
+          <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" class="engine-icon-img" alt="" />
+        </span>
+        <span class="engine-name" id="currentEngineName">Google</span>
         <i data-lucide="chevron-down" class="chevron-icon"></i>
       </button>
       <div class="engine-dropdown" id="engineDropdown">
-        <button class="engine-item active" type="button" data-engine="local" data-icon="search" data-action="">
-          <i data-lucide="search" class="item-icon"></i>
-          <span>本地过滤</span>
-        </button>
-        <button class="engine-item" type="button" data-engine="google" data-icon="globe" data-action="https://www.google.com/search?q=">
-          <i data-lucide="globe" class="item-icon"></i>
+        <button class="engine-item active" type="button" data-engine="google" data-action="https://www.google.com/search?q=">
+          <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" class="item-icon" alt="" />
           <span>Google</span>
         </button>
-        <button class="engine-item" type="button" data-engine="baidu" data-icon="chrome" data-action="https://www.baidu.com/s?wd=">
-          <i data-lucide="chrome" class="item-icon"></i>
+        <button class="engine-item" type="button" data-engine="baidu" data-action="https://www.baidu.com/s?wd=">
+          <img src="https://www.google.com/s2/favicons?sz=64&domain=baidu.com" class="item-icon" alt="" />
           <span>百度</span>
         </button>
-        <button class="engine-item" type="button" data-engine="bing" data-icon="compass" data-action="https://cn.bing.com/search?q=">
-          <i data-lucide="compass" class="item-icon"></i>
+        <button class="engine-item" type="button" data-engine="bing" data-action="https://cn.bing.com/search?q=">
+          <img src="https://www.google.com/s2/favicons?sz=64&domain=bing.com" class="item-icon" alt="" />
           <span>必应</span>
         </button>
-        <button class="engine-item" type="button" data-engine="github" data-icon="github" data-action="https://github.com/search?q=">
-          <i data-lucide="github" class="item-icon"></i>
+        <button class="engine-item" type="button" data-engine="github" data-action="https://github.com/search?q=">
+          <img src="https://www.google.com/s2/favicons?sz=64&domain=github.com" class="item-icon" alt="" />
           <span>GitHub</span>
         </button>
       </div>
@@ -42,7 +40,7 @@
     <input 
       type="text" 
       id="searchInput" 
-      placeholder="输入关键字过滤本地卡片... (按 Enter 进行外部搜索)" 
+      placeholder="在 Google 中搜索..." 
       autocomplete="off"
     />
     
@@ -74,6 +72,12 @@
     transition: var(--transition-smooth);
     position: relative;
     backdrop-filter: blur(10px);
+    z-index: 99; /* 提升层级，防止下拉菜单被后方的网址卡片或分类区块遮挡 */
+    
+    /* 开启 GPU 硬件加速，防止聚焦或过渡时内部文本与图标产生亚像素抖动 */
+    transform: translate3d(0, 0, 0);
+    will-change: box-shadow, border-color, background-color;
+    backface-visibility: hidden;
   }
 
   .search-wrapper:focus-within {
@@ -99,6 +103,11 @@
     font-size: 13.5px;
     font-weight: 550;
     transition: var(--transition-smooth);
+    
+    /* 硬件加速稳定器 */
+    transform: translate3d(0, 0, 0);
+    will-change: background-color;
+    backface-visibility: hidden;
   }
 
   .current-engine-btn:hover {
@@ -109,6 +118,11 @@
     width: 15px;
     height: 15px;
     color: var(--theme-primary);
+    
+    /* 硬件加速以避免微小的图标抖动 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
   .chevron-icon {
@@ -116,6 +130,11 @@
     height: 13px;
     opacity: 0.5;
     transition: var(--transition-smooth);
+    
+    /* 硬件加速以在旋转时消除颤抖 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
   }
 
   .current-engine-btn:hover .chevron-icon {
@@ -192,11 +211,11 @@
     position: absolute;
     top: calc(100% + 10px);
     left: 0;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(25px);
+    background: rgba(255, 255, 255, 0.98); /* 使用高密度背景遮挡后方卡片内容，解决文字穿透 */
+    backdrop-filter: blur(20px);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
-    box-shadow: 0 15px 35px -10px rgba(0,0,0,0.06);
+    box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.03);
     padding: 5px;
     display: flex;
     flex-direction: column;
@@ -204,14 +223,18 @@
     z-index: 100;
     min-width: 130px;
     opacity: 0;
-    transform: translateY(-8px) scale(0.95);
+    transform: translate3d(0, -4px, 0); /* 仅使用极小垂直位移，完全舍弃 scale 缩放以根除缩放重绘抖动 */
     pointer-events: none;
     transition: var(--transition-smooth);
+    
+    /* 硬件加速层隔离 */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
   }
 
   .engine-dropdown.open {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate3d(0, 0, 0);
     pointer-events: auto;
   }
 
@@ -229,11 +252,15 @@
     font-size: 13px;
     color: var(--color-text-main);
     transition: var(--transition-smooth);
+
+    /* 强制建立 GPU 硬件合成上下文，保障渲染纯净稳定 */
+    transform: translate3d(0, 0, 0);
+    will-change: background-color;
+    backface-visibility: hidden;
   }
 
   .engine-item:hover {
-    background: rgba(255, 255, 255, 0.8);
-    transform: translateX(2px);
+    background: rgba(0, 0, 0, 0.045); /* 改用温润明晰的微深背景色，以配合当前不透明的下拉底色 */
   }
 
   .engine-item.active {
@@ -245,6 +272,25 @@
   .item-icon {
     width: 14px;
     height: 14px;
+    object-fit: contain;
+    border-radius: 2px;
+
+    /* 硬件加速稳定器 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  /* 当前搜索引擎原生 Favicon 图标样式 */
+  .engine-icon-img {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    object-fit: contain;
+    /* 硬件加速稳定器 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
   }
 </style>
 
@@ -258,11 +304,11 @@
     const clearBtn = document.getElementById('clearBtn') as HTMLElement;
     const kbdHint = document.getElementById('kbdHint') as HTMLElement;
     
-    let activeEngine = 'local';
-    let activeAction = '';
+    let activeEngine = 'google';
+    let activeAction = 'https://www.google.com/search?q=';
 
     const savedEngine = localStorage.getItem('nav_search_engine');
-    if (savedEngine) {
+    if (savedEngine && savedEngine !== 'local') {
       const item = document.querySelector(`.engine-item[data-engine="${savedEngine}"]`);
       if (item) {
         selectEngine(item);
@@ -273,25 +319,31 @@
       document.querySelectorAll('.engine-item').forEach(el => el.classList.remove('active'));
       element.classList.add('active');
       
-      activeEngine = element.getAttribute('data-engine') || 'local';
-      activeAction = element.getAttribute('data-action') || '';
-      const icon = element.getAttribute('data-icon') || 'search';
+      activeEngine = element.getAttribute('data-engine') || 'google';
+      activeAction = element.getAttribute('data-action') || 'https://www.google.com/search?q=';
       const name = element.querySelector('span')?.textContent || '搜索';
 
       localStorage.setItem('nav_search_engine', activeEngine);
 
       currentEngineName!.textContent = name;
-      currentEngineIcon!.setAttribute('data-lucide', icon);
+      
+      const iconWrapper = document.getElementById('currentEngineIconWrapper');
+      if (iconWrapper) {
+        const domainMap: Record<string, string> = {
+          google: 'google.com',
+          baidu: 'baidu.com',
+          bing: 'bing.com',
+          github: 'github.com'
+        };
+        const domain = domainMap[activeEngine] || 'google.com';
+        iconWrapper.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=64&domain=${domain}" class="engine-icon-img" alt="" />`;
+      }
       
       if ((window as any).lucide) {
         (window as any).lucide.createIcons();
       }
 
-      if (activeEngine === 'local') {
-        searchInput.placeholder = "输入关键字过滤本地卡片... (按 Enter 进行外部搜索)";
-      } else {
-        searchInput.placeholder = `在 ${name} 中搜索...`;
-      }
+      searchInput.placeholder = `在 ${name} 中搜索...`;
     }
 
     engineBtn?.addEventListener('click', (e) => {
@@ -337,9 +389,6 @@
         clearBtn.style.display = 'none';
         kbdHint.style.display = 'block';
       }
-
-      const event = new CustomEvent('local-search', { detail: { query: val } });
-      window.dispatchEvent(event);
     });
 
     clearBtn?.addEventListener('click', () => {
@@ -353,11 +402,7 @@
         const query = searchInput.value.trim();
         if (!query) return;
 
-        if (activeEngine === 'local') {
-          window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
-        } else {
-          window.open(`${activeAction}${encodeURIComponent(query)}`, '_blank');
-        }
+        window.open(`${activeAction}${encodeURIComponent(query)}`, '_blank');
       }
     });
   });

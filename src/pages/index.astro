@@ -4,7 +4,7 @@ import SearchBar from '../components/SearchBar.astro';
 import Sidebar from '../components/Sidebar.astro';
 ---
 
-<Layout title="个人导航聚合页">
+<Layout title="Mora - 个人导航">
   <!-- 左侧收放边栏 -->
   <Sidebar />
 
@@ -418,7 +418,6 @@ import Sidebar from '../components/Sidebar.astro';
                 rel="noopener noreferrer" 
                 class="link-card" 
                 data-id="${link.id}"
-                data-search-content="${link.title.toLowerCase()} ${link.description.toLowerCase()} ${link.url.toLowerCase()}"
                 style="--theme-color: var(--theme-${cat.color});"
               >
                 <div class="card-inner">
@@ -443,6 +442,17 @@ import Sidebar from '../components/Sidebar.astro';
                     <p class="card-desc" title="${link.description}">${link.description}</p>
                   </div>
                 </div>
+                <div class="card-watermark">
+                  <img 
+                    src="https://www.google.com/s2/favicons?sz=64&domain=${domain}" 
+                    class="watermark-favicon"
+                    onload="this.style.display='block'; this.nextElementSibling.style.display='none';"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                    style="display: none; width: 100%; height: 100%; object-fit: contain;"
+                    alt=""
+                  />
+                  <i data-lucide="${link.icon || 'external-link'}"></i>
+                </div>
               </a>
             `;
             grid!.insertAdjacentHTML('beforeend', cardHtml);
@@ -464,6 +474,14 @@ import Sidebar from '../components/Sidebar.astro';
 
     renderMainGrid();
 
+    // 页面载入后静默从云端同步一次，实现跨设备无感刷新
+    storage.syncFromCloud().then(updated => {
+      if (updated) {
+        renderMainGrid();
+        window.dispatchEvent(new CustomEvent('appearance-updated'));
+      }
+    }).catch(e => console.error('Silent background sync failed:', e));
+
     // 3. 事件委托：点击卡片记录点击量
     gridSection?.addEventListener('click', (e) => {
       const card = (e.target as HTMLElement).closest('.link-card');
@@ -475,42 +493,7 @@ import Sidebar from '../components/Sidebar.astro';
       }
     });
 
-    // 4. 实时搜索过滤
-    window.addEventListener('local-search', (e: any) => {
-      const query = e.detail.query;
-      const catBlocks = document.querySelectorAll('.category-block');
-      let visibleBlocksCount = 0;
 
-      catBlocks.forEach(block => {
-        const cards = block.querySelectorAll('.link-card');
-        let visibleCardsCount = 0;
-
-        cards.forEach(card => {
-          const searchContent = card.getAttribute('data-search-content') || '';
-          if (searchContent.includes(query)) {
-            (card as HTMLElement).style.display = 'block';
-            visibleCardsCount++;
-          } else {
-            (card as HTMLElement).style.display = 'none';
-          }
-        });
-
-        if (visibleCardsCount > 0) {
-          (block as HTMLElement).style.display = 'flex';
-          const badge = block.querySelector('.category-badge');
-          if (badge) badge.textContent = String(visibleCardsCount);
-          visibleBlocksCount++;
-        } else {
-          (block as HTMLElement).style.display = 'none';
-        }
-      });
-
-      if (visibleBlocksCount === 0 && query !== '') {
-        emptyState!.style.display = 'flex';
-      } else {
-        emptyState!.style.display = 'none';
-      }
-    });
 
     window.addEventListener('focus', () => {
       renderMainGrid();
