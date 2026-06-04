@@ -392,8 +392,8 @@ export const storage = {
     if (!supabase) return;
     try {
       const userId = await getUserId();
-      if (!userId) return;
-      await supabase.from('categories').insert({
+      if (!userId) throw new Error('用户身份失效，请重新登录');
+      const { error } = await supabase.from('categories').insert({
         id: cat.id,
         user_id: userId,
         name: cat.name,
@@ -401,8 +401,10 @@ export const storage = {
         color: cat.color,
         order: cat.order
       });
+      if (error) throw error;
     } catch (e) {
       console.error(e);
+      throw e;
     }
   },
 
@@ -410,15 +412,17 @@ export const storage = {
     if (!supabase) return;
     try {
       const userId = await getUserId();
-      if (!userId) return;
-      await supabase.from('categories').update({
+      if (!userId) throw new Error('用户身份失效，请重新登录');
+      const { error } = await supabase.from('categories').update({
         name: cat.name,
         icon: cat.icon,
         color: cat.color,
         order: cat.order
       }).eq('id', cat.id).eq('user_id', userId);
+      if (error) throw error;
     } catch (e) {
       console.error(e);
+      throw e;
     }
   },
 
@@ -426,10 +430,12 @@ export const storage = {
     if (!supabase) return;
     try {
       const userId = await getUserId();
-      if (!userId) return;
-      await supabase.from('categories').delete().eq('id', catId).eq('user_id', userId);
+      if (!userId) throw new Error('用户身份失效，请重新登录');
+      const { error } = await supabase.from('categories').delete().eq('id', catId).eq('user_id', userId);
+      if (error) throw error;
     } catch (e) {
       console.error(e);
+      throw e;
     }
   },
 
@@ -437,8 +443,8 @@ export const storage = {
     if (!supabase) return;
     try {
       const userId = await getUserId();
-      if (!userId) return;
-      await supabase.from('links').insert({
+      if (!userId) throw new Error('用户身份失效，请重新登录');
+      const { error } = await supabase.from('links').insert({
         id: link.id,
         user_id: userId,
         category_id: link.categoryId,
@@ -449,8 +455,10 @@ export const storage = {
         clicks: link.clicks,
         order: link.order
       });
+      if (error) throw error;
     } catch (e) {
       console.error(e);
+      throw e;
     }
   },
 
@@ -458,8 +466,8 @@ export const storage = {
     if (!supabase) return;
     try {
       const userId = await getUserId();
-      if (!userId) return;
-      await supabase.from('links').update({
+      if (!userId) throw new Error('用户身份失效，请重新登录');
+      const { error } = await supabase.from('links').update({
         category_id: link.categoryId,
         title: link.title,
         url: link.url,
@@ -468,8 +476,10 @@ export const storage = {
         clicks: link.clicks,
         order: link.order
       }).eq('id', link.id).eq('user_id', userId);
+      if (error) throw error;
     } catch (e) {
       console.error(e);
+      throw e;
     }
   },
 
@@ -477,10 +487,12 @@ export const storage = {
     if (!supabase) return;
     try {
       const userId = await getUserId();
-      if (!userId) return;
-      await supabase.from('links').delete().eq('id', linkId).eq('user_id', userId);
+      if (!userId) throw new Error('用户身份失效，请重新登录');
+      const { error } = await supabase.from('links').delete().eq('id', linkId).eq('user_id', userId);
+      if (error) throw error;
     } catch (e) {
       console.error(e);
+      throw e;
     }
   },
 

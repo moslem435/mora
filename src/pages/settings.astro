@@ -50,36 +50,162 @@ import Layout from '../layouts/Layout.astro';
     </header>
 
     <div class="settings-grid">
-      <section class="settings-section account-section">
-        <div class="section-header">
-          <i data-lucide="user-cog" class="section-icon"></i>
-          <div>
-            <h2>账号</h2>
-            <p>查看当前登录状态和会员权限</p>
-          </div>
-        </div>
-
-        <div class="account-card">
-          <div class="account-avatar"><i data-lucide="user"></i></div>
-          <div>
-            <p class="account-label">当前账号</p>
-            <h3 id="currentEmail">本地离线模式</h3>
-            <div class="account-badges">
-              <span id="currentRole" class="role-badge user">普通会员</span>
-              <span id="uploadPermission" class="role-badge user">文件上传：未启用</span>
+      <!-- 左侧窄栏 (360px) -->
+      <div class="settings-col-left">
+        <section class="settings-section account-section">
+          <div class="section-header">
+            <i data-lucide="user-cog" class="section-icon"></i>
+            <div>
+              <h2>账号</h2>
+              <p>查看当前登录状态和会员权限</p>
             </div>
           </div>
-        </div>
 
-        <button type="button" id="logoutBtn" class="action-btn danger wide-btn" style="display: none;">
-          <i data-lucide="log-out"></i>
-          <span>退出当前账号</span>
-        </button>
+          <div class="account-card">
+            <div class="account-avatar"><i data-lucide="user"></i></div>
+            <div>
+              <p class="account-label">当前账号</p>
+              <h3 id="currentEmail">本地离线模式</h3>
+              <div class="account-badges">
+                <span id="currentRole" class="role-badge user">普通会员</span>
+                <span id="uploadPermission" class="role-badge user">文件上传：未启用</span>
+              </div>
+            </div>
+          </div>
 
-        <div id="usersPanel" class="users-panel" style="display: none;">
-          <div class="subsection-title">
-            <i data-lucide="users"></i>
-            <span>会员权限管理</span>
+          <button type="button" id="logoutBtn" class="action-btn danger wide-btn" style="display: none;">
+            <i data-lucide="log-out"></i>
+            <span>退出当前账号</span>
+          </button>
+        </section>
+
+        <section class="settings-section backup-section">
+          <div class="section-header">
+            <i data-lucide="archive-restore" class="section-icon"></i>
+            <div>
+              <h2>备份</h2>
+              <p>导出、导入或恢复完整导航数据</p>
+            </div>
+          </div>
+
+          <div class="backup-actions">
+            <button id="exportBtn" class="action-btn secondary" title="导出数据为 JSON 文件" type="button">
+              <i data-lucide="download"></i>
+              <span>导出备份</span>
+            </button>
+            <button id="importBtn" class="action-btn secondary" title="从 JSON 文件导入数据" type="button">
+              <i data-lucide="upload"></i>
+              <span>导入备份</span>
+            </button>
+            <button id="resetBtn" class="action-btn danger" title="重置项目到出厂种子配置" type="button">
+              <i data-lucide="rotate-ccw"></i>
+              <span>恢复默认</span>
+            </button>
+          </div>
+          <input type="file" id="importFile" accept=".json" style="display: none;" />
+          <p class="backup-note">导入和恢复默认会覆盖当前本地与云端数据，执行前建议先导出备份。</p>
+        </section>
+      </div>
+
+      <!-- 右侧自适应宽栏 (1fr) -->
+      <div class="settings-col-right">
+        <section class="settings-section appearance-section">
+          <div class="section-header">
+            <i data-lucide="palette" class="section-icon"></i>
+            <div>
+              <h2>美化</h2>
+              <p>即时调整全站字体、背景和卡片质感</p>
+            </div>
+          </div>
+
+          <form id="appearanceForm" class="settings-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fontStyle">全局字体风格</label>
+                <select id="fontStyle">
+                  <option value="system-sans">本地系统黑体</option>
+                  <option value="morandi-sans">思源莫兰迪黑体</option>
+                  <option value="inter">MiSans 极简黑体</option>
+                  <option value="outfit">HarmonyOS 科技体</option>
+                  <option value="geist">得意黑 潮玩极客体</option>
+                  <option value="custom-link">自定义在线字体链接</option>
+                  <option value="custom-file">本地上传字体包文件</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="primaryColor">全站高亮主色</label>
+                <select id="primaryColor">
+                  <option value="blue">烟雨蓝</option>
+                  <option value="green">烟草绿</option>
+                  <option value="purple">丁香灰</option>
+                  <option value="pink">珊瑚粉</option>
+                  <option value="orange">燕麦杏</option>
+                  <option value="yellow">芥末黄</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" id="customFontLinkGroup" style="display: none;">
+              <label for="fontCustomLink">在线字体地址</label>
+              <input type="url" id="fontCustomLink" placeholder="输入 https://... 字体或 CSS 链接" />
+            </div>
+            <div class="form-group" id="customFontFamilyGroup" style="display: none;">
+              <label for="fontFamilyName">自定义字体族名称</label>
+              <input type="text" id="fontFamilyName" placeholder="如：Noto Serif SC" />
+            </div>
+            <div class="form-group" id="customFontFileGroup" style="display: none;">
+              <label for="fontCustomFile">本地上传字体包</label>
+              <input type="file" id="fontCustomFile" accept=".ttf,.otf,.woff,.woff2" style="display: none;" />
+              <button type="button" id="uploadFontBtn" class="action-btn secondary wide-btn">
+                <i data-lucide="upload-cloud"></i>
+                <span>选择字体文件</span>
+              </button>
+              <span id="fontUploadStatus" class="upload-status">未上传本地文件</span>
+            </div>
+
+            <div class="form-group">
+              <label for="bgStyle">全局背景风格</label>
+              <select id="bgStyle">
+                <option value="morandi-glow">莫兰迪流光</option>
+                <option value="solid-cream">暖米纯色</option>
+                <option value="dark-slate">静谧深空暗调</option>
+                <option value="custom-url">在线壁纸图片链接</option>
+                <option value="custom-file">本地上传壁纸图片</option>
+              </select>
+            </div>
+            <div class="form-group" id="customBgUrlGroup" style="display: none;">
+              <label for="customBgUrl">壁纸图片 URL</label>
+              <input type="url" id="customBgUrl" placeholder="输入高清图片链接" />
+            </div>
+            <div class="form-group" id="customBgFileGroup" style="display: none;">
+              <label for="bgCustomFile">本地上传壁纸</label>
+              <input type="file" id="bgCustomFile" accept="image/*" style="display: none;" />
+              <button type="button" id="uploadBgBtn" class="action-btn secondary wide-btn">
+                <i data-lucide="image"></i>
+                <span>选择背景图片</span>
+              </button>
+              <span id="bgUploadStatus" class="upload-status">未上传本地文件</span>
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-label"><label for="cardOpacity">卡片不透明度</label><span id="opacityVal">65%</span></div>
+              <input type="range" id="cardOpacity" min="0.2" max="0.95" step="any" value="0.65" />
+            </div>
+            <div class="slider-group">
+              <div class="slider-label"><label for="cardBlur">毛玻璃虚化度</label><span id="blurVal">50%</span></div>
+              <input type="range" id="cardBlur" min="0" max="40" step="any" value="20" />
+            </div>
+          </form>
+        </section>
+
+        <!-- 会员权限管理：升级为独立的右侧宽栏 Section，列字段拓展为 4 列 -->
+        <section id="usersPanel" class="settings-section users-section" style="display: none;">
+          <div class="section-header">
+            <i data-lucide="users" class="section-icon"></i>
+            <div>
+              <h2>会员权限管理</h2>
+              <p>管理注册用户的角色身份与文件上传权限</p>
+            </div>
           </div>
           <div class="users-table-wrapper">
             <table class="users-table">
@@ -88,130 +214,14 @@ import Layout from '../layouts/Layout.astro';
                   <th>会员邮箱</th>
                   <th>加入时间</th>
                   <th>角色权限</th>
+                  <th>上传权限</th>
                 </tr>
               </thead>
               <tbody id="usersListBody"></tbody>
             </table>
           </div>
-        </div>
-      </section>
-
-      <section class="settings-section appearance-section">
-        <div class="section-header">
-          <i data-lucide="palette" class="section-icon"></i>
-          <div>
-            <h2>美化</h2>
-            <p>即时调整全站字体、背景和卡片质感</p>
-          </div>
-        </div>
-
-        <form id="appearanceForm" class="settings-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="fontStyle">全局字体风格</label>
-              <select id="fontStyle">
-                <option value="system-sans">本地系统黑体</option>
-                <option value="morandi-sans">思源莫兰迪黑体</option>
-                <option value="inter">MiSans 极简黑体</option>
-                <option value="outfit">HarmonyOS 科技体</option>
-                <option value="geist">得意黑 潮玩极客体</option>
-                <option value="custom-link">自定义在线字体链接</option>
-                <option value="custom-file">本地上传字体包文件</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="primaryColor">全站高亮主色</label>
-              <select id="primaryColor">
-                <option value="blue">烟雨蓝</option>
-                <option value="green">烟草绿</option>
-                <option value="purple">丁香灰</option>
-                <option value="pink">珊瑚粉</option>
-                <option value="orange">燕麦杏</option>
-                <option value="yellow">芥末黄</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group" id="customFontLinkGroup" style="display: none;">
-            <label for="fontCustomLink">在线字体地址</label>
-            <input type="url" id="fontCustomLink" placeholder="输入 https://... 字体或 CSS 链接" />
-          </div>
-          <div class="form-group" id="customFontFamilyGroup" style="display: none;">
-            <label for="fontFamilyName">自定义字体族名称</label>
-            <input type="text" id="fontFamilyName" placeholder="如：Noto Serif SC" />
-          </div>
-          <div class="form-group" id="customFontFileGroup" style="display: none;">
-            <label for="fontCustomFile">本地上传字体包</label>
-            <input type="file" id="fontCustomFile" accept=".ttf,.otf,.woff,.woff2" style="display: none;" />
-            <button type="button" id="uploadFontBtn" class="action-btn secondary wide-btn">
-              <i data-lucide="upload-cloud"></i>
-              <span>选择字体文件</span>
-            </button>
-            <span id="fontUploadStatus" class="upload-status">未上传本地文件</span>
-          </div>
-
-          <div class="form-group">
-            <label for="bgStyle">全局背景风格</label>
-            <select id="bgStyle">
-              <option value="morandi-glow">莫兰迪流光</option>
-              <option value="solid-cream">暖米纯色</option>
-              <option value="dark-slate">静谧深空暗调</option>
-              <option value="custom-url">在线壁纸图片链接</option>
-              <option value="custom-file">本地上传壁纸图片</option>
-            </select>
-          </div>
-          <div class="form-group" id="customBgUrlGroup" style="display: none;">
-            <label for="customBgUrl">壁纸图片 URL</label>
-            <input type="url" id="customBgUrl" placeholder="输入高清图片链接" />
-          </div>
-          <div class="form-group" id="customBgFileGroup" style="display: none;">
-            <label for="bgCustomFile">本地上传壁纸</label>
-            <input type="file" id="bgCustomFile" accept="image/*" style="display: none;" />
-            <button type="button" id="uploadBgBtn" class="action-btn secondary wide-btn">
-              <i data-lucide="image"></i>
-              <span>选择背景图片</span>
-            </button>
-            <span id="bgUploadStatus" class="upload-status">未上传本地文件</span>
-          </div>
-
-          <div class="slider-group">
-            <div class="slider-label"><label for="cardOpacity">卡片不透明度</label><span id="opacityVal">65%</span></div>
-            <input type="range" id="cardOpacity" min="0.2" max="0.95" step="0.05" value="0.65" />
-          </div>
-          <div class="slider-group">
-            <div class="slider-label"><label for="cardBlur">毛玻璃虚化度</label><span id="blurVal">50%</span></div>
-            <input type="range" id="cardBlur" min="0" max="40" step="1" value="20" />
-          </div>
-        </form>
-      </section>
-
-      <section class="settings-section backup-section">
-        <div class="section-header">
-          <i data-lucide="archive-restore" class="section-icon"></i>
-          <div>
-            <h2>备份</h2>
-            <p>导出、导入或恢复完整导航数据</p>
-          </div>
-        </div>
-
-        <div class="backup-actions">
-          <button id="exportBtn" class="action-btn secondary" title="导出数据为 JSON 文件" type="button">
-            <i data-lucide="download"></i>
-            <span>导出备份</span>
-          </button>
-          <button id="importBtn" class="action-btn secondary" title="从 JSON 文件导入数据" type="button">
-            <i data-lucide="upload"></i>
-            <span>导入备份</span>
-          </button>
-          <button id="resetBtn" class="action-btn danger" title="重置项目到出厂种子配置" type="button">
-            <i data-lucide="rotate-ccw"></i>
-            <span>恢复默认</span>
-          </button>
-        </div>
-        <input type="file" id="importFile" accept=".json" style="display: none;" />
-        <p class="backup-note">导入和恢复默认会覆盖当前本地与云端数据，执行前建议先导出备份。</p>
-      </section>
-    </div>
+        </section>
+      </div>
   </main>
 
   <div class="modal" id="customConfirmModal">
@@ -279,15 +289,18 @@ import Layout from '../layouts/Layout.astro';
     align-items: start;
   }
 
+  .settings-col-left,
+  .settings-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
   .settings-section {
     padding: 26px;
     display: flex;
     flex-direction: column;
     gap: 24px;
-  }
-
-  .appearance-section {
-    grid-row: span 2;
   }
 
   .section-header {
@@ -473,10 +486,20 @@ import Layout from '../layouts/Layout.astro';
     color: var(--color-text-main);
   }
 
-  .form-group input,
-  .form-group select {
+  .form-group input {
     width: 100%;
     padding: 11px 13px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--color-text-main);
+    outline: none;
+    transition: var(--transition-smooth);
+  }
+
+  .form-group select {
+    width: 100%;
+    padding: 11px 32px 11px 13px;
     border-radius: 10px;
     border: 1px solid var(--card-border);
     background: rgba(255, 255, 255, 0.74);
@@ -668,10 +691,7 @@ import Layout from '../layouts/Layout.astro';
     font-family: monospace;
   }
 
-  input[type='range'] {
-    width: 100%;
-    cursor: pointer;
-  }
+
 
   .backup-actions {
     display: grid;
@@ -705,23 +725,38 @@ import Layout from '../layouts/Layout.astro';
   .users-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .users-table th,
   .users-table td {
-    padding: 11px 10px;
+    padding: 12px 14px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
     text-align: left;
+    vertical-align: middle;
   }
 
   .users-table th {
     color: var(--color-text-sub);
     font-weight: 650;
+    background: rgba(0, 0, 0, 0.015);
+  }
+
+  /* 表格内自定义下拉框精致化尺寸 */
+  .users-table .custom-select-wrapper {
+    width: 120px;
+    display: inline-block;
+  }
+
+  .users-table .custom-select-trigger {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.8);
   }
 
   .users-table select {
-    padding: 5px 7px;
+    padding: 5px 26px 5px 8px;
     border-radius: 7px;
     border: 1px solid var(--card-border);
     background: rgba(255, 255, 255, 0.8);
@@ -933,6 +968,19 @@ import Layout from '../layouts/Layout.astro';
     background: rgba(255, 255, 255, 0.08) !important;
   }
 
+  html.bg-dark-slate .users-table th {
+    background: rgba(255, 255, 255, 0.02) !important;
+    color: #9ba1a3;
+  }
+
+  html.bg-dark-slate .users-table tr {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  html.bg-dark-slate .users-table td {
+    border-bottom-color: rgba(255, 255, 255, 0.03) !important;
+  }
+
   @media (max-width: 860px) {
     .settings-header,
     .settings-title-group {
@@ -943,6 +991,12 @@ import Layout from '../layouts/Layout.astro';
     .settings-grid,
     .form-row {
       grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .settings-col-left,
+    .settings-col-right {
+      gap: 20px;
     }
   }
 </style>
@@ -1157,11 +1211,11 @@ import Layout from '../layouts/Layout.astro';
 
     async function renderUsersList() {
       if (!usersListBody) return;
-      usersListBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:18px;">载入会员列表中...</td></tr>';
+      usersListBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:18px;">载入会员列表中...</td></tr>';
       const profiles = await storage.getAllProfiles();
       usersListBody.innerHTML = '';
       if (profiles.length === 0) {
-        usersListBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:18px;">暂无注册会员数据。</td></tr>';
+        usersListBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:18px;">暂无注册会员数据。</td></tr>';
         return;
       }
 
@@ -1169,13 +1223,15 @@ import Layout from '../layouts/Layout.astro';
         const tr = document.createElement('tr');
         const joinDate = new Date(profile.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
         tr.innerHTML = `
-          <td style="font-weight: 550;">${profile.email}</td>
-          <td style="color: var(--color-text-sub);">${joinDate}</td>
-          <td style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+          <td style="font-weight: 550; min-width: 140px; word-break: break-all;">${profile.email}</td>
+          <td style="color: var(--color-text-sub); min-width: 95px;">${joinDate}</td>
+          <td style="min-width: 120px;">
             <select class="role-select" data-id="${profile.id}">
               <option value="user" ${profile.role === 'user' ? 'selected' : ''}>普通会员</option>
               <option value="admin" ${profile.role === 'admin' ? 'selected' : ''}>超级管理员</option>
             </select>
+          </td>
+          <td style="min-width: 120px;">
             <select class="upload-select" data-id="${profile.id}">
               <option value="false" ${!profile.allow_upload ? 'selected' : ''}>禁止上传</option>
               <option value="true" ${profile.allow_upload ? 'selected' : ''}>允许上传</option>
@@ -1195,6 +1251,7 @@ import Layout from '../layouts/Layout.astro';
           } catch (err: any) {
             showToast(`修改失败: ${err.message || err}`, 'error');
             select.value = profile.role;
+            refreshCustomSelect(select, 'plain');
           }
         });
 
@@ -1206,17 +1263,23 @@ import Layout from '../layouts/Layout.astro';
           } catch (err: any) {
             showToast(`修改失败: ${err.message || err}`, 'error');
             uploadSelect.value = String(!!profile.allow_upload);
+            refreshCustomSelect(uploadSelect, 'plain');
           }
         });
 
         usersListBody.appendChild(tr);
+
+        if (select) convertSelectToCustom(select, 'plain');
+        if (uploadSelect) convertSelectToCustom(uploadSelect, 'plain');
       });
     }
 
     type CustomSelectType = 'plain' | 'color';
 
-    function convertSelectToCustom(selectId: string, type: CustomSelectType = 'plain') {
-      const select = document.getElementById(selectId) as HTMLSelectElement;
+    function convertSelectToCustom(selectOrId: string | HTMLSelectElement, type: CustomSelectType = 'plain') {
+      const select = typeof selectOrId === 'string'
+        ? document.getElementById(selectOrId) as HTMLSelectElement
+        : selectOrId;
       if (!select) return;
 
       const existingWrapper = select.parentElement?.classList.contains('custom-select-wrapper')
@@ -1254,6 +1317,17 @@ import Layout from '../layouts/Layout.astro';
         document.querySelectorAll('.custom-select-wrapper').forEach(w => {
           if (w !== wrapper) w.classList.remove('open');
         });
+
+        // 智能判断弹出方向，防止表格等小容器内向下弹出被截断
+        const rect = trigger.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const selectMenuHeight = 220; // 对应 CSS .custom-options-container 的 max-height
+        if (spaceBelow < selectMenuHeight && rect.top > selectMenuHeight) {
+          wrapper.classList.add('open-up');
+        } else {
+          wrapper.classList.remove('open-up');
+        }
+
         wrapper.classList.toggle('open');
       });
 
@@ -1336,7 +1410,7 @@ import Layout from '../layouts/Layout.astro';
         customBgUrl: customBgUrlInput?.value.trim() || '',
         primaryColor: primaryColorSelect?.value || 'blue',
         cardOpacity: cardOpacityInput ? parseFloat(cardOpacityInput.value) : 0.65,
-        cardBlur: cardBlurInput ? parseInt(cardBlurInput.value) : 20
+        cardBlur: cardBlurInput ? parseFloat(cardBlurInput.value) : 20
       };
       storage.saveAppearance(config);
       window.dispatchEvent(new CustomEvent('appearance-updated'));
@@ -1434,14 +1508,51 @@ import Layout from '../layouts/Layout.astro';
       }
     });
 
+    let dragTimeout: any = null;
+
+    function startDragging() {
+      document.documentElement.classList.add('is-dragging');
+      if (dragTimeout) clearTimeout(dragTimeout);
+    }
+
+    function stopDragging() {
+      if (dragTimeout) clearTimeout(dragTimeout);
+      dragTimeout = setTimeout(() => {
+        document.documentElement.classList.remove('is-dragging');
+      }, 50);
+    }
+
     cardOpacityInput?.addEventListener('input', () => {
-      if (opacityVal) opacityVal.textContent = `${Math.round(parseFloat(cardOpacityInput.value) * 100)}%`;
+      startDragging();
+      const opacity = parseFloat(cardOpacityInput.value);
+      if (opacityVal) opacityVal.textContent = `${Math.round(opacity * 100)}%`;
+      
+      const doc = document.documentElement;
+      doc.style.setProperty('--card-bg-opacity', String(opacity));
+      
+      const bgStyle = bgStyleSelect?.value || 'morandi-glow';
+      if (bgStyle === 'dark-slate') {
+        doc.style.setProperty('--card-bg', `rgba(38, 41, 43, ${opacity})`);
+      } else {
+        doc.style.setProperty('--card-bg', `rgba(255, 255, 255, ${opacity})`);
+      }
+    });
+
+    cardOpacityInput?.addEventListener('change', () => {
       saveAndApplyAppearance();
+      stopDragging();
     });
 
     cardBlurInput?.addEventListener('input', () => {
-      if (blurVal) blurVal.textContent = `${Math.round((parseInt(cardBlurInput.value) / 40) * 100)}%`;
+      startDragging();
+      const blur = parseFloat(cardBlurInput.value);
+      if (blurVal) blurVal.textContent = `${Math.round((blur / 40) * 100)}%`;
+      document.documentElement.style.setProperty('--card-blur-radius', `${blur}px`);
+    });
+
+    cardBlurInput?.addEventListener('change', () => {
       saveAndApplyAppearance();
+      stopDragging();
     });
 
     fontStyleSelect?.addEventListener('change', () => {

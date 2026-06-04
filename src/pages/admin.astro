@@ -38,7 +38,7 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </div>
 
-  <div class="admin-container">
+  <div class="admin-container" style="display: none;">
     
     <!-- 头部工具栏 -->
     <header class="admin-header">
@@ -1057,88 +1057,7 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  /* 个性化滑块美化 */
-  .admin-form input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.08);
-    outline: none;
-    border: none !important; /* 彻底去除边框 */
-    padding: 0;
-    margin: 8px 0;
-    transition: background 0.3s;
-  }
 
-  .admin-form input[type="range"]:focus {
-    outline: none !important;
-    border: none !important;
-    box-shadow: none !important; /* 彻底消除 focus 时的外框投影 */
-  }
-
-  /* 针对 Chrome, Safari, Opera 和 Edge 的 track */
-  .admin-form input[type="range"]::-webkit-slider-runnable-track {
-    border: none !important;
-    background: transparent;
-  }
-
-  /* 针对 Chrome, Safari, Opera 和 Edge 的 thumb */
-  .admin-form input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--theme-primary);
-    cursor: pointer;
-    border: none !important; /* 彻底去除滑块按钮边框 */
-    transition: transform 0.15s, background-color 0.15s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-  }
-
-  .admin-form input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale3d(1.2, 1.2, 1);
-    background: var(--theme-primary-hover);
-  }
-
-  /* 针对 Firefox 的 track */
-  .admin-form input[type="range"]::-moz-range-track {
-    border: none !important;
-    background: transparent;
-  }
-
-  /* 针对 Firefox 的 thumb */
-  .admin-form input[type="range"]::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-    border: none !important; /* 彻底去除 Firefox 滑块按钮边框 */
-    border-radius: 50%;
-    background: var(--theme-primary);
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    transition: transform 0.15s, background-color 0.15s;
-  }
-
-  .admin-form input[type="range"]::-moz-range-thumb:hover {
-    transform: scale3d(1.2, 1.2, 1);
-    background: var(--theme-primary-hover);
-  }
-
-  /* 针对 IE 的 track & thumb */
-  .admin-form input[type="range"]::-ms-track {
-    border: none !important;
-    color: transparent;
-    background: transparent;
-  }
-  .admin-form input[type="range"]::-ms-thumb {
-    border: none !important;
-  }
 
   /* ================= 自定义通知与确认弹窗设计 ================= */
   .toast-container {
@@ -2108,11 +2027,16 @@ import Layout from '../layouts/Layout.astro';
             true
           );
           if (ok) {
-            showToast('正在删除...', 'info');
-            await storage.deleteCategoryCloud(cat.id);
+            storage.deleteCategory(cat.id);
             refreshAll();
             window.dispatchEvent(new CustomEvent('categories-updated'));
-            showToast('分类已成功删除', 'success');
+            showToast('分类已从本地删除，正在同步至云端...', 'info');
+            
+            storage.deleteCategoryCloudSilent(cat.id).then(() => {
+              showToast(`分类“${cat.name}”已成功同步删除至云端`, 'success');
+            }).catch(err => {
+              showToast(`分类“${cat.name}”云端删除同步失败: ${err.message || err}`, 'error');
+            });
           }
         });
 
@@ -2221,10 +2145,15 @@ import Layout from '../layouts/Layout.astro';
             true
           );
           if (ok) {
-            showToast('正在删除...', 'info');
-            await storage.deleteLinkCloud(link.id);
+            storage.deleteLink(link.id);
             refreshAll();
-            showToast('链接已成功删除', 'success');
+            showToast('链接已从本地删除，正在同步至云端...', 'info');
+
+            storage.deleteLinkCloudSilent(link.id).then(() => {
+              showToast(`链接“${link.title}”已成功同步删除至云端`, 'success');
+            }).catch(err => {
+              showToast(`链接“${link.title}”云端删除同步失败: ${err.message || err}`, 'error');
+            });
           }
         });
 
@@ -2239,16 +2168,39 @@ import Layout from '../layouts/Layout.astro';
       const icon = (document.getElementById('catIcon') as HTMLInputElement).value.trim();
       const color = (document.getElementById('catColor') as HTMLSelectElement).value;
 
-      showToast('正在添加分类...', 'info');
-      await storage.addCategoryCloud({ name, icon, color });
+      const localCat = storage.addCategory({ name, icon, color });
       addCatForm.reset();
       
       const defaultIcon = document.getElementById('catIcon') as HTMLInputElement;
       if (defaultIcon) defaultIcon.value = 'folder';
 
+      // 联动重设自定义下拉框
+      const select = document.getElementById('catColor') as HTMLSelectElement;
+      if (select) {
+        const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
+          ? select.parentElement as HTMLElement
+          : null;
+        if (wrapper) {
+          select.value = 'blue';
+          const triggerContent = wrapper.querySelector('.custom-select-trigger-content');
+          if (triggerContent) {
+            triggerContent.innerHTML = `
+              <div class="select-color-dot" style="background: var(--theme-blue)"></div>
+              <span>莫兰迪蓝</span>
+            `;
+          }
+        }
+      }
+
       refreshAll();
       window.dispatchEvent(new CustomEvent('categories-updated'));
-      showToast('分类添加成功', 'success');
+      showToast('分类已在本地添加，正在同步至云端...', 'info');
+
+      storage.addCategoryCloudSilent(localCat).then(() => {
+        showToast(`分类“${localCat.name}”已成功同步至云端`, 'success');
+      }).catch(err => {
+        showToast(`分类“${localCat.name}”云端同步失败: ${err.message || err}`, 'error');
+      });
     });
 
     addLinkForm?.addEventListener('submit', async (e) => {
@@ -2260,15 +2212,14 @@ import Layout from '../layouts/Layout.astro';
       const description = (document.getElementById('linkDesc') as HTMLInputElement).value.trim();
       const icon = (document.getElementById('linkIcon') as HTMLInputElement).value.trim();
 
-      showToast('正在添加链接卡片...', 'info');
-      await storage.addLinkCloud({ title, categoryId, url, description, icon });
+      const localLink = storage.addLink({ title, categoryId, url, description, icon });
       addLinkForm.reset();
       
       const defaultIcon = document.getElementById('linkIcon') as HTMLInputElement;
       if (defaultIcon) defaultIcon.value = 'external-link';
 
       refreshAll();
-      showToast('链接卡片添加成功', 'success');
+      showToast('链接已在本地添加，正在同步至云端...', 'info');
 
       // 成功添加后关闭弹窗
       addLinkModal?.classList.remove('open');
@@ -2283,6 +2234,12 @@ import Layout from '../layouts/Layout.astro';
           updateTriggerDisplay(wrapper, select, 'category');
         }
       }
+
+      storage.addLinkCloudSilent(localLink).then(() => {
+        showToast(`链接“${localLink.title}”已成功同步至云端`, 'success');
+      }).catch(err => {
+        showToast(`链接“${localLink.title}”云端同步失败: ${err.message || err}`, 'error');
+      });
     });
 
     function openEditCategory(id: string) {
@@ -2329,12 +2286,18 @@ import Layout from '../layouts/Layout.astro';
       const categories = storage.getCategories();
       const cat = categories.find(c => c.id === id);
       if (cat) {
-        showToast('正在保存分类...', 'info');
-        await storage.updateCategoryCloud({ ...cat, name, icon, color });
+        const updatedCat = { ...cat, name, icon, color };
+        storage.updateCategory(updatedCat);
         editCatModal?.classList.remove('open');
         refreshAll();
-        showToast('分类修改已保存', 'success');
         window.dispatchEvent(new CustomEvent('categories-updated'));
+        showToast('分类已在本地修改，正在同步至云端...', 'info');
+
+        storage.updateCategoryCloudSilent(updatedCat).then(() => {
+          showToast(`分类“${updatedCat.name}”修改已同步至云端`, 'success');
+        }).catch(err => {
+          showToast(`分类“${updatedCat.name}”云端同步失败: ${err.message || err}`, 'error');
+        });
       }
     });
 
@@ -2389,11 +2352,17 @@ import Layout from '../layouts/Layout.astro';
       const links = storage.getLinks();
       const link = links.find(l => l.id === id);
       if (link) {
-        showToast('正在保存修改...', 'info');
-        await storage.updateLinkCloud({ ...link, title, categoryId, url, description, icon });
+        const updatedLink = { ...link, title, categoryId, url, description, icon };
+        storage.updateLink(updatedLink);
         editLinkModal?.classList.remove('open');
         refreshAll();
-        showToast('链接修改已保存', 'success');
+        showToast('链接已在本地修改，正在同步至云端...', 'info');
+
+        storage.updateLinkCloudSilent(updatedLink).then(() => {
+          showToast(`链接“${updatedLink.title}”修改已同步至云端`, 'success');
+        }).catch(err => {
+          showToast(`链接“${updatedLink.title}”云端同步失败: ${err.message || err}`, 'error');
+        });
       }
     });
 

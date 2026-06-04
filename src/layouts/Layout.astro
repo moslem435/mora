@@ -372,9 +372,6 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 		border-bottom-color: rgba(255, 255, 255, 0.08) !important;
 	}
 
-	html.bg-dark-slate .admin-form input[type="range"] {
-		background: rgba(255, 255, 255, 0.12) !important;
-	}
 
 	html.bg-dark-slate #fontUploadStatus,
 	html.bg-dark-slate #bgUploadStatus {
@@ -516,6 +513,20 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 		            box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 	}
 
+	/* 当在拖拽调节美化参数时，临时禁用卡片的 transition 过渡，以实现极度顺畅丝滑的实时手势拖动渲染 */
+	html.is-dragging .admin-header,
+	html.is-dragging .admin-section,
+	html.is-dragging .modal-box,
+	html.is-dragging .sidebar-container,
+	html.is-dragging .category-item,
+	html.is-dragging a.link-card,
+	html.is-dragging .admin-link-card,
+	html.is-dragging .custom-select-trigger,
+	html.is-dragging .custom-options-container,
+	html.is-dragging .settings-section {
+		transition: none !important;
+	}
+
 	/* 自定义滚动条 */
 	::-webkit-scrollbar {
 		width: 5px;
@@ -575,6 +586,155 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 		display: flex;
 		flex-direction: column;
 		position: relative;
+	}
+
+	/* ================= 全局原生下拉框及滑动条美化，消除默认样式痕迹 ================= */
+	
+	/* 1. 全局下拉框 select 美化 */
+	select {
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		outline: none;
+		border: 1px solid var(--card-border);
+		background-color: rgba(255, 255, 255, 0.8);
+		color: var(--color-text-main);
+		border-radius: 8px;
+		padding: 8px 30px 8px 12px;
+		font-size: 13px;
+		cursor: pointer;
+		transition: var(--transition-smooth);
+		
+		/* 自定义 SVG 箭头背景 */
+		background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+		background-repeat: no-repeat;
+		background-position: right 10px center;
+		background-size: 13px;
+	}
+
+	select:hover {
+		border-color: var(--theme-primary-hover);
+		background-color: #fff;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+	}
+
+	select:focus {
+		border-color: var(--theme-primary);
+		box-shadow: 0 0 0 3px rgba(154, 168, 173, 0.15);
+		background-color: #fff;
+	}
+
+	/* 暗色模式下的 select */
+	html.bg-dark-slate select {
+		background-color: rgba(255, 255, 255, 0.04) !important;
+		color: #e8e8e8 !important;
+		border-color: rgba(255, 255, 255, 0.08) !important;
+		background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+	}
+
+	html.bg-dark-slate select:hover,
+	html.bg-dark-slate select:focus {
+		background-color: rgba(255, 255, 255, 0.08) !important;
+		border-color: var(--theme-primary-hover) !important;
+	}
+
+	/* 2. 全局滑动条 range 美化 */
+	input[type="range"] {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 100%;
+		height: 6px;
+		border-radius: 3px;
+		background: rgba(0, 0, 0, 0.08);
+		outline: none;
+		border: none !important; /* 彻底去除默认边框 */
+		padding: 0;
+		margin: 8px 0;
+		transition: background 0.3s;
+	}
+
+	input[type="range"]:focus {
+		outline: none !important;
+		border: none !important;
+		box-shadow: none !important; /* 消除 focus 时默认的高亮外框 */
+	}
+
+	/* 针对 Chrome, Safari, Opera 和 Edge 的 track */
+	input[type="range"]::-webkit-slider-runnable-track {
+		border: none !important;
+		background: transparent;
+	}
+
+	/* 针对 Chrome, Safari, Opera 和 Edge 的 thumb */
+	input[type="range"]::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		background: var(--theme-primary);
+		cursor: pointer;
+		border: none !important; /* 去除滑块按钮边框 */
+		transition: transform 0.15s, background-color 0.15s;
+		box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+		
+		transform: translate3d(0, 0, 0);
+		will-change: transform;
+		backface-visibility: hidden;
+	}
+
+	input[type="range"]::-webkit-slider-thumb:hover {
+		transform: scale3d(1.2, 1.2, 1);
+		background: var(--theme-primary-hover);
+	}
+
+	/* 针对 Firefox 的 track */
+	input[type="range"]::-moz-range-track {
+		border: none !important;
+		background: transparent;
+	}
+
+	/* 针对 Firefox 的 thumb */
+	input[type="range"]::-moz-range-thumb {
+		width: 14px;
+		height: 14px;
+		border: none !important;
+		border-radius: 50%;
+		background: var(--theme-primary);
+		cursor: pointer;
+		box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+		transition: transform 0.15s, background-color 0.15s;
+	}
+
+	input[type="range"]::-moz-range-thumb:hover {
+		transform: scale3d(1.2, 1.2, 1);
+		background: var(--theme-primary-hover);
+	}
+
+	/* 针对 IE 的 track & thumb */
+	input[type="range"]::-ms-track {
+		border: none !important;
+		color: transparent;
+		background: transparent;
+	}
+	input[type="range"]::-ms-thumb {
+		border: none !important;
+	}
+
+	/* 暗调模式下的滑动条背景 */
+	html.bg-dark-slate input[type="range"] {
+		background: rgba(255, 255, 255, 0.12) !important;
+	}
+
+	/* 3. 自定义下拉选择框智能向上弹起（防被表格溢出隐藏裁剪） */
+	.custom-select-wrapper.open-up .custom-options-container {
+		top: auto;
+		bottom: calc(100% + 6px) !important;
+		transform: translate3d(0, 6px, 0) !important;
+	}
+
+	.custom-select-wrapper.open-up.open .custom-options-container {
+		transform: translate3d(0, 0, 0) !important;
 	}
 </style>
 
