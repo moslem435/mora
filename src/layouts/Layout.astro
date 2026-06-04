@@ -330,10 +330,7 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 		box-shadow: 0 6px 20px -10px rgba(0, 0, 0, 0.4) !important;
 	}
 	
-	html.bg-dark-slate .weather-widget:hover {
-		background: rgba(255, 255, 255, 0.1) !important;
-		border-color: var(--theme-primary) !important;
-	}
+
 
 	html.bg-dark-slate .nav-item {
 		color: #e8e8e8 !important;
@@ -491,7 +488,6 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 
 	/* 首页 link-card hover (去变色，亮边框) */
 	html.bg-dark-slate a.link-card:hover {
-		border-color: rgba(255, 255, 255, 0.15) !important;
 		background: rgba(255, 255, 255, 0.06) !important;
 		box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5) !important;
 	}
@@ -545,7 +541,10 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 	a.link-card,
 	.admin-link-card,
 	.custom-select-trigger,
-	.custom-options-container {
+	.custom-options-container,
+	.settings-header,
+	.settings-section,
+	.settings-auth-card {
 		backdrop-filter: blur(var(--card-blur-radius, 20px)) !important;
 		-webkit-backdrop-filter: blur(var(--card-blur-radius, 20px)) !important;
 		
@@ -567,7 +566,9 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 	html.is-dragging .admin-link-card,
 	html.is-dragging .custom-select-trigger,
 	html.is-dragging .custom-options-container,
-	html.is-dragging .settings-section {
+	html.is-dragging .settings-header,
+	html.is-dragging .settings-section,
+	html.is-dragging .settings-auth-card {
 		transition: none !important;
 	}
 

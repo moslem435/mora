@@ -479,16 +479,12 @@ import Layout from '../layouts/Layout.astro';
     border-left: 4px solid var(--theme-color); /* 莫兰迪色左侧条 */
     border-radius: 10px;
     transition: var(--transition-smooth);
-    
-    /* 强制开启 GPU 硬件加速防抖动 */
-    transform: translate3d(0, 0, 0);
-    will-change: transform, background-color, box-shadow;
-    backface-visibility: hidden;
   }
 
   .category-item:hover {
     background: var(--card-bg-hover);
-    transform: translate3d(4px, 0, 0); /* 3D 平移 */
+    padding-left: 20px;
+    padding-right: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
   }
 
