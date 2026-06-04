@@ -91,12 +91,57 @@ const {
 							"))",
 					);
 
-					// 2. 同步自定义在线壁纸 URL 变量
+					// 2. 同步自定义在线与本地壁纸 URL 变量
 					if (config.bgStyle === "custom-url" && config.customBgUrl) {
 						doc.style.setProperty(
 							"--custom-bg-image-url",
 							'url("' + config.customBgUrl + '")',
 						);
+					} else if (config.bgStyle === "custom-file") {
+						const cachedBg = sessionStorage.getItem("mora_temp_bg_url");
+						if (cachedBg) {
+							doc.style.setProperty(
+								"--custom-bg-image-url",
+								'url("' + cachedBg + '")',
+							);
+						}
+					}
+
+					// 2.5 同步自定义字体文件与链接变量
+					if (config.fontStyle === "custom-file") {
+						const cachedFontUrl = sessionStorage.getItem("mora_temp_font_url");
+						const cachedFontName = sessionStorage.getItem("mora_temp_font_name") || "LocalCustomFont";
+						if (cachedFontUrl) {
+							doc.style.setProperty("--font-family-custom", cachedFontName);
+							let styleEl = document.getElementById("custom-fonts-style");
+							if (!styleEl) {
+								styleEl = document.createElement("style");
+								styleEl.id = "custom-fonts-style";
+								document.head.appendChild(styleEl);
+							}
+							styleEl.innerHTML = '@font-face { font-family: "' + cachedFontName + '"; src: url("' + cachedFontUrl + '"); font-display: swap; }';
+						}
+					} else if (config.fontStyle === "custom-link" && config.fontCustomLink) {
+						const familyName = config.fontFamilyName || "OnlineCustomFont";
+						doc.style.setProperty("--font-family-custom", familyName);
+						if (config.fontCustomLink.indexOf(".css") !== -1 || config.fontCustomLink.indexOf("fonts.googleapis.com") !== -1) {
+							let linkEl = document.getElementById("online-font-link");
+							if (!linkEl) {
+								linkEl = document.createElement("link");
+								linkEl.id = "online-font-link";
+								linkEl.rel = "stylesheet";
+								document.head.appendChild(linkEl);
+							}
+							linkEl.href = config.fontCustomLink;
+						} else {
+							let styleEl = document.getElementById("custom-fonts-style");
+							if (!styleEl) {
+								styleEl = document.createElement("style");
+								styleEl.id = "custom-fonts-style";
+								document.head.appendChild(styleEl);
+							}
+							styleEl.innerHTML = '@font-face { font-family: "' + familyName + '"; src: url("' + config.fontCustomLink + '"); font-display: swap; }';
+						}
 					}
 
 					// 3. 将字体和背景的 Class 同步渲染在 html 根节点，实现首屏绘制对齐
@@ -934,7 +979,8 @@ const {
 		body.classList.add(`bg-${config.bgStyle}`);
 
 		// 清理旧的内存壁纸引用
-		if (activeBgObjectURL) {
+		const sessionBgUrl = sessionStorage.getItem("mora_temp_bg_url");
+		if (activeBgObjectURL && activeBgObjectURL !== sessionBgUrl) {
 			URL.revokeObjectURL(activeBgObjectURL);
 			activeBgObjectURL = "";
 		}
@@ -947,7 +993,12 @@ const {
 			try {
 				const blob = await dbStorage.getAsset("custom-bg-file");
 				if (blob) {
-					activeBgObjectURL = URL.createObjectURL(blob);
+					if (!sessionBgUrl) {
+						activeBgObjectURL = URL.createObjectURL(blob);
+						sessionStorage.setItem("mora_temp_bg_url", activeBgObjectURL);
+					} else {
+						activeBgObjectURL = sessionBgUrl;
+					}
 					const urlVal = `url("${activeBgObjectURL}")`;
 					doc.style.setProperty("--custom-bg-image-url", urlVal);
 					body.style.backgroundImage = urlVal;
@@ -959,6 +1010,7 @@ const {
 					body.classList.add("bg-morandi-glow");
 					body.style.backgroundImage = "";
 					doc.style.removeProperty("--custom-bg-image-url");
+					sessionStorage.removeItem("mora_temp_bg_url");
 				}
 			} catch (e) {
 				console.error(
@@ -967,10 +1019,12 @@ const {
 				);
 				body.style.backgroundImage = "";
 				doc.style.removeProperty("--custom-bg-image-url");
+				sessionStorage.removeItem("mora_temp_bg_url");
 			}
 		} else {
 			body.style.backgroundImage = "";
 			doc.style.removeProperty("--custom-bg-image-url");
+			sessionStorage.removeItem("mora_temp_bg_url");
 		}
 
 		// 4. 动态应用全局字体风格与动态注册
@@ -1026,10 +1080,17 @@ const {
 			try {
 				const blob = await dbStorage.getAsset("custom-font-file");
 				if (blob) {
-					if (activeFontObjectURL) {
-						URL.revokeObjectURL(activeFontObjectURL);
+					const sessionFontUrl = sessionStorage.getItem("mora_temp_font_url");
+					if (!sessionFontUrl) {
+						if (activeFontObjectURL) {
+							URL.revokeObjectURL(activeFontObjectURL);
+						}
+						activeFontObjectURL = URL.createObjectURL(blob);
+						sessionStorage.setItem("mora_temp_font_url", activeFontObjectURL);
+						sessionStorage.setItem("mora_temp_font_name", familyName);
+					} else {
+						activeFontObjectURL = sessionFontUrl;
 					}
-					activeFontObjectURL = URL.createObjectURL(blob);
 					customStyleTag.innerHTML = `
 						@font-face {
 							font-family: "${familyName}";
@@ -1043,9 +1104,13 @@ const {
 					"Failed to load local font file from IndexedDB:",
 					e,
 				);
+				sessionStorage.removeItem("mora_temp_font_url");
+				sessionStorage.removeItem("mora_temp_font_name");
 			}
 		} else {
 			document.getElementById("online-font-link")?.remove();
+			sessionStorage.removeItem("mora_temp_font_url");
+			sessionStorage.removeItem("mora_temp_font_name");
 		}
 
 		// 5. 动态应用滚动条开关 Class
