@@ -1,4 +1,6 @@
 ---
+import { inject } from '@vercel/analytics';
+
 interface Props {
 	title?: string;
 	description?: string;
@@ -8,6 +10,8 @@ const {
 	title = "Mora - 个人导航",
 	description = "Mora - 极简优雅的莫兰迪低饱和度个人导航",
 } = Astro.props;
+
+inject();
 ---
 
 <!doctype html>
