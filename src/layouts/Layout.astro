@@ -25,7 +25,7 @@ const {
 		<link rel="stylesheet" href="https://npm.elemecdn.com/font-smiley-sans@1.0.0/style.min.css">
 		<link rel="stylesheet" href="https://npm.elemecdn.com/lxgw-wenkai-screen-webfont@1.1.0/style.css">
 		<link rel="stylesheet" href="https://npm.elemecdn.com/geist@1.3.0/dist/fonts/geist-sans/style.css">
-		<link href="https://fonts.googleapis.cn/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@300;500;700&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.cn/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@300;500;700&display=block" rel="stylesheet">
 		
 		<!-- 引入 Lucide Icons CDN (锁定 v0.x 以保证 github/chrome 等品牌图标正常显示) -->
 		<script src="https://unpkg.com/lucide@0.474.0"></script>
@@ -119,7 +119,7 @@ const {
 								styleEl.id = "custom-fonts-style";
 								document.head.appendChild(styleEl);
 							}
-							styleEl.innerHTML = '@font-face { font-family: "' + cachedFontName + '"; src: url("' + cachedFontUrl + '"); font-display: swap; }';
+							styleEl.innerHTML = '@font-face { font-family: "' + cachedFontName + '"; src: url("' + cachedFontUrl + '"); font-display: block; }';
 						}
 					} else if (config.fontStyle === "custom-link" && config.fontCustomLink) {
 						const familyName = config.fontFamilyName || "OnlineCustomFont";
@@ -140,7 +140,7 @@ const {
 								styleEl.id = "custom-fonts-style";
 								document.head.appendChild(styleEl);
 							}
-							styleEl.innerHTML = '@font-face { font-family: "' + familyName + '"; src: url("' + config.fontCustomLink + '"); font-display: swap; }';
+							styleEl.innerHTML = '@font-face { font-family: "' + familyName + '"; src: url("' + config.fontCustomLink + '"); font-display: block; }';
 						}
 					}
 
@@ -1067,7 +1067,7 @@ const {
 					@font-face {
 						font-family: "${familyName}";
 						src: url("${linkUrl}");
-						font-display: swap;
+						font-display: block;
 					}
 				`;
 				document.getElementById("online-font-link")?.remove();
@@ -1095,7 +1095,7 @@ const {
 						@font-face {
 							font-family: "${familyName}";
 							src: url("${activeFontObjectURL}");
-							font-display: swap;
+							font-display: block;
 						}
 					`;
 				}
