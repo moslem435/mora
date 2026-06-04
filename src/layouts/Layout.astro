@@ -278,17 +278,30 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 	}
 
 	/* 4. 自定义壁纸风格 */
-	html.bg-custom-url body, html.bg-custom-file body, 
-	body.bg-custom-url, body.bg-custom-file {
+	html.bg-custom-url, html.bg-custom-file {
+		background-color: var(--color-bg);
+		background-image: var(--custom-bg-image-url, none);
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;
-		background-image: var(--custom-bg-image-url, none);
-	}
-
-	html.bg-custom-url, html.bg-custom-file {
+		background-attachment: fixed;
 		--color-text-main: #111111;
 		--color-text-sub: #4b4b4b;
+	}
+
+	html.bg-custom-url body, html.bg-custom-file body,
+	body.bg-custom-url, body.bg-custom-file {
+		background-color: transparent;
+		background-image: var(--custom-bg-image-url, none);
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+		background-attachment: fixed;
+	}
+
+	html.bg-custom-url::-webkit-scrollbar-track,
+	html.bg-custom-file::-webkit-scrollbar-track {
+		background: transparent;
 	}
 
 	html.bg-custom-url::after, html.bg-custom-file::after,
