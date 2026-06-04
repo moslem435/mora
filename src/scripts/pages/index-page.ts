@@ -145,6 +145,67 @@ export function initMainPage() {
       }
     };
     runLucide();
+
+    // 渲染完成后，根据当前输入框内容进行过滤
+    if (searchInput) {
+      const query = searchInput.value.trim().toLowerCase();
+      filterCards(query);
+    }
+  }
+
+  const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+
+  function filterCards(query: string) {
+    const cards = document.querySelectorAll('.link-card');
+    const categories = document.querySelectorAll('.category-block');
+    let totalVisible = 0;
+
+    cards.forEach(card => {
+      const title = card.querySelector('.card-title')?.textContent?.toLowerCase() || '';
+      const desc = card.querySelector('.card-desc')?.textContent?.toLowerCase() || '';
+      const url = card.getAttribute('href')?.toLowerCase() || '';
+
+      const matches = title.includes(query) || desc.includes(query) || url.includes(query);
+      if (matches) {
+        (card as HTMLElement).style.display = '';
+        totalVisible++;
+      } else {
+        (card as HTMLElement).style.display = 'none';
+      }
+    });
+
+    categories.forEach(block => {
+      const blockCards = block.querySelectorAll('.link-card');
+      let visibleInBlock = 0;
+      blockCards.forEach(card => {
+        if ((card as HTMLElement).style.display !== 'none') {
+          visibleInBlock++;
+        }
+      });
+
+      if (visibleInBlock === 0) {
+        (block as HTMLElement).style.display = 'none';
+      } else {
+        (block as HTMLElement).style.display = '';
+        const badge = block.querySelector('.category-badge');
+        if (badge) badge.textContent = String(visibleInBlock);
+      }
+    });
+
+    if (emptyState) {
+      if (totalVisible === 0) {
+        emptyState.style.display = 'flex';
+      } else {
+        emptyState.style.display = 'none';
+      }
+    }
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      filterCards(query);
+    });
   }
 
   renderMainGrid();

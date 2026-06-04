@@ -456,6 +456,127 @@ function initAdminConsole() {
     initIconPicker('linkIconWrapper', 'linkIcon');
     initIconPicker('editLinkIconWrapper', 'editLinkIcon');
 
+    // ================= 分类长按拖拽排序逻辑 =================
+    function initCategoryDragAndDrop() {
+      if (!categoryList) return;
+
+      let isDragging = false;
+      let draggingItem: HTMLElement | null = null;
+      let longPressTimer: any = null;
+      let startX = 0;
+      let startY = 0;
+
+      // 批量同步新顺序到云端
+      async function saveNewOrder() {
+        const items = [...categoryList.querySelectorAll('.category-item')];
+        const catIdList = items.map(el => el.getAttribute('data-id')).filter(Boolean) as string[];
+        
+        const currentCats = storage.getCategories();
+        
+        // 按照当前的 DOM 顺序重新映射排序值
+        const updatedCats = currentCats.map(cat => {
+          const index = catIdList.indexOf(cat.id);
+          return { ...cat, order: index !== -1 ? index + 1 : cat.order };
+        });
+
+        // 重新排序并保存到本地
+        updatedCats.sort((a, b) => a.order - b.order);
+        storage.saveCategories(updatedCats);
+
+        // 刷新列表和 tabs 以保持同步
+        refreshAll();
+        window.dispatchEvent(new CustomEvent('categories-updated'));
+
+        const toast = showToast('正在同步分类顺序至云端...', 'loading');
+        try {
+          // 并发更新各分类在云端的 order
+          await Promise.all(updatedCats.map(cat => storage.updateCategoryCloudSilent(cat)));
+          toast.update('分类顺序已成功同步至云端', 'success');
+        } catch (err: any) {
+          toast.update(`云端同步排序失败: ${err.message || err}`, 'error');
+        }
+      }
+
+      categoryList.addEventListener('pointerdown', (e: PointerEvent) => {
+        // 仅响应鼠标左键或触屏单指按下
+        if (e.button !== 0) return;
+
+        const item = (e.target as HTMLElement).closest('.category-item') as HTMLElement;
+        if (!item) return;
+
+        // 如果点在了操作按钮（如编辑、删除）上，直接跳过拖拽逻辑
+        if ((e.target as HTMLElement).closest('.cat-actions')) return;
+
+        // 记录起点坐标
+        startX = e.clientX;
+        startY = e.clientY;
+
+        // 开启 300ms 长按检测定时器
+        longPressTimer = setTimeout(() => {
+          isDragging = true;
+          draggingItem = item;
+          draggingItem.classList.add('dragging');
+          
+          // 移动端轻微震动反馈
+          if (navigator.vibrate) {
+            try {
+              navigator.vibrate(50);
+            } catch (err) {}
+          }
+          showToast('已激活排序，上下拖动分类即可排序', 'info');
+        }, 300);
+
+        const onPointerMove = (moveEvent: PointerEvent) => {
+          if (!isDragging) {
+            // 未激活拖拽时，若滑动距离大于 8px，判定为滚动或误触，取消长按定时器
+            const dist = Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY);
+            if (dist > 8) {
+              clearTimeout(longPressTimer);
+            }
+            return;
+          }
+
+          // 已进入拖拽状态，阻止默认事件（如页面滚动）
+          moveEvent.preventDefault();
+
+          // 寻找插入点
+          const siblings = [...categoryList.querySelectorAll('.category-item:not(.dragging)')] as HTMLElement[];
+          const nextSibling = siblings.find(sibling => {
+            const box = sibling.getBoundingClientRect();
+            // 如果指针 Y 坐标在兄弟元素的中心线以上，说明应该插入其前面
+            return moveEvent.clientY < box.top + box.height / 2;
+          });
+
+          if (nextSibling) {
+            categoryList.insertBefore(draggingItem!, nextSibling);
+          } else {
+            categoryList.appendChild(draggingItem!);
+          }
+        };
+
+        const onPointerUp = () => {
+          clearTimeout(longPressTimer);
+          document.removeEventListener('pointermove', onPointerMove);
+          document.removeEventListener('pointerup', onPointerUp);
+          document.removeEventListener('pointercancel', onPointerUp);
+
+          if (isDragging && draggingItem) {
+            draggingItem.classList.remove('dragging');
+            isDragging = false;
+            draggingItem = null;
+            saveNewOrder();
+          }
+        };
+
+        document.addEventListener('pointermove', onPointerMove, { passive: false });
+        document.addEventListener('pointerup', onPointerUp);
+        document.addEventListener('pointercancel', onPointerUp);
+      });
+    }
+
+    // 启用拖拽排序
+    initCategoryDragAndDrop();
+
     refreshAll();
   }
 

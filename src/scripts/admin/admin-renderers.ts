@@ -57,6 +57,7 @@ export function createAdminRenderers(params: {
     categories.forEach(cat => {
       const catItem = document.createElement('div');
       catItem.className = 'category-item';
+      catItem.setAttribute('data-id', cat.id);
       catItem.setAttribute('style', `--theme-color: var(--theme-${cat.color})`);
 
       catItem.innerHTML = `

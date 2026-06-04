@@ -44,11 +44,24 @@ export function showToast(message: string, type: ToastType = 'info'): ToastHandl
     if (dismissTimeout) window.clearTimeout(dismissTimeout);
     toast.classList.remove('show');
     toast.classList.add('fade-out');
-    const onTransitionEnd = () => {
+
+    let isRemoved = false;
+    const removeToast = () => {
+      if (isRemoved) return;
+      isRemoved = true;
       toast.remove();
       toast.removeEventListener('transitionend', onTransitionEnd);
     };
+
+    const onTransitionEnd = (e: TransitionEvent) => {
+      if (e.target === toast) {
+        removeToast();
+      }
+    };
+
     toast.addEventListener('transitionend', onTransitionEnd);
+    // 安全兜底：如果过渡动画因为某种原因没有触发，500ms 后强制移除
+    window.setTimeout(removeToast, 500);
   };
 
   if (type !== 'loading') {

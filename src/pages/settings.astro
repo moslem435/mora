@@ -605,12 +605,12 @@ import '../styles/settings.css';
 
         select?.addEventListener('change', async () => {
           try {
-            showToast('正在修改用户权限...', 'info');
+            const toastHandle = showToast('正在修改用户权限...', 'loading');
             await storage.updateUserProfileRole(profile.id, select.value as 'admin' | 'user', uploadSelect.value === 'true');
-            showToast('权限修改成功！', 'success');
+            toastHandle.update('权限修改成功！', 'success');
             if (currentUserId === profile.id) window.location.reload();
           } catch (err: any) {
-            showToast(`修改失败: ${err.message || err}`, 'error');
+            toastHandle.update(`修改失败: ${err.message || err}`, 'error');
             select.value = profile.role;
             refreshCustomSelect(select, 'plain');
           }
@@ -618,11 +618,11 @@ import '../styles/settings.css';
 
         uploadSelect?.addEventListener('change', async () => {
           try {
-            showToast('正在修改文件上传权限...', 'info');
+            const toastHandle = showToast('正在修改文件上传权限...', 'loading');
             await storage.updateUserProfileRole(profile.id, select.value as 'admin' | 'user', uploadSelect.value === 'true');
-            showToast('文件上传权限修改成功！', 'success');
+            toastHandle.update('文件上传权限修改成功！', 'success');
           } catch (err: any) {
-            showToast(`修改失败: ${err.message || err}`, 'error');
+            toastHandle.update(`修改失败: ${err.message || err}`, 'error');
             uploadSelect.value = String(!!profile.allow_upload);
             refreshCustomSelect(uploadSelect, 'plain');
           }
