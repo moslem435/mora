@@ -151,11 +151,33 @@ export function createAdminRenderers(params: {
       : allLinks.filter(l => l.categoryId === getActiveTabCatId());
 
     if (filteredLinks.length === 0) {
-      linksList.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--color-text-sub); padding: 40px 0;">该分类下暂无卡片。</div>`;
+      linksList.innerHTML = `
+        <div class="admin-links-empty">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(0, 0, 0, 0.02); display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+            <i data-lucide="folder-open" style="width: 20px; height: 20px; color: var(--color-text-sub); opacity: 0.7;"></i>
+          </div>
+          <p>该分类下暂无任何卡片，开始创建吧！</p>
+          <button class="empty-add-btn" type="button">
+            <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+            <span>添加卡片</span>
+          </button>
+        </div>
+      `;
+      linksList.querySelector('.empty-add-btn')?.addEventListener('click', () => {
+        const openAddLinkBtn = document.getElementById('openAddLinkBtn');
+        openAddLinkBtn?.click();
+      });
+      if ((window as any).lucide) {
+        try {
+          (window as any).lucide.createIcons({ node: linksList });
+        } catch (e) {
+          console.error('Lucide icons for empty state failed:', e);
+        }
+      }
       return;
     }
 
-    filteredLinks.forEach(link => {
+    filteredLinks.forEach((link, index) => {
       const cat = categories.find(c => c.id === link.categoryId);
       const catColor = cat ? cat.color : 'blue';
       const domain = getDomain(link.url);
@@ -163,6 +185,7 @@ export function createAdminRenderers(params: {
       const card = document.createElement('div');
       card.className = 'admin-link-card';
       card.setAttribute('style', `--theme-color: var(--theme-${catColor})`);
+      card.style.animationDelay = `${index * 30}ms`;
       card.innerHTML = `
         <div>
           <div class="admin-link-card-header">
@@ -171,7 +194,7 @@ export function createAdminRenderers(params: {
                 src="https://www.google.com/s2/favicons?sz=64&domain=${domain}"
                 class="admin-card-favicon"
                 onload="this.style.display='block'; this.nextElementSibling.style.display='none';"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                onerror="window.handleFaviconError && window.handleFaviconError(this, '${domain}')"
                 style="display: none; width: 24px; height: 24px; border-radius: 5px; object-fit: contain;"
                 alt=""
               />
@@ -183,7 +206,10 @@ export function createAdminRenderers(params: {
           <a href="${link.url}" target="_blank" class="admin-link-card-url" title="${link.url}">${link.url}</a>
         </div>
         <div class="admin-link-card-footer">
-          <span class="admin-link-card-clicks">${link.clicks || 0} 次点击</span>
+          <span class="admin-link-card-clicks">
+            <i data-lucide="mouse-pointer-click" style="width: 11px; height: 11px; margin-right: 4px; display: inline-block; vertical-align: -1px;"></i>
+            ${link.clicks || 0} 次点击
+          </span>
           <div class="admin-link-card-actions">
             <button class="icon-btn edit-link-btn" data-id="${link.id}" title="编辑卡片" type="button">
               <i data-lucide="pencil"></i>

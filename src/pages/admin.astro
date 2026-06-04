@@ -3,6 +3,32 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Mora 管理控制台">
+  <!-- 全局 Favicon 容灾加载机制 -->
+  <script is:inline>
+    window.handleFaviconError = function(img, domain) {
+      if (!domain) {
+        img.style.display = 'none';
+        if (img.nextElementSibling) img.nextElementSibling.style.display = 'block';
+        return;
+      }
+      const sources = [
+        "https://api.iowen.cn/favicon/" + domain + ".png",
+        "https://favicon.t.jiandao.info/" + domain,
+        "https://unavatar.io/" + domain
+      ];
+      let idx = parseInt(img.getAttribute('data-fav-idx') || '0');
+      if (idx < sources.length) {
+        img.setAttribute('data-fav-idx', String(idx + 1));
+        img.src = sources[idx];
+      } else {
+        img.style.display = 'none';
+        if (img.nextElementSibling) {
+          img.nextElementSibling.style.display = 'block';
+        }
+      }
+    };
+  </script>
+
   <!-- 身份验证面板（毛玻璃磨砂效果） -->
   <div id="authContainer" class="auth-container" style="display: none;">
     <div class="auth-card">
@@ -709,6 +735,17 @@ import Layout from '../layouts/Layout.astro';
     margin-bottom: 8px;
   }
 
+  @keyframes adminCardFadeIn {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 12px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
   .admin-link-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -720,6 +757,7 @@ import Layout from '../layouts/Layout.astro';
     min-height: 135px;
     position: relative;
     transition: var(--transition-smooth);
+    animation: adminCardFadeIn 0.45s cubic-bezier(0.215, 0.61, 0.355, 1) both;
     
     /* 强制开启 GPU 硬件加速防抖动 */
     transform: translate3d(0, 0, 0);
@@ -728,8 +766,11 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .admin-link-card:hover {
-    transform: translate3d(0, -3px, 0); /* 3D 平移 */
-    box-shadow: var(--card-shadow-hover);
+    transform: translate3d(0, -4px, 0); /* 3D 平移 */
+    border-color: color-mix(in srgb, var(--theme-color) 45%, transparent);
+    box-shadow: 
+      0 12px 24px -10px color-mix(in srgb, var(--theme-color) 15%, rgba(0, 0, 0, 0.06)),
+      0 0 0 1px color-mix(in srgb, var(--theme-color) 10%, transparent);
   }
 
   .admin-link-card-header {
@@ -792,24 +833,136 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px dashed rgba(0, 0, 0, 0.05);
-    padding-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
+    padding-top: 12px;
     margin-top: auto;
   }
 
   .admin-link-card-clicks {
     font-family: 'Outfit', var(--font-global);
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 500;
     color: var(--color-text-sub);
     background: rgba(0, 0, 0, 0.04);
     padding: 3px 8px;
     border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .admin-link-card-clicks i {
+    opacity: 0.75;
   }
 
   .admin-link-card-actions {
     display: flex;
+    gap: 8px;
+  }
+
+  .admin-link-card-actions .icon-btn {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    color: var(--color-text-sub);
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+    box-shadow: none;
+    transform: none;
+    will-change: transform, background-color, border-color, color;
+  }
+
+  .admin-link-card-actions .icon-btn i,
+  .admin-link-card-actions .icon-btn svg {
+    width: 13.5px;
+    height: 13.5px;
+    display: block;
+  }
+
+  .admin-link-card-actions .icon-btn:hover {
+    background: color-mix(in srgb, var(--theme-color) 12%, transparent);
+    color: var(--theme-color);
+    border-color: color-mix(in srgb, var(--theme-color) 25%, transparent);
+    transform: translate3d(0, -1px, 0);
+  }
+
+  .admin-link-card-actions .icon-btn.delete-link-btn:hover {
+    background: rgba(220, 53, 69, 0.08);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.15);
+  }
+
+  /* 精致空状态 */
+  .admin-links-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 20px;
+    background: rgba(0, 0, 0, 0.015);
+    border: 2px dashed rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-md);
+    text-align: center;
+    gap: 12px;
+    animation: adminCardFadeIn 0.5s cubic-bezier(0.25, 1, 0.5, 1) both;
+  }
+
+  .admin-links-empty p {
+    font-size: 13px;
+    color: var(--color-text-sub);
+    font-weight: 500;
+  }
+
+  .empty-add-btn {
+    margin-top: 4px;
+    padding: 7px 16px;
+    font-size: 12px;
+    font-weight: 550;
+    background: var(--theme-primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
     gap: 6px;
+    transition: var(--transition-smooth);
+    box-shadow: 0 4px 10px rgba(163, 179, 182, 0.15);
+  }
+
+  .empty-add-btn:hover {
+    background: var(--theme-primary-hover);
+    transform: translate3d(0, -1.5px, 0);
+    box-shadow: 0 6px 14px rgba(163, 179, 182, 0.25);
+  }
+
+  /* 暗色模式局部精细调整 */
+  html.bg-dark-slate .admin-link-card-actions .icon-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  html.bg-dark-slate .admin-link-card:hover {
+    border-color: color-mix(in srgb, var(--theme-color) 40%, transparent) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 
+      0 12px 24px -10px color-mix(in srgb, var(--theme-color) 25%, rgba(0, 0, 0, 0.35)),
+      0 0 0 1px color-mix(in srgb, var(--theme-color) 15%, transparent) !important;
+  }
+
+  html.bg-dark-slate .admin-link-card-footer {
+    border-top-color: rgba(255, 255, 255, 0.05);
+  }
+
+  html.bg-dark-slate .admin-links-empty {
+    background: rgba(255, 255, 255, 0.01);
+    border-color: rgba(255, 255, 255, 0.04);
   }
 
   /* ================= 自定义下拉选择框样式 ================= */
@@ -2115,11 +2268,32 @@ import Layout from '../layouts/Layout.astro';
         : allLinks.filter(l => l.categoryId === activeTabCatId);
 
       if (filteredLinks.length === 0) {
-        linksList.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--color-text-sub); padding: 40px 0;">该分类下暂无卡片。</div>`;
+        linksList.innerHTML = `
+          <div class="admin-links-empty">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(0, 0, 0, 0.02); display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+              <i data-lucide="folder-open" style="width: 20px; height: 20px; color: var(--color-text-sub); opacity: 0.7;"></i>
+            </div>
+            <p>该分类下暂无任何卡片，开始创建吧！</p>
+            <button class="empty-add-btn" type="button">
+              <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+              <span>添加卡片</span>
+            </button>
+          </div>
+        `;
+        linksList.querySelector('.empty-add-btn')?.addEventListener('click', () => {
+          openAddLinkBtn?.click();
+        });
+        if ((window as any).lucide) {
+          try {
+            (window as any).lucide.createIcons({ node: linksList });
+          } catch (e) {
+            console.error('Lucide icons for empty state failed:', e);
+          }
+        }
         return;
       }
 
-      filteredLinks.forEach(link => {
+      filteredLinks.forEach((link, index) => {
         const cat = categories.find(c => c.id === link.categoryId);
         const catColor = cat ? cat.color : 'blue';
         const domain = getDomain(link.url);
@@ -2127,6 +2301,8 @@ import Layout from '../layouts/Layout.astro';
         const card = document.createElement('div');
         card.className = 'admin-link-card';
         card.setAttribute('style', `--theme-color: var(--theme-${catColor})`);
+        card.style.animationDelay = `${index * 30}ms`;
+
         card.innerHTML = `
           <div>
             <div class="admin-link-card-header">
@@ -2135,7 +2311,7 @@ import Layout from '../layouts/Layout.astro';
                   src="https://www.google.com/s2/favicons?sz=64&domain=${domain}" 
                   class="admin-card-favicon"
                   onload="this.style.display='block'; this.nextElementSibling.style.display='none';"
-                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                  onerror="window.handleFaviconError && window.handleFaviconError(this, '${domain}')"
                   style="display: none; width: 24px; height: 24px; border-radius: 5px; object-fit: contain;"
                   alt=""
                 />
@@ -2147,7 +2323,10 @@ import Layout from '../layouts/Layout.astro';
             <a href="${link.url}" target="_blank" class="admin-link-card-url" title="${link.url}">${link.url}</a>
           </div>
           <div class="admin-link-card-footer">
-            <span class="admin-link-card-clicks">${link.clicks || 0} 次点击</span>
+            <span class="admin-link-card-clicks">
+              <i data-lucide="mouse-pointer-click" style="width: 11px; height: 11px; margin-right: 4px; display: inline-block; vertical-align: -1px;"></i>
+              ${link.clicks || 0} 次点击
+            </span>
             <div class="admin-link-card-actions">
               <button class="icon-btn edit-link-btn" data-id="${link.id}" title="编辑卡片" type="button">
                 <i data-lucide="pencil"></i>
