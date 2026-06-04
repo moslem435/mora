@@ -17,14 +17,29 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 		<meta name="description" content={description} />
 		<title>{title}</title>
 		
-		<!-- 现代中文双语 Web 字体引入 (使用 jsDelivr 加速与分包加载) -->
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans-vf@1.0.0/lib/MiSans.min.css">
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/harmonyos-sans-sc-webfont-splitted@1.1.0/dist/index.min.css">
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-smiley-sans@1.0.0/style.min.css">
-		<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+		<!-- 现代中文双语 Web 字体引入 (使用国内镜像加速与分包加载) -->
+		<link rel="stylesheet" href="https://npm.elemecdn.com/misans-vf@1.0.0/lib/MiSans.min.css">
+		<link rel="stylesheet" href="https://npm.elemecdn.com/harmonyos-sans-sc-webfont-splitted@1.1.0/dist/index.min.css">
+		<link rel="stylesheet" href="https://npm.elemecdn.com/font-smiley-sans@1.0.0/style.min.css">
+		<link rel="stylesheet" href="https://npm.elemecdn.com/lxgw-wenkai-screen-webfont@1.1.0/style.css">
+		<link rel="stylesheet" href="https://npm.elemecdn.com/geist@1.3.0/dist/fonts/geist-sans/style.css">
+		<link href="https://fonts.googleapis.cn/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@300;500;700&display=swap" rel="stylesheet">
 		
 		<!-- 引入 Lucide Icons CDN -->
 		<script src="https://unpkg.com/lucide@latest"></script>
+		<script is:inline>
+			(function() {
+				if (window.lucide && window.lucide.createIcons) {
+					const originalCreateIcons = window.lucide.createIcons;
+					window.lucide.createIcons = function(options) {
+						options = options || {};
+						options.icons = options.icons || window.lucide.icons;
+						return originalCreateIcons.call(this, options);
+					};
+				}
+			})();
+		</script>
+
 
 		<!-- 首屏极速防闪烁与透明度/模糊度同步脚本 -->
 		<script is:inline>
@@ -61,7 +76,7 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 					}
 					
 					// 3. 将字体和背景的 Class 同步渲染在 html 根节点，实现首屏绘制对齐
-					doc.classList.add('font-' + (config.fontStyle || 'system-sans'));
+					doc.classList.add('font-' + (config.fontStyle || 'morandi-sans'));
 					doc.classList.add('bg-' + (config.bgStyle || 'morandi-glow'));
 				} catch(e) {
 					console.error('Appearance fast-init failed:', e);
@@ -79,6 +94,9 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 <style is:global>
 	/* 莫兰迪配色系统及全局变量 */
 	:root {
+		/* 全局默认字体变量，作为第一层兜底 */
+		--font-global: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+
 		/* 基础背景与文字 */
 		--color-bg: #f5f4f0;            /* 静谧暖米灰 */
 		--color-text-main: #222222;     /* 调深为主炭黑，极大增加字迹清晰度 */
@@ -119,6 +137,11 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 		padding: 0;
 	}
 
+	/* 强制全站及表单控件使用全局字体变量，避免继承链断层 */
+	html, body, input, button, select, textarea {
+		font-family: var(--font-global);
+	}
+
 	html {
 		background-color: var(--color-bg);
 		color: var(--color-text-main);
@@ -131,34 +154,49 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 		text-rendering: optimizeLegibility;
 	}
 
-	/* 第一版：思源莫兰迪黑体（Plus Jakarta Sans + Noto Sans SC） */
+	/* 第一版：思源莫兰迪黑体 */
 	html.font-morandi-sans {
-		font-family: 'Plus Jakarta Sans', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+		--font-global: 'Plus Jakarta Sans', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
 	}
 
-	/* 第二版：本地微软雅黑高清（Segoe UI + Microsoft YaHei） */
+	/* 第二版：本地微软雅黑高清 */
 	html.font-system-sans {
-		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+		--font-global: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
 	}
 
 	/* MiSans 极简黑体 */
 	html.font-inter {
-		font-family: 'Inter', 'MiSans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+		--font-global: 'Inter', 'MiSans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 	}
 
 	/* HarmonyOS 科技体 */
 	html.font-outfit {
-		font-family: 'Outfit', 'HarmonyOS Sans SC', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+		--font-global: 'Outfit', 'HarmonyOS Sans SC', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 	}
 
 	/* 得意黑 潮玩极客体 */
 	html.font-geist {
-		font-family: 'Smiley Sans', 'smiley-sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+		--font-global: 'Smiley Sans', 'smiley-sans', 'SmileySans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+	}
+
+	/* 霞鹜文楷 (温润书香) */
+	html.font-lxgw-wenkai {
+		--font-global: 'Lora', 'LXGW WenKai Screen', 'LXGW WenKai', system-ui, -apple-system, sans-serif;
+	}
+
+	/* Geist 极简 (极客冷淡) */
+	html.font-geist-sans {
+		--font-global: 'Geist Sans', 'Inter', 'MiSans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+	}
+
+	/* 古典宋体 (大牌高奢) */
+	html.font-cormorant-serif {
+		--font-global: 'Cormorant Garamond', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
 	}
 
 	/* 第三版：自定义在线字体或本地上传字体 */
 	html.font-custom-link, html.font-custom-file {
-		font-family: var(--font-family-custom), -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif !important;
+		--font-global: var(--font-family-custom), -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif !important;
 	}
 
 	body {
@@ -736,6 +774,18 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 	.custom-select-wrapper.open-up.open .custom-options-container {
 		transform: translate3d(0, 0, 0) !important;
 	}
+
+	/* 4. 加载状态 Toast 全局旋转动画与图标样式支持 */
+	@keyframes toast-spin {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
+	}
+
+	.custom-toast.loading i,
+	.custom-toast.loading svg {
+		animation: toast-spin 1s linear infinite !important;
+		color: var(--theme-primary) !important;
+	}
 </style>
 
 <!-- 客户端首屏无感渲染个性化美化层 -->
@@ -750,6 +800,8 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 		const doc = document.documentElement;
 		const body = document.body;
 		if (!body) return;
+
+		console.log('[Layout] applyAppearance executed. Configured fontStyle:', config.fontStyle, 'HTML Classes:', doc.className);
 
 		// 1. 动态应用卡片不透明度和模糊度 CSS 自定义变量
 		doc.style.setProperty('--card-bg-opacity', String(config.cardOpacity));
@@ -815,8 +867,8 @@ const { title = "Mora - 个人导航", description = "Mora - 极简优雅的莫�
 		}
 
 		// 4. 动态应用全局字体风格与动态注册
-		doc.classList.remove('font-morandi-sans', 'font-system-sans', 'font-inter', 'font-outfit', 'font-geist', 'font-custom-link', 'font-custom-file');
-		doc.classList.add(`font-${config.fontStyle || 'system-sans'}`);
+		doc.classList.remove('font-morandi-sans', 'font-system-sans', 'font-inter', 'font-outfit', 'font-geist', 'font-custom-link', 'font-custom-file', 'font-lxgw-wenkai', 'font-geist-sans', 'font-cormorant-serif');
+		doc.classList.add(`font-${config.fontStyle || 'morandi-sans'}`);
 
 		// 获取/创建样式注入容器
 		let customStyleTag = document.getElementById('custom-fonts-style');

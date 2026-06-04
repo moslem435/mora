@@ -128,6 +128,9 @@ import Layout from '../layouts/Layout.astro';
                   <option value="inter">MiSans 极简黑体</option>
                   <option value="outfit">HarmonyOS 科技体</option>
                   <option value="geist">得意黑 潮玩极客体</option>
+                  <option value="lxgw-wenkai">霞鹜文楷 (温润书香)</option>
+                  <option value="geist-sans">Geist 极简 (极客冷淡)</option>
+                  <option value="cormorant-serif">古典宋体 (大牌高奢)</option>
                   <option value="custom-link">自定义在线字体链接</option>
                   <option value="custom-file">本地上传字体包文件</option>
                 </select>
@@ -238,10 +241,44 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </div>
 
+  <div class="modal" id="syncChooseModal" style="z-index: 10000;">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="confirm-title" style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+        <i data-lucide="arrow-left-right" class="section-icon" style="color: var(--theme-primary); width: 20px; height: 20px; flex-shrink: 0;"></i>
+        <h3 style="margin: 0;">数据同步选择</h3>
+      </div>
+      <p style="font-size: 13px; color: var(--color-text-sub); line-height: 1.6; margin-bottom: 20px;">
+        检测到当前设备的本地离线数据与云端数据库不一致。请选择您的同步策略：
+      </p>
+      <div class="sync-options-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        <button type="button" class="sync-opt-btn" id="syncUseLocalBtn" style="display: flex; flex-direction: column; text-align: left; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.6); cursor: pointer; transition: var(--transition-smooth); gap: 4px;">
+          <span style="font-weight: 600; font-size: 13.5px; color: var(--color-text-main);">保留本地数据（覆盖云端）</span>
+          <span style="font-size: 11px; color: var(--color-text-sub);">完全使用当前本机的配置与链接卡片，并强行将其上传保存到云端。</span>
+        </button>
+        <button type="button" class="sync-opt-btn" id="syncUseCloudBtn" style="display: flex; flex-direction: column; text-align: left; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.6); cursor: pointer; transition: var(--transition-smooth); gap: 4px;">
+          <span style="font-weight: 600; font-size: 13.5px; color: var(--color-text-main);">保留云端数据（覆盖本地）</span>
+          <span style="font-size: 11px; color: var(--color-text-sub);">清空当前本机的内容，完全拉取下载保存在云端数据库里的数据。</span>
+        </button>
+        <button type="button" class="sync-opt-btn" id="syncMergeBtn" style="display: flex; flex-direction: column; text-align: left; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--theme-primary); background: rgba(154, 168, 173, 0.05); cursor: pointer; transition: var(--transition-smooth); gap: 4px;">
+          <span style="font-weight: 600; font-size: 13.5px; color: var(--theme-primary);">双向合并数据（推荐）</span>
+          <span style="font-size: 11px; color: var(--color-text-sub);">将本地特有的分类和卡片与云端求并集并自动去重，合并后同步两端。</span>
+        </button>
+      </div>
+      <div style="font-size: 11px; color: var(--color-text-sub); text-align: center;">* 选择后将自动刷新页面应用新数据</div>
+    </div>
+  </div>
+
   <div id="toastContainer" class="toast-container"></div>
 </Layout>
 
 <style is:global>
+  .sync-opt-btn:hover {
+    background: #fff !important;
+    border-color: var(--theme-primary) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+
   .settings-container {
     width: 100%;
     max-width: 1200px;
@@ -519,6 +556,11 @@ import Layout from '../layouts/Layout.astro';
     position: relative;
     user-select: none;
     width: 100%;
+    z-index: 1;
+  }
+
+  .custom-select-wrapper.open {
+    z-index: 1000;
   }
 
   .custom-select-wrapper select {
@@ -716,8 +758,6 @@ import Layout from '../layouts/Layout.astro';
   }
 
   .users-table-wrapper {
-    max-height: 360px;
-    overflow: auto;
     border: 1px solid var(--card-border);
     border-radius: 12px;
   }
@@ -1003,6 +1043,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { storage, dbStorage, supabase, isSupabaseConfigured } from '../scripts/storage';
+  import { showToast, setPendingToast } from '../scripts/ui/toast';
 
   function initSettingsPage() {
     let userAllowUpload = false;
@@ -1056,23 +1097,8 @@ import Layout from '../layouts/Layout.astro';
       if ((window as any).lucide) (window as any).lucide.createIcons();
     }
 
-    function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
-      const container = document.getElementById('toastContainer');
-      if (!container) return;
+    // 删除了局部的 showToast，统一使用引入的全局 showToast
 
-      const toast = document.createElement('div');
-      toast.className = `custom-toast ${type}`;
-      const iconName = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-triangle' : 'info';
-      toast.innerHTML = `<i data-lucide="${iconName}" style="width: 16px; height: 16px;"></i><span>${message}</span>`;
-      container.appendChild(toast);
-      refreshIcons();
-      requestAnimationFrame(() => toast.classList.add('show'));
-      setTimeout(() => {
-        toast.classList.remove('show');
-        toast.classList.add('fade-out');
-        toast.addEventListener('transitionend', () => toast.remove());
-      }, 3500);
-    }
 
     let confirmResolve: ((value: boolean) => void) | null = null;
 
@@ -1161,20 +1187,100 @@ import Layout from '../layouts/Layout.astro';
       refreshIcons();
     }
 
+    function showSyncChooseModal(cloudData: any) {
+      const modal = document.getElementById('syncChooseModal');
+      const useLocalBtn = document.getElementById('syncUseLocalBtn');
+      const useCloudBtn = document.getElementById('syncUseCloudBtn');
+      const mergeBtn = document.getElementById('syncMergeBtn');
+
+      if (!modal) return;
+      modal.classList.add('open');
+
+      // 强力清除旧事件监听，避免闭包积压和重复绑定
+      const newUseLocal = useLocalBtn?.cloneNode(true) as HTMLButtonElement;
+      const newUseCloud = useCloudBtn?.cloneNode(true) as HTMLButtonElement;
+      const newMerge = mergeBtn?.cloneNode(true) as HTMLButtonElement;
+
+      if (useLocalBtn && newUseLocal) useLocalBtn.parentNode?.replaceChild(newUseLocal, useLocalBtn);
+      if (useCloudBtn && newUseCloud) useCloudBtn.parentNode?.replaceChild(newUseCloud, useCloudBtn);
+      if (mergeBtn && newMerge) mergeBtn.parentNode?.replaceChild(newMerge, mergeBtn);
+
+      newUseLocal?.addEventListener('click', async () => {
+        const toastHandle = showToast('正在上传本地数据...', 'loading');
+        try {
+          await storage.uploadLocalData();
+          setPendingToast('同步成功！', 'success');
+          modal.classList.remove('open');
+          window.location.href = '/admin';
+        } catch (e: any) {
+          toastHandle.update(`上传失败: ${e.message || e}`, 'error');
+        }
+      });
+
+      newUseCloud?.addEventListener('click', () => {
+        const toastHandle = showToast('正在拉取云端数据...', 'loading');
+        try {
+          storage.applyCloudData(cloudData);
+          setPendingToast('同步成功！', 'success');
+          modal.classList.remove('open');
+          window.location.href = '/admin';
+        } catch (e: any) {
+          toastHandle.update(`拉取失败: ${e.message || e}`, 'error');
+        }
+      });
+
+      newMerge?.addEventListener('click', async () => {
+        const toastHandle = showToast('正在执行双向合并与同步...', 'loading');
+        try {
+          await storage.mergeAndSyncData(cloudData);
+          setPendingToast('双向合并同步成功！', 'success');
+          modal.classList.remove('open');
+          window.location.href = '/admin';
+        } catch (e: any) {
+          toastHandle.update(`合并失败: ${e.message || e}`, 'error');
+        }
+      });
+    }
+
     authForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = authEmail.value.trim();
       const password = authPassword.value;
       if (!email || !password) return;
-      showToast('正在登录...', 'info');
-      const { error } = await supabase!.auth.signInWithPassword({ email, password });
-      if (error) {
-        showToast(`登录失败: ${error.message}`, 'error');
-        return;
+      
+      const toastHandle = showToast('正在登录并检测数据同步...', 'loading');
+      
+      try {
+        const { error } = await supabase!.auth.signInWithPassword({ email, password });
+        if (error) {
+          toastHandle.update(`登录失败: ${error.message}`, 'error');
+          return;
+        }
+
+        const cloudData = await storage.fetchCloudData();
+        if (cloudData) {
+          const hasConflict = storage.checkConflict(cloudData);
+          if (hasConflict) {
+            toastHandle.update('检测到数据冲突，请选择同步策略', 'info');
+            if (authContainer) {
+              authContainer.style.display = 'none';
+              authContainer.remove(); // 彻底从 DOM 中移除以防挡住同步选择弹窗
+            }
+            showSyncChooseModal(cloudData);
+            return;
+          } else {
+            storage.applyCloudData(cloudData);
+          }
+        } else {
+          // 获取云端数据失败（为 null）时，静默上传本地数据
+          await storage.uploadLocalData();
+        }
+        setPendingToast('登录成功，已自动同步数据！', 'success');
+        window.location.href = '/admin';
+      } catch (err: any) {
+        console.error('Login sync error:', err);
+        toastHandle.update(`数据同步失败: ${err.message || err}`, 'error');
       }
-      showToast('登录成功，正在加载云端数据...', 'success');
-      await storage.syncFromCloud();
-      window.location.reload();
     });
 
     signUpBtn?.addEventListener('click', async () => {
@@ -1188,16 +1294,24 @@ import Layout from '../layouts/Layout.astro';
         showToast('密码长度至少为 6 位', 'info');
         return;
       }
-      showToast('正在注册...', 'info');
+      
+      const toastHandle = showToast('正在注册账号...', 'loading');
       const { error, data } = await supabase!.auth.signUp({ email, password });
       if (error) {
-        showToast(`注册失败: ${error.message}`, 'error');
+        toastHandle.update(`注册失败: ${error.message}`, 'error');
         return;
       }
-      showToast('注册成功！如果开启了邮箱验证，请查收确认邮件。', 'success');
+      
       if (data?.session) {
-        await storage.saveAppearanceCloud(storage.getAppearance());
-        window.location.reload();
+        try {
+          await storage.saveAppearanceCloud(storage.getAppearance());
+          setPendingToast('注册并登录成功！', 'success');
+        } catch (saveErr) {
+          console.error(saveErr);
+        }
+        window.location.href = '/admin';
+      } else {
+        toastHandle.update('注册成功！如果开启了邮箱验证，请查收确认邮件。', 'success');
       }
     });
 
@@ -1412,6 +1526,7 @@ import Layout from '../layouts/Layout.astro';
         cardOpacity: cardOpacityInput ? parseFloat(cardOpacityInput.value) : 0.65,
         cardBlur: cardBlurInput ? parseFloat(cardBlurInput.value) : 20
       };
+      console.log('[Settings] saveAndApplyAppearance called. Saving Config:', config);
       storage.saveAppearance(config);
       window.dispatchEvent(new CustomEvent('appearance-updated'));
     }

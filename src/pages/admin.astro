@@ -1371,6 +1371,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { storage, supabase, isSupabaseConfigured } from '../scripts/storage';
+  import { showToast, setPendingToast } from '../scripts/ui/toast';
 
   function initAdminConsole() {
     // DOM 元素获取
@@ -1430,14 +1431,19 @@ import Layout from '../layouts/Layout.astro';
       
       if (!email || !password) return;
 
-      showToast('正在登录...', 'info');
+      const toastHandle = showToast('正在登录账号...', 'loading');
       const { error } = await supabase!.auth.signInWithPassword({ email, password });
       if (error) {
-        showToast(`登录失败: ${error.message}`, 'error');
+        toastHandle.update(`登录失败: ${error.message}`, 'error');
       } else {
-        showToast('登录成功，正在加载云端数据...', 'success');
-        await storage.syncFromCloud();
-        window.location.reload();
+        toastHandle.update('登录成功，正在加载并同步云端数据...', 'loading');
+        try {
+          await storage.syncFromCloud();
+          setPendingToast('登录成功！', 'success');
+          window.location.reload();
+        } catch (syncErr: any) {
+          toastHandle.update(`云端同步失败: ${syncErr.message || syncErr}`, 'error');
+        }
       }
     });
 
@@ -1454,15 +1460,21 @@ import Layout from '../layouts/Layout.astro';
         return;
       }
 
-      showToast('正在注册...', 'info');
+      const toastHandle = showToast('正在注册账号...', 'loading');
       const { error, data } = await supabase!.auth.signUp({ email, password });
       if (error) {
-        showToast(`注册失败: ${error.message}`, 'error');
+        toastHandle.update(`注册失败: ${error.message}`, 'error');
       } else {
-        showToast('注册成功！如果开启了邮箱验证，请查收确认邮件。', 'success');
         if (data?.session) {
-          await storage.saveAppearanceCloud(storage.getAppearance());
+          try {
+            await storage.saveAppearanceCloud(storage.getAppearance());
+            setPendingToast('注册成功并已自动登录！', 'success');
+          } catch (saveErr) {
+            console.error(saveErr);
+          }
           window.location.reload();
+        } else {
+          toastHandle.update('注册成功！如果开启了邮箱验证，请查收确认邮件。', 'success');
         }
       }
     });
@@ -1470,43 +1482,8 @@ import Layout from '../layouts/Layout.astro';
     checkAuth();
 
     // ================= 自定义通知与 Confirm 确认窗口核心逻辑 =================
-    function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
-      const container = document.getElementById('toastContainer');
-      if (!container) return;
+    // 删除了局部的 showToast，统一使用引入的全局 showToast
 
-      const toast = document.createElement('div');
-      toast.className = `custom-toast ${type}`;
-      
-      let iconName = 'info';
-      if (type === 'success') iconName = 'check-circle';
-      if (type === 'error') iconName = 'alert-triangle';
-
-      toast.innerHTML = `
-        <i data-lucide="${iconName}" style="width: 16px; height: 16px;"></i>
-        <span>${message}</span>
-      `;
-      container.appendChild(toast);
-
-      if ((window as any).lucide) {
-        try {
-          (window as any).lucide.createIcons();
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
-      requestAnimationFrame(() => {
-        toast.classList.add('show');
-      });
-
-      setTimeout(() => {
-        toast.classList.remove('show');
-        toast.classList.add('fade-out');
-        toast.addEventListener('transitionend', () => {
-          toast.remove();
-        });
-      }, 3500);
-    }
 
     let confirmResolve: ((value: boolean) => void) | null = null;
     
@@ -2059,6 +2036,7 @@ import Layout from '../layouts/Layout.astro';
         activeTabCatId = 'all';
         renderTabs();
         renderLinks();
+        renderIconsSafe();
       });
       categoryTabs.appendChild(allBtn);
 
@@ -2072,9 +2050,11 @@ import Layout from '../layouts/Layout.astro';
           activeTabCatId = cat.id;
           renderTabs();
           renderLinks();
+          renderIconsSafe();
         });
         categoryTabs.appendChild(btn);
       });
+
     }
 
     // 渲染卡片链接列表
