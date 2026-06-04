@@ -28,6 +28,7 @@ export interface AppearanceConfig {
   fontStyle: 'morandi-sans' | 'system-sans' | 'inter' | 'outfit' | 'geist' | 'custom-link' | 'custom-file';
   fontCustomLink?: string;
   fontFamilyName?: string;
+  scrollbarEnabled?: boolean; // 是否启用自定义滚动条，默认为 false
 }
 
 // 默认种子数据
@@ -66,7 +67,8 @@ const DEFAULT_APPEARANCE: AppearanceConfig = {
   primaryColor: 'blue',
   fontStyle: 'system-sans',
   fontCustomLink: '',
-  fontFamilyName: ''
+  fontFamilyName: '',
+  scrollbarEnabled: false
 };
 
 // =========================================================================
@@ -164,7 +166,8 @@ export const storage = {
           primaryColor: cloudApp.primary_color,
           fontStyle: cloudApp.font_style,
           fontCustomLink: cloudApp.font_custom_link || '',
-          fontFamilyName: cloudApp.font_family_name || ''
+          fontFamilyName: cloudApp.font_family_name || '',
+          scrollbarEnabled: cloudApp.scrollbar_enabled !== undefined ? !!cloudApp.scrollbar_enabled : false
         };
       }
 
@@ -498,7 +501,8 @@ export const storage = {
         primary_color: config.primaryColor,
         font_style: config.fontStyle,
         font_custom_link: config.fontCustomLink,
-        font_family_name: config.fontFamilyName
+        font_family_name: config.fontFamilyName,
+        scrollbar_enabled: config.scrollbarEnabled ?? false
       });
     } catch (e) {
       console.error(e);
