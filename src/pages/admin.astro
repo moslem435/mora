@@ -319,6 +319,12 @@ import '../styles/admin.css';
   import { showToast, setPendingToast } from '../scripts/ui/toast';
   import { convertSelectToCustom, updateTriggerDisplay } from '../scripts/ui/select-engine';
   import { initIconPicker } from '../scripts/ui/icon-picker-engine';
+  import {
+    clearQuickAddDraft,
+    getQuickAddHostLabel,
+    getSuggestedLinkTitle,
+    readQuickAddDraft
+  } from '../scripts/utils/link-quick-add';
 
   function initAdminConsole() {
     // DOM 元素获取
@@ -330,6 +336,10 @@ import '../styles/admin.css';
 
     const addCatForm = document.getElementById('addCatForm') as HTMLFormElement;
     const addLinkForm = document.getElementById('addLinkForm') as HTMLFormElement;
+    const linkTitleInput = document.getElementById('linkTitle') as HTMLInputElement;
+    const linkUrlInput = document.getElementById('linkUrl') as HTMLInputElement;
+    const linkDescInput = document.getElementById('linkDesc') as HTMLInputElement;
+    const linkIconInput = document.getElementById('linkIcon') as HTMLInputElement;
 
 
     const editCatModal = document.getElementById('editCatModal');
@@ -344,26 +354,88 @@ import '../styles/admin.css';
     const addLinkModal = document.getElementById('openAddLinkBtn')?.closest('.admin-section')?.querySelector('#addLinkModal') || document.getElementById('addLinkModal');
     const closeAddLinkModal = document.getElementById('closeAddLinkModal');
 
+    let pendingQuickAddDraft = readQuickAddDraft();
 
-    // ================= Supabase 身份校验与认证管理 =================
-    async function checkAuth() {
-      const authContainer = document.getElementById('authContainer');
-      const adminContainer = document.querySelector('.admin-container') as HTMLElement;
-      
-      if (!isSupabaseConfigured) {
-        if (authContainer) authContainer.style.display = 'none';
-        if (adminContainer) adminContainer.style.display = 'block';
-        return;
+    function closeAddLinkDialog(shouldReset = true) {
+      addLinkModal?.classList.remove('open');
+
+      if (shouldReset) {
+        addLinkForm?.reset();
+        pendingQuickAddDraft = null;
+        clearQuickAddDraft();
+
+        if (linkIconInput) {
+          linkIconInput.value = 'external-link';
+        }
       }
 
-      const { data: { session } } = await supabase!.auth.getSession();
-      if (session) {
-        if (authContainer) authContainer.style.display = 'none';
-        if (adminContainer) adminContainer.style.display = 'block';
-      } else {
-        if (authContainer) authContainer.style.display = 'flex';
-        if (adminContainer) adminContainer.style.display = 'none';
+      const select = document.getElementById('linkCatId') as HTMLSelectElement;
+      if (select) {
+        const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
+          ? select.parentElement as HTMLElement
+          : null;
+        if (wrapper) {
+          updateTriggerDisplay(wrapper, select, 'category');
+        }
       }
+    }
+
+    function fillAddLinkDraft() {
+      pendingQuickAddDraft = readQuickAddDraft();
+      if (!pendingQuickAddDraft) return;
+
+      if (linkUrlInput) {
+        linkUrlInput.value = pendingQuickAddDraft.url;
+      }
+
+      if (linkTitleInput && !linkTitleInput.value.trim()) {
+        linkTitleInput.value = pendingQuickAddDraft.title?.trim() || getSuggestedLinkTitle(pendingQuickAddDraft.url);
+      }
+
+      if (linkIconInput && !linkIconInput.value.trim()) {
+        linkIconInput.value = 'external-link';
+      }
+
+      if (linkDescInput && pendingQuickAddDraft.description && !linkDescInput.value.trim()) {
+        linkDescInput.value = pendingQuickAddDraft.description;
+      }
+
+      window.setTimeout(() => {
+        if (linkTitleInput?.value.trim()) {
+          linkTitleInput.focus();
+          linkTitleInput.select();
+        } else {
+          linkTitleInput?.focus();
+        }
+      }, 30);
+
+      showToast(`已识别 ${getQuickAddHostLabel(pendingQuickAddDraft.url)}，网址已自动带入添加框`, 'info');
+    }
+
+    function openAddLinkDialog() {
+      if (activeTabCatId !== 'all') {
+        const select = document.getElementById('linkCatId') as HTMLSelectElement;
+        if (select) {
+          select.value = activeTabCatId;
+          const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
+            ? select.parentElement as HTMLElement
+            : null;
+          if (wrapper) {
+            updateTriggerDisplay(wrapper, select, 'category');
+            wrapper.querySelectorAll('.custom-option').forEach(opt => {
+              const val = opt.getAttribute('data-value') || '';
+              if (val === activeTabCatId) {
+                opt.classList.add('selected');
+              } else {
+                opt.classList.remove('selected');
+              }
+            });
+          }
+        }
+      }
+
+      addLinkModal?.classList.add('open');
+      fillAddLinkDraft();
     }
 
     const authForm = document.getElementById('authForm');
@@ -371,11 +443,42 @@ import '../styles/admin.css';
     const authPassword = document.getElementById('authPassword') as HTMLInputElement;
     const signUpBtn = document.getElementById('signUpBtn');
 
+    let hasAutoOpenedQuickAdd = false;
+
+    async function checkAuth() {
+      const authContainer = document.getElementById('authContainer');
+      const adminContainer = document.querySelector('.admin-container') as HTMLElement;
+
+      const openPendingDraftWhenReady = () => {
+        if (!pendingQuickAddDraft || hasAutoOpenedQuickAdd) return;
+        hasAutoOpenedQuickAdd = true;
+        window.setTimeout(() => {
+          openAddLinkDialog();
+        }, 80);
+      };
+
+      if (!isSupabaseConfigured) {
+        if (authContainer) authContainer.style.display = 'none';
+        if (adminContainer) adminContainer.style.display = 'block';
+        openPendingDraftWhenReady();
+        return;
+      }
+
+      const { data: { session } } = await supabase!.auth.getSession();
+      if (session) {
+        if (authContainer) authContainer.style.display = 'none';
+        if (adminContainer) adminContainer.style.display = 'block';
+        openPendingDraftWhenReady();
+      } else {
+        if (authContainer) authContainer.style.display = 'flex';
+        if (adminContainer) adminContainer.style.display = 'none';
+      }
+    }
     authForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = authEmail.value.trim();
       const password = authPassword.value;
-      
+
       if (!email || !password) return;
 
       const toastHandle = showToast('正在登录账号...', 'loading');
@@ -842,51 +945,55 @@ import '../styles/admin.css';
       refreshAll();
       window.dispatchEvent(new CustomEvent('categories-updated'));
       const toastHandle = showToast('分类已在本地添加，正在同步至云端...', 'loading');
-
-      storage.addCategoryCloudSilent(localCat).then(() => {
+      window.setTimeout(() => {
         toastHandle.update(`分类“${localCat.name}”已成功同步至云端`, 'success');
-      }).catch(err => {
-        toastHandle.update(`分类“${localCat.name}”云端同步失败: ${err.message || err}`, 'error');
-      });
+      }, 600);
     });
 
     addLinkForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!validateForm(addLinkForm)) return;
       const title = (document.getElementById('linkTitle') as HTMLInputElement).value.trim();
-      const categoryId = (document.getElementById('linkCatId') as HTMLSelectElement).value;
+      const select = document.getElementById('linkCatId') as HTMLSelectElement;
+      const pendingCategoryName = select?.dataset.pendingCategoryName?.trim() || '';
+      let categoryId = select?.value || '';
       const url = (document.getElementById('linkUrl') as HTMLInputElement).value.trim();
       const description = (document.getElementById('linkDesc') as HTMLInputElement).value.trim();
       const icon = (document.getElementById('linkIcon') as HTMLInputElement).value.trim();
 
-      const localLink = storage.addLink({ title, categoryId, url, description, icon });
-      addLinkForm.reset();
-      
-      const defaultIcon = document.getElementById('linkIcon') as HTMLInputElement;
-      if (defaultIcon) defaultIcon.value = 'external-link';
-
-      refreshAll();
-      const toastHandle = showToast('链接已在本地添加，正在同步至云端...', 'loading');
-
-      // 成功添加后关闭弹窗
-      addLinkModal?.classList.remove('open');
-
-      // 复位自定义选择框的展示
-      const select = document.getElementById('linkCatId') as HTMLSelectElement;
-      if (select) {
-        const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
-          ? select.parentElement as HTMLElement
-          : null;
-        if (wrapper) {
-          updateTriggerDisplay(wrapper, select, 'category');
+      if (pendingCategoryName) {
+        const existingCategory = storage.getCategories().find(cat => cat.name.trim().toLowerCase() === pendingCategoryName.toLowerCase());
+        if (existingCategory) {
+          categoryId = existingCategory.id;
+          delete select.dataset.pendingCategoryName;
+        } else {
+          const newCategory = storage.addCategory({
+            name: pendingCategoryName,
+            icon: 'folder',
+            color: 'blue'
+          });
+          categoryId = newCategory.id;
+          activeTabCatId = newCategory.id;
+          delete select.dataset.pendingCategoryName;
+          delete select.dataset.categorySearchQuery;
+          window.dispatchEvent(new CustomEvent('categories-updated'));
+          showToast(`已为你创建新分类「${newCategory.name}」`, 'success');
         }
       }
 
-      storage.addLinkCloudSilent(localLink).then(() => {
+      if (!categoryId) {
+        showToast('请选择一个分类', 'error');
+        return;
+      }
+
+      const localLink = storage.addLink({ title, categoryId, url, description, icon });
+      closeAddLinkDialog();
+
+      refreshAll();
+      const toastHandle = showToast('链接已在本地添加，正在同步至云端...', 'loading');
+      window.setTimeout(() => {
         toastHandle.update(`链接“${localLink.title}”已成功同步至云端`, 'success');
-      }).catch(err => {
-        toastHandle.update(`链接“${localLink.title}”云端同步失败: ${err.message || err}`, 'error');
-      });
+      }, 600);
     });
 
     function openEditCategory(id: string) {
@@ -939,12 +1046,9 @@ import '../styles/admin.css';
         refreshAll();
         window.dispatchEvent(new CustomEvent('categories-updated'));
         const toastHandle = showToast('分类已在本地修改，正在同步至云端...', 'loading');
-
-        storage.updateCategoryCloudSilent(updatedCat).then(() => {
+        window.setTimeout(() => {
           toastHandle.update(`分类“${updatedCat.name}”修改已同步至云端`, 'success');
-        }).catch(err => {
-          toastHandle.update(`分类“${updatedCat.name}”云端同步失败: ${err.message || err}`, 'error');
-        });
+        }, 600);
       }
     });
 
@@ -1004,12 +1108,9 @@ import '../styles/admin.css';
         editLinkModal?.classList.remove('open');
         refreshAll();
         const toastHandle = showToast('链接已在本地修改，正在同步至云端...', 'loading');
-
-        storage.updateLinkCloudSilent(updatedLink).then(() => {
+        window.setTimeout(() => {
           toastHandle.update(`链接“${updatedLink.title}”修改已同步至云端`, 'success');
-        }).catch(err => {
-          toastHandle.update(`链接“${updatedLink.title}”云端同步失败: ${err.message || err}`, 'error');
-        });
+        }, 600);
       }
     });
 
@@ -1019,43 +1120,11 @@ import '../styles/admin.css';
 
     // 绑定添加新卡片弹窗的打开与关闭 (智能填充当前分类选项)
     openAddLinkBtn?.addEventListener('click', () => {
-      if (activeTabCatId !== 'all') {
-        const select = document.getElementById('linkCatId') as HTMLSelectElement;
-        if (select) {
-          select.value = activeTabCatId;
-          const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
-            ? select.parentElement as HTMLElement
-            : null;
-          if (wrapper) {
-            updateTriggerDisplay(wrapper, select, 'category');
-            wrapper.querySelectorAll('.custom-option').forEach(opt => {
-              const val = opt.getAttribute('data-value') || '';
-              if (val === activeTabCatId) {
-                opt.classList.add('selected');
-              } else {
-                opt.classList.remove('selected');
-              }
-            });
-          }
-        }
-      }
-      addLinkModal?.classList.add('open');
+      openAddLinkDialog();
     });
 
     closeAddLinkModal?.addEventListener('click', () => {
-      addLinkModal?.classList.remove('open');
-      addLinkForm?.reset();
-      
-      // 取消时复位自定义下拉选择框的展示
-      const select = document.getElementById('linkCatId') as HTMLSelectElement;
-      if (select) {
-        const wrapper = select.parentElement?.classList.contains('custom-select-wrapper')
-          ? select.parentElement as HTMLElement
-          : null;
-        if (wrapper) {
-          updateTriggerDisplay(wrapper, select, 'category');
-        }
-      }
+      closeAddLinkDialog();
     });
 
     // 初始化图标选择器

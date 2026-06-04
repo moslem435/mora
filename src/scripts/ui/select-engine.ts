@@ -2,6 +2,8 @@ import { storage } from '../storage';
 
 export type CustomSelectType = 'plain' | 'color' | 'category';
 
+const CREATABLE_CATEGORY_SELECT_IDS = new Set(['linkCatId']);
+
 // 安全地触发 Lucide 图标渲染
 function refreshSelectIcons() {
   if (typeof window !== 'undefined' && (window as any).lucide) {
@@ -11,6 +13,32 @@ function refreshSelectIcons() {
       console.error('Lucide select rendering failed:', err);
     }
   }
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function isCreatableCategorySelect(select: HTMLSelectElement, type: CustomSelectType) {
+  return type === 'category' && CREATABLE_CATEGORY_SELECT_IDS.has(select.id);
+}
+
+function getPendingCategoryName(select: HTMLSelectElement) {
+  return select.dataset.pendingCategoryName?.trim() || '';
+}
+
+function clearPendingCategoryState(select: HTMLSelectElement) {
+  delete select.dataset.pendingCategoryName;
+  delete select.dataset.categorySearchQuery;
+}
+
+function getCategorySearchQuery(select: HTMLSelectElement) {
+  return select.dataset.categorySearchQuery ?? getPendingCategoryName(select);
 }
 
 // 转换默认 Select 为自定义 Select 触发器与面板
@@ -32,7 +60,7 @@ export function convertSelectToCustom(
     // 仅刷新选项容器与触发器
     const container = existingWrapper.querySelector('.custom-options-container');
     if (container) {
-      container.innerHTML = generateOptionsHtml(select, type);
+      container.innerHTML = generateOptionsMarkup(select, type);
       bindOptionsEvents(existingWrapper, select, type);
     }
     updateTriggerDisplay(existingWrapper, select, type);
@@ -45,6 +73,9 @@ export function convertSelectToCustom(
   // 创建外壳容器并包裹 select
   const wrapper = document.createElement('div');
   wrapper.className = 'custom-select-wrapper';
+  if (isCreatableCategorySelect(select, type)) {
+    wrapper.classList.add('is-searchable-category');
+  }
   select.parentNode?.insertBefore(wrapper, select);
   wrapper.appendChild(select);
 
@@ -60,7 +91,7 @@ export function convertSelectToCustom(
   // 创建下拉菜单容器
   const optionsContainer = document.createElement('div');
   optionsContainer.className = 'custom-options-container';
-  optionsContainer.innerHTML = generateOptionsHtml(select, type);
+  optionsContainer.innerHTML = generateOptionsMarkup(select, type);
   wrapper.appendChild(optionsContainer);
 
   // 点击触发器展开或收起下拉面板
@@ -83,6 +114,16 @@ export function convertSelectToCustom(
     }
 
     wrapper.classList.toggle('open');
+
+    if (wrapper.classList.contains('open') && isCreatableCategorySelect(select, type)) {
+      const searchInput = wrapper.querySelector('.custom-select-search-input') as HTMLInputElement | null;
+      if (searchInput) {
+        window.setTimeout(() => {
+          searchInput.focus();
+          searchInput.select();
+        }, 10);
+      }
+    }
   });
 
   bindOptionsEvents(wrapper, select, type);
@@ -96,6 +137,7 @@ export function convertSelectToCustom(
       setTimeout(() => {
         form.querySelectorAll('select').forEach(sel => {
           const s = sel as HTMLSelectElement;
+          clearPendingCategoryState(s);
           const w = s.parentElement?.classList.contains('custom-select-wrapper')
             ? s.parentElement as HTMLElement
             : null;
@@ -106,8 +148,13 @@ export function convertSelectToCustom(
             } else if (s.id.toLowerCase().includes('cat') && s.id !== 'editCatId' && s.id !== 'catId') {
               t = 'category';
             }
+            const container = w.querySelector('.custom-options-container');
+            if (container) {
+              container.innerHTML = generateOptionsMarkup(s, t);
+              bindOptionsEvents(w, s, t);
+            }
             updateTriggerDisplay(w, s, t);
-            
+
             // 同步高亮选中项
             w.querySelectorAll('.custom-option').forEach(opt => {
               const val = opt.getAttribute('data-value') || '';
@@ -127,20 +174,54 @@ export function refreshCustomSelect(select: HTMLSelectElement | null, type: Cust
     ? select.parentElement as HTMLElement
     : null;
   if (!wrapper) return;
-  
+
+  const container = wrapper.querySelector('.custom-options-container');
+  if (container) {
+    container.innerHTML = generateOptionsMarkup(select, type);
+    bindOptionsEvents(wrapper, select, type);
+  }
+
   updateTriggerDisplay(wrapper, select, type);
   wrapper.querySelectorAll('.custom-option').forEach(opt => {
     opt.classList.toggle('selected', opt.getAttribute('data-value') === select.value);
   });
 }
 
+function generateOptionsMarkup(select: HTMLSelectElement, type: CustomSelectType) {
+  if (isCreatableCategorySelect(select, type)) {
+    const query = getCategorySearchQuery(select);
+    return `
+      <div class="custom-select-search-shell">
+        <input
+          type="text"
+          class="custom-select-search-input"
+          placeholder="搜索或新建分类..."
+          value="${escapeHtml(query)}"
+          autocomplete="off"
+        />
+      </div>
+      <div class="custom-select-options-list">
+        ${generateOptionsHtml(select, type, query)}
+      </div>
+    `;
+  }
+
+  return generateOptionsHtml(select, type);
+}
+
 // 生成下拉选项 HTML
-function generateOptionsHtml(select: HTMLSelectElement, type: CustomSelectType) {
+function generateOptionsHtml(select: HTMLSelectElement, type: CustomSelectType, query = '') {
   const categories = storage.getCategories();
-  return Array.from(select.options).map(opt => {
+  const normalizedQuery = query.trim().toLowerCase();
+  const options = Array.from(select.options);
+  const filteredOptions = normalizedQuery && isCreatableCategorySelect(select, type)
+    ? options.filter(opt => (opt.textContent || '').toLowerCase().includes(normalizedQuery))
+    : options;
+
+  const optionsHtml = filteredOptions.map(opt => {
     const val = opt.value;
     const text = opt.textContent || '';
-    const isSelected = opt.selected ? 'selected' : '';
+    const isSelected = !getPendingCategoryName(select) && opt.selected ? 'selected' : '';
 
     if (type === 'color') {
       return `
@@ -168,16 +249,59 @@ function generateOptionsHtml(select: HTMLSelectElement, type: CustomSelectType) 
       `;
     }
   }).join('');
+
+  if (!isCreatableCategorySelect(select, type)) {
+    return optionsHtml;
+  }
+
+  const exactMatch = options.some(opt => (opt.textContent || '').trim().toLowerCase() === normalizedQuery);
+  const pendingCategoryName = getPendingCategoryName(select);
+  const createOption = normalizedQuery && !exactMatch
+    ? `
+      <button type="button" class="custom-option custom-option-create ${pendingCategoryName.toLowerCase() === normalizedQuery ? 'selected' : ''}" data-create-category="${escapeHtml(query.trim())}">
+        <i data-lucide="plus" class="select-cat-icon"></i>
+        <span>创建分类「${escapeHtml(query.trim())}」</span>
+      </button>
+    `
+    : '';
+
+  const emptyState = !optionsHtml && !createOption
+    ? '<div class="custom-select-empty">没有匹配的分类</div>'
+    : '';
+
+  return `${createOption}${optionsHtml}${emptyState}`;
 }
 
 // 绑定选项点击事件
 function bindOptionsEvents(wrapper: HTMLElement, select: HTMLSelectElement, type: CustomSelectType) {
-  const options = wrapper.querySelectorAll('.custom-option');
+  if (isCreatableCategorySelect(select, type)) {
+    const searchInput = wrapper.querySelector('.custom-select-search-input') as HTMLInputElement | null;
+    const optionsList = wrapper.querySelector('.custom-select-options-list') as HTMLElement | null;
+
+    if (searchInput && optionsList) {
+      searchInput.addEventListener('click', (e) => e.stopPropagation());
+      searchInput.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        if (e.key === 'Escape') {
+          wrapper.classList.remove('open');
+        }
+      });
+      searchInput.addEventListener('input', () => {
+        select.dataset.categorySearchQuery = searchInput.value;
+        optionsList.innerHTML = generateOptionsHtml(select, type, searchInput.value);
+        bindOptionsEvents(wrapper, select, type);
+        refreshSelectIcons();
+      });
+    }
+  }
+
+  const options = wrapper.querySelectorAll('.custom-option[data-value]');
   options.forEach(opt => {
     opt.addEventListener('click', (e) => {
       e.stopPropagation();
       const val = opt.getAttribute('data-value') || '';
 
+      clearPendingCategoryState(select);
       options.forEach(o => o.classList.remove('selected'));
       opt.classList.add('selected');
 
@@ -188,12 +312,40 @@ function bindOptionsEvents(wrapper: HTMLElement, select: HTMLSelectElement, type
       wrapper.classList.remove('open');
     });
   });
+
+  const createOptions = wrapper.querySelectorAll('.custom-option-create');
+  createOptions.forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const pendingName = opt.getAttribute('data-create-category')?.trim() || '';
+      if (!pendingName) return;
+
+      select.dataset.pendingCategoryName = pendingName;
+      select.dataset.categorySearchQuery = pendingName;
+      select.dispatchEvent(new Event('change'));
+
+      updateTriggerDisplay(wrapper, select, type);
+      wrapper.classList.remove('open');
+    });
+  });
+
+  refreshSelectIcons();
 }
 
 // 更新显示触发器文本及组件
 export function updateTriggerDisplay(wrapper: HTMLElement, select: HTMLSelectElement, type: CustomSelectType) {
   const triggerContent = wrapper.querySelector('.custom-select-trigger-content');
   if (!triggerContent) return;
+
+  const pendingCategoryName = getPendingCategoryName(select);
+  if (isCreatableCategorySelect(select, type) && pendingCategoryName) {
+    triggerContent.innerHTML = `
+      <i data-lucide="plus" class="select-cat-icon" style="color: var(--theme-primary)"></i>
+      <span>新分类：${escapeHtml(pendingCategoryName)}</span>
+    `;
+    refreshSelectIcons();
+    return;
+  }
 
   const selectedOpt = select.options[select.selectedIndex];
   if (!selectedOpt) {
