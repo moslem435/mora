@@ -74,11 +74,17 @@
     cursor: pointer;
     transition: var(--transition-smooth);
     backdrop-filter: blur(10px);
+    
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .sidebar-toggle-btn:hover {
     background: var(--card-bg-hover);
-    transform: scale(1.05);
+    transform: translate3d(0, 0, 0) scale(1.05);
     border-color: var(--theme-primary);
     box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.12);
   }
@@ -152,12 +158,12 @@
 
   /* 时间挂件 */
   .time-widget {
-    background: rgba(255, 255, 255, 0.45);
-    border: 1px solid rgba(0,0,0,0.015);
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     padding: 14px;
     text-align: center;
-    box-shadow: 0 4px 15px -10px rgba(0,0,0,0.02);
+    box-shadow: 0 8px 24px -12px rgba(67, 67, 67, 0.08), 0 0 1px rgba(0, 0, 0, 0.02);
   }
 
   .clock-time {
@@ -177,8 +183,8 @@
 
   /* 天气挂件 */
   .weather-widget {
-    background: rgba(255, 255, 255, 0.45);
-    border: 1px solid rgba(0,0,0,0.015);
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     padding: 14px;
     display: flex;
@@ -187,13 +193,20 @@
     cursor: pointer;
     transition: var(--transition-smooth);
     user-select: none;
-    box-shadow: 0 4px 15px -10px rgba(0,0,0,0.02);
+    box-shadow: 0 8px 24px -12px rgba(67, 67, 67, 0.08), 0 0 1px rgba(0, 0, 0, 0.02);
+
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .weather-widget:hover {
-    background: rgba(255, 255, 255, 0.65);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px -10px rgba(0,0,0,0.05);
+    background: #fff;
+    transform: translate3d(0, -2px, 0);
+    border-color: var(--theme-primary-hover, var(--theme-primary));
+    box-shadow: 0 12px 28px -12px rgba(67, 67, 67, 0.15), 0 0 1px rgba(0, 0, 0, 0.05);
   }
 
   .weather-main {
@@ -208,10 +221,15 @@
     height: 22px;
     color: var(--theme-yellow);
     transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* 旋转加速防模糊 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
   .weather-widget:hover .weather-icon {
-    transform: rotate(15deg) scale(1.1);
+    transform: translate3d(0, 0, 0) rotate(15deg) scale3d(1.1, 1.1, 1);
   }
 
   .weather-temp {
@@ -273,11 +291,17 @@
     cursor: pointer;
     text-align: left;
     width: 100%;
+
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .nav-item:hover {
     background: rgba(255, 255, 255, 0.5);
-    transform: translateX(4px);
+    transform: translate3d(4px, 0, 0);
     border-color: var(--card-border);
   }
 
@@ -314,13 +338,19 @@
     font-weight: 550;
     color: var(--color-text-main);
     transition: var(--transition-smooth);
+
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .admin-link-btn:hover {
     background: var(--card-bg-hover);
     border-color: var(--theme-primary);
     box-shadow: 0 6px 15px -5px rgba(0,0,0,0.05);
-    transform: translateY(-2px);
+    transform: translate3d(0, -2px, 0);
   }
 
   .btn-icon {
@@ -328,10 +358,15 @@
     height: 14px;
     color: var(--theme-primary);
     transition: transform 0.8s ease;
+
+    /* 旋转防发虚 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
   .admin-link-btn:hover .btn-icon {
-    transform: rotate(45deg);
+    transform: translate3d(0, 0, 0) rotate(45deg);
   }
 </style>
 

@@ -272,10 +272,17 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style is:global>
+  .sync-opt-btn {
+    transform: translate3d(0, 0, 0);
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
   .sync-opt-btn:hover {
     background: #fff !important;
     border-color: var(--theme-primary) !important;
-    transform: translateY(-1px);
+    transform: translate3d(0, -1px, 0);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   }
 
@@ -380,6 +387,11 @@ import Layout from '../layouts/Layout.astro';
     cursor: pointer;
     text-decoration: none;
     transition: var(--transition-smooth);
+
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .back-home-btn,
@@ -388,6 +400,7 @@ import Layout from '../layouts/Layout.astro';
     border-radius: 10px;
     font-size: 13px;
     font-weight: 500;
+    will-change: transform;
   }
 
   .back-home-btn,
@@ -395,13 +408,14 @@ import Layout from '../layouts/Layout.astro';
     color: var(--color-text-main);
     background: rgba(255, 255, 255, 0.85);
     border: 1px solid var(--card-border);
+    will-change: transform, box-shadow;
   }
 
   .back-home-btn:hover,
   .action-btn.secondary:hover {
     background: #fff;
     border-color: var(--theme-primary);
-    transform: translateY(-2px);
+    transform: translate3d(0, -2px, 0);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   }
 
@@ -409,11 +423,12 @@ import Layout from '../layouts/Layout.astro';
     background: rgba(196, 117, 117, 0.1);
     border: 1px solid rgba(196, 117, 117, 0.2);
     color: #b35959;
+    will-change: transform, box-shadow;
   }
 
   .action-btn.danger:hover {
     background: rgba(196, 117, 117, 0.2);
-    transform: translateY(-2px);
+    transform: translate3d(0, -2px, 0);
     box-shadow: 0 4px 12px rgba(196, 117, 117, 0.08);
   }
 
@@ -641,20 +656,28 @@ import Layout from '../layouts/Layout.astro';
     pointer-events: none;
     transition: opacity 0.22s cubic-bezier(0.25, 1, 0.5, 1), transform 0.22s cubic-bezier(0.25, 1, 0.5, 1);
     max-height: 220px;
+    overflow: hidden;
     overflow-y: auto;
   }
 
   .custom-options-container::-webkit-scrollbar {
-    width: 4px;
+    width: 8px;
   }
 
   .custom-options-container::-webkit-scrollbar-track {
     background: transparent;
+    margin: 8px 0;
   }
 
   .custom-options-container::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.08);
-    border-radius: 2px;
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .custom-options-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.15);
   }
 
   .custom-select-wrapper.open .custom-options-container {
@@ -879,19 +902,24 @@ import Layout from '../layouts/Layout.astro';
     color: var(--color-text-main);
     font-size: 13px;
     opacity: 0;
-    transform: translateX(16px);
+    transform: translate3d(16px, 0, 0);
     transition: var(--transition-smooth);
     backdrop-filter: blur(16px);
+
+    /* 强力防抖与平滑：硬件加速 */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .custom-toast.show {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
 
   .custom-toast.fade-out {
     opacity: 0;
-    transform: translateX(16px);
+    transform: translate3d(16px, 0, 0);
   }
 
   .custom-toast.success { border-left-color: var(--theme-green); }
@@ -1745,6 +1773,10 @@ import Layout from '../layouts/Layout.astro';
       window.dispatchEvent(new CustomEvent('categories-updated'));
       showToast('已恢复为默认配置', 'success');
     });
+
+    // 先同步渲染本地缓存的外观样式与自定义下拉框，防异步 Supabase 验证网络慢导致 UI 卡顿或样式延迟
+    initAppearanceForm();
+    refreshIcons();
 
     checkAuth();
   }

@@ -318,19 +318,27 @@ import Layout from '../layouts/Layout.astro';
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
+    padding: 9px 16px;
     border-radius: 10px;
     font-size: 13px;
     font-weight: 550;
     color: var(--color-text-main);
-    background: rgba(0, 0, 0, 0.03);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--card-border);
     transition: var(--transition-smooth);
+
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .back-home-btn:hover {
-    background: rgba(0, 0, 0, 0.06);
-    transform: translateX(-3px);
+    background: #fff;
+    border-color: var(--theme-primary);
+    transform: translate3d(-3px, 0, 0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   }
 
   .back-home-btn .btn-icon {
@@ -364,10 +372,16 @@ import Layout from '../layouts/Layout.astro';
     padding: 9px 16px;
     border-radius: 10px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 550;
     cursor: pointer;
     border: none;
     transition: var(--transition-smooth);
+
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .action-btn i {
@@ -379,12 +393,13 @@ import Layout from '../layouts/Layout.astro';
     background: rgba(255, 255, 255, 0.85);
     border: 1px solid var(--card-border);
     color: var(--color-text-main);
+    will-change: transform, box-shadow;
   }
 
   .action-btn.secondary:hover {
     background: #fff;
     border-color: var(--theme-primary);
-    transform: translateY(-2px);
+    transform: translate3d(0, -2px, 0);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   }
 
@@ -392,11 +407,12 @@ import Layout from '../layouts/Layout.astro';
     background: rgba(196, 117, 117, 0.1);
     border: 1px solid rgba(196, 117, 117, 0.2);
     color: #b35959;
+    will-change: transform, box-shadow;
   }
 
   .action-btn.danger:hover {
     background: rgba(196, 117, 117, 0.2);
-    transform: translateY(-2px);
+    transform: translate3d(0, -2px, 0);
     box-shadow: 0 4px 12px rgba(196, 117, 117, 0.08);
   }
 
@@ -523,13 +539,19 @@ import Layout from '../layouts/Layout.astro';
     align-items: center;
     justify-content: center;
     transition: var(--transition-smooth);
+
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .icon-btn:hover {
     background: #fff;
     color: var(--theme-primary);
     border-color: var(--theme-primary-hover);
-    transform: translateY(-1px);
+    transform: translate3d(0, -1px, 0);
   }
 
   .icon-btn.delete-btn:hover {
@@ -617,11 +639,17 @@ import Layout from '../layouts/Layout.astro';
     cursor: pointer;
     transition: var(--transition-smooth);
     box-shadow: 0 4px 10px rgba(163, 179, 182, 0.2);
+
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .submit-btn:hover {
     background: var(--theme-primary-hover);
-    transform: translateY(-2px);
+    transform: translate3d(0, -2px, 0);
     box-shadow: 0 6px 14px rgba(163, 179, 182, 0.3);
   }
 
@@ -650,12 +678,18 @@ import Layout from '../layouts/Layout.astro';
     border: 1px solid var(--card-border);
     cursor: pointer;
     transition: var(--transition-smooth);
+
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .tab-btn:hover {
     background: rgba(255, 255, 255, 0.9);
     color: var(--color-text-main);
-    transform: translateY(-1px);
+    transform: translate3d(0, -1px, 0);
   }
 
   .tab-btn.active {
@@ -876,21 +910,25 @@ import Layout from '../layouts/Layout.astro';
     transform-style: preserve-3d;
     
     max-height: 220px;
+    overflow: hidden;
     overflow-y: auto;
   }
 
   /* 精美细滚动条 */
   .custom-options-container::-webkit-scrollbar {
-    width: 4px;
+    width: 8px;
   }
 
   .custom-options-container::-webkit-scrollbar-track {
     background: transparent;
+    margin: 8px 0;
   }
 
   .custom-options-container::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.08);
-    border-radius: 2px;
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 
   .custom-options-container::-webkit-scrollbar-thumb:hover {
@@ -1019,6 +1057,12 @@ import Layout from '../layouts/Layout.astro';
     cursor: pointer;
     border: none;
     transition: var(--transition-smooth);
+
+    /* 强力防抖：硬件加速 */
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .modal-btn.primary {
@@ -1028,7 +1072,7 @@ import Layout from '../layouts/Layout.astro';
 
   .modal-btn.primary:hover {
     background: var(--theme-primary-hover);
-    transform: translateY(-1px);
+    transform: translate3d(0, -1px, 0);
   }
 
   .modal-btn.secondary {
@@ -1092,6 +1136,11 @@ import Layout from '../layouts/Layout.astro';
     transform: translate3d(0, -20px, 0);
     opacity: 0;
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+
+    /* 强力防抖：硬件加速 */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .custom-toast.show {
