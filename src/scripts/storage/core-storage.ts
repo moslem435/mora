@@ -102,7 +102,8 @@ export const storage = {
           primaryColor: cloudApp.primary_color,
           fontStyle: cloudApp.font_style,
           fontCustomLink: cloudApp.font_custom_link || '',
-          fontFamilyName: cloudApp.font_family_name || ''
+          fontFamilyName: cloudApp.font_family_name || '',
+          scrollbarEnabled: cloudApp.scrollbar_enabled !== undefined ? !!cloudApp.scrollbar_enabled : false
         };
       }
 
@@ -171,7 +172,8 @@ export const storage = {
           primaryColor: cloudApp.primary_color,
           fontStyle: cloudApp.font_style,
           fontCustomLink: cloudApp.font_custom_link || '',
-          fontFamilyName: cloudApp.font_family_name || ''
+          fontFamilyName: cloudApp.font_family_name || '',
+          scrollbarEnabled: cloudApp.scrollbar_enabled !== undefined ? !!cloudApp.scrollbar_enabled : false
         };
       }
 
@@ -523,7 +525,8 @@ export const storage = {
         primary_color: config.primaryColor,
         font_style: config.fontStyle,
         font_custom_link: config.fontCustomLink,
-        font_family_name: config.fontFamilyName
+        font_family_name: config.fontFamilyName,
+        scrollbar_enabled: config.scrollbarEnabled ?? false
       });
       if (error) {
         throw new Error(`更新云端美化配置失败: ${error.message}`);

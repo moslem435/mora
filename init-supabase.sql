@@ -42,6 +42,7 @@ create table if not exists public.appearance (
   font_style text not null default 'system-sans',
   font_custom_link text default '',
   font_family_name text default '',
+  scrollbar_enabled boolean not null default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

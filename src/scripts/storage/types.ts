@@ -26,4 +26,5 @@ export interface AppearanceConfig {
   fontStyle: 'morandi-sans' | 'system-sans' | 'inter' | 'outfit' | 'geist' | 'custom-link' | 'custom-file' | 'lxgw-wenkai' | 'geist-sans' | 'cormorant-serif';
   fontCustomLink?: string;
   fontFamilyName?: string;
+  scrollbarEnabled?: boolean;
 }

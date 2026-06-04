@@ -45,5 +45,6 @@ export const DEFAULT_APPEARANCE: AppearanceConfig = {
   primaryColor: 'blue',
   fontStyle: 'morandi-sans',
   fontCustomLink: '',
-  fontFamilyName: ''
+  fontFamilyName: '',
+  scrollbarEnabled: false
 };

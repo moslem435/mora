@@ -223,8 +223,140 @@ import Layout from '../layouts/Layout.astro';
               <tbody id="usersListBody"></tbody>
             </table>
           </div>
+<<<<<<< HEAD
         </section>
       </div>
+=======
+        </div>
+      </section>
+
+      <section class="settings-section appearance-section">
+        <div class="section-header">
+          <i data-lucide="palette" class="section-icon"></i>
+          <div>
+            <h2>美化</h2>
+            <p>即时调整全站字体、背景和卡片质感</p>
+          </div>
+        </div>
+
+        <form id="appearanceForm" class="settings-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fontStyle">全局字体风格</label>
+              <select id="fontStyle">
+                <option value="system-sans">本地系统黑体</option>
+                <option value="morandi-sans">思源莫兰迪黑体</option>
+                <option value="inter">MiSans 极简黑体</option>
+                <option value="outfit">HarmonyOS 科技体</option>
+                <option value="geist">得意黑 潮玩极客体</option>
+                <option value="custom-link">自定义在线字体链接</option>
+                <option value="custom-file">本地上传字体包文件</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="primaryColor">全站高亮主色</label>
+              <select id="primaryColor">
+                <option value="blue">烟雨蓝</option>
+                <option value="green">烟草绿</option>
+                <option value="purple">丁香灰</option>
+                <option value="pink">珊瑚粉</option>
+                <option value="orange">燕麦杏</option>
+                <option value="yellow">芥末黄</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" id="customFontLinkGroup" style="display: none;">
+            <label for="fontCustomLink">在线字体地址</label>
+            <input type="url" id="fontCustomLink" placeholder="输入 https://... 字体或 CSS 链接" />
+          </div>
+          <div class="form-group" id="customFontFamilyGroup" style="display: none;">
+            <label for="fontFamilyName">自定义字体族名称</label>
+            <input type="text" id="fontFamilyName" placeholder="如：Noto Serif SC" />
+          </div>
+          <div class="form-group" id="customFontFileGroup" style="display: none;">
+            <label for="fontCustomFile">本地上传字体包</label>
+            <input type="file" id="fontCustomFile" accept=".ttf,.otf,.woff,.woff2" style="display: none;" />
+            <button type="button" id="uploadFontBtn" class="action-btn secondary wide-btn">
+              <i data-lucide="upload-cloud"></i>
+              <span>选择字体文件</span>
+            </button>
+            <span id="fontUploadStatus" class="upload-status">未上传本地文件</span>
+          </div>
+
+          <div class="form-group">
+            <label for="bgStyle">全局背景风格</label>
+            <select id="bgStyle">
+              <option value="morandi-glow">莫兰迪流光</option>
+              <option value="solid-cream">暖米纯色</option>
+              <option value="dark-slate">静谧深空暗调</option>
+              <option value="custom-url">在线壁纸图片链接</option>
+              <option value="custom-file">本地上传壁纸图片</option>
+            </select>
+          </div>
+          <div class="form-group" id="customBgUrlGroup" style="display: none;">
+            <label for="customBgUrl">壁纸图片 URL</label>
+            <input type="url" id="customBgUrl" placeholder="输入高清图片链接" />
+          </div>
+          <div class="form-group" id="customBgFileGroup" style="display: none;">
+            <label for="bgCustomFile">本地上传壁纸</label>
+            <input type="file" id="bgCustomFile" accept="image/*" style="display: none;" />
+            <button type="button" id="uploadBgBtn" class="action-btn secondary wide-btn">
+              <i data-lucide="image"></i>
+              <span>选择背景图片</span>
+            </button>
+            <span id="bgUploadStatus" class="upload-status">未上传本地文件</span>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label"><label for="cardOpacity">卡片不透明度</label><span id="opacityVal">65%</span></div>
+            <input type="range" id="cardOpacity" min="0.2" max="0.95" step="0.05" value="0.65" />
+          </div>
+          <div class="slider-group">
+            <div class="slider-label"><label for="cardBlur">毛玻璃虚化度</label><span id="blurVal">50%</span></div>
+            <input type="range" id="cardBlur" min="0" max="40" step="1" value="20" />
+          </div>
+          <div class="switch-group">
+            <div class="switch-label">
+              <label for="scrollbarEnabled">显示自定义滚动条</label>
+              <span class="switch-desc">开启后显示适配主题色的极简滚动条</span>
+            </div>
+            <label class="switch-toggle">
+              <input type="checkbox" id="scrollbarEnabled" />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </form>
+      </section>
+
+      <section class="settings-section backup-section">
+        <div class="section-header">
+          <i data-lucide="archive-restore" class="section-icon"></i>
+          <div>
+            <h2>备份</h2>
+            <p>导出、导入或恢复完整导航数据</p>
+          </div>
+        </div>
+
+        <div class="backup-actions">
+          <button id="exportBtn" class="action-btn secondary" title="导出数据为 JSON 文件" type="button">
+            <i data-lucide="download"></i>
+            <span>导出备份</span>
+          </button>
+          <button id="importBtn" class="action-btn secondary" title="从 JSON 文件导入数据" type="button">
+            <i data-lucide="upload"></i>
+            <span>导入备份</span>
+          </button>
+          <button id="resetBtn" class="action-btn danger" title="重置项目到出厂种子配置" type="button">
+            <i data-lucide="rotate-ccw"></i>
+            <span>恢复默认</span>
+          </button>
+        </div>
+        <input type="file" id="importFile" accept=".json" style="display: none;" />
+        <p class="backup-note">导入和恢复默认会覆盖当前本地与云端数据，执行前建议先导出备份。</p>
+      </section>
+    </div>
+>>>>>>> settings-page-consolidation
   </main>
 
   <div class="modal" id="customConfirmModal">
@@ -743,6 +875,96 @@ import Layout from '../layouts/Layout.astro';
     background: rgba(255, 255, 255, 0.36);
   }
 
+  .switch-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.36);
+  }
+
+  .switch-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+  }
+
+  .switch-label label {
+    font-size: 12px;
+    font-weight: 650;
+    color: var(--color-text-main);
+  }
+
+  .switch-desc {
+    font-size: 11px;
+    color: var(--color-text-sub);
+  }
+
+  .switch-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .switch-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.1);
+    transition: .3s;
+    border-radius: 24px;
+    border: 1px solid var(--card-border);
+  }
+
+  .switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  }
+
+  .switch-toggle input:checked + .switch-slider {
+    background-color: var(--theme-primary);
+    border-color: var(--theme-primary);
+  }
+
+  .switch-toggle input:checked + .switch-slider:before {
+    transform: translateX(20px);
+  }
+
+  html.bg-dark-slate .switch-group {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  html.bg-dark-slate .switch-slider {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  html.bg-dark-slate .switch-slider:before {
+    background-color: #e8e8e8;
+  }
+
   .slider-label {
     display: flex;
     align-items: center;
@@ -1112,6 +1334,7 @@ import Layout from '../layouts/Layout.astro';
     const primaryColorSelect = document.getElementById('primaryColor') as HTMLSelectElement;
     const cardOpacityInput = document.getElementById('cardOpacity') as HTMLInputElement;
     const cardBlurInput = document.getElementById('cardBlur') as HTMLInputElement;
+    const scrollbarEnabledInput = document.getElementById('scrollbarEnabled') as HTMLInputElement;
     const opacityVal = document.getElementById('opacityVal');
     const blurVal = document.getElementById('blurVal');
     const appearanceForm = document.getElementById('appearanceForm') as HTMLFormElement;
@@ -1552,7 +1775,8 @@ import Layout from '../layouts/Layout.astro';
         customBgUrl: customBgUrlInput?.value.trim() || '',
         primaryColor: primaryColorSelect?.value || 'blue',
         cardOpacity: cardOpacityInput ? parseFloat(cardOpacityInput.value) : 0.65,
-        cardBlur: cardBlurInput ? parseFloat(cardBlurInput.value) : 20
+        cardBlur: cardBlurInput ? parseFloat(cardBlurInput.value) : 20,
+        scrollbarEnabled: scrollbarEnabledInput ? scrollbarEnabledInput.checked : false
       };
       console.log('[Settings] saveAndApplyAppearance called. Saving Config:', config);
       storage.saveAppearance(config);
@@ -1582,6 +1806,9 @@ import Layout from '../layouts/Layout.astro';
       if (cardBlurInput) {
         cardBlurInput.value = String(config.cardBlur);
         if (blurVal) blurVal.textContent = `${Math.round((config.cardBlur / 40) * 100)}%`;
+      }
+      if (scrollbarEnabledInput) {
+        scrollbarEnabledInput.checked = !!config.scrollbarEnabled;
       }
       syncAppearanceVisibility();
       initCustomSelects();
@@ -1697,6 +1924,8 @@ import Layout from '../layouts/Layout.astro';
       saveAndApplyAppearance();
       stopDragging();
     });
+
+    scrollbarEnabledInput?.addEventListener('change', saveAndApplyAppearance);
 
     fontStyleSelect?.addEventListener('change', () => {
       if (fontStyleSelect.value === 'custom-file' && !userAllowUpload) {
