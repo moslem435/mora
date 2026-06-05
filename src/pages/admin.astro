@@ -462,17 +462,26 @@ import '../styles/admin.css';
     const authPassword = document.getElementById('authPassword') as HTMLInputElement;
     const signUpBtn = document.getElementById('signUpBtn');
 
-    const updateSignUpBtn = () => {
-      const config = storage.getSiteConfig();
+    const updateSignUpBtn = (config: any) => {
       if (signUpBtn) {
         signUpBtn.style.display = config.allowRegistration ? 'flex' : 'none';
       }
     };
 
-    updateSignUpBtn();
-    storage.syncSiteConfigPublic().then(updated => {
-      if (updated) updateSignUpBtn();
-    });
+    // 如果启用了 Supabase，初始保持隐藏，等待云端同步结果
+    if (isSupabaseConfigured) {
+      storage.syncSiteConfigPublic().then(updatedConfig => {
+        if (updatedConfig) {
+          updateSignUpBtn(updatedConfig);
+        } else {
+          // 如果同步失败或无更新，再尝试使用本地缓存（作为次选方案）
+          updateSignUpBtn(storage.getSiteConfig());
+        }
+      });
+    } else {
+      // 离线模式下直接使用本地配置
+      updateSignUpBtn(storage.getSiteConfig());
+    }
 
     let hasAutoOpenedQuickAdd = false;
 
