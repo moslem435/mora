@@ -60,10 +60,11 @@
       </div>
       <div class="quick-link-hint-copy">
         <p class="quick-link-hint-title">检测到网址粘贴</p>
-        <p class="quick-link-hint-text" id="quickLinkHintText">可直接打开添加卡片弹窗，并自动帮你带上网址。</p>
+        <p class="quick-link-hint-text" id="quickLinkHintText">识别到链接，点击“识别”获取网页信息，或直接添加卡片。</p>
       </div>
     </div>
     <div class="quick-link-hint-actions">
+      <button class="quick-link-hint-btn" id="quickLinkIdentifyBtn" type="button">识别</button>
       <button class="quick-link-hint-btn primary" id="quickLinkAddBtn" type="button">添加卡片</button>
       <button class="quick-link-hint-btn" id="quickLinkDismissBtn" type="button">继续搜索</button>
     </div>
@@ -445,6 +446,7 @@
     const kbdHint = document.getElementById('kbdHint') as HTMLElement;
     const quickLinkHint = document.getElementById('quickLinkHint') as HTMLElement;
     const quickLinkHintText = document.getElementById('quickLinkHintText') as HTMLElement;
+    const quickLinkIdentifyBtn = document.getElementById('quickLinkIdentifyBtn') as HTMLButtonElement;
     const quickLinkAddBtn = document.getElementById('quickLinkAddBtn') as HTMLButtonElement;
     const quickLinkDismissBtn = document.getElementById('quickLinkDismissBtn') as HTMLButtonElement;
 
@@ -498,37 +500,64 @@
       if (quickLinkHint) {
         quickLinkHint.hidden = true;
       }
+      if (quickLinkIdentifyBtn) {
+        quickLinkIdentifyBtn.style.display = 'inline-block';
+      }
     }
 
     async function showQuickLinkHint(url: string) {
       pendingQuickLinkUrl = url;
-      pendingMetadata = null; // 重置
+      pendingMetadata = null; 
       const hostLabel = getQuickAddHostLabel(url);
 
       if (quickLinkHintText) {
-        quickLinkHintText.textContent = `识别到 ${hostLabel} 链接，正在获取网页信息...`;
+        quickLinkHintText.textContent = `检测到 ${hostLabel} 链接，点击“识别”获取网页信息，或直接添加。`;
       }
 
       if (quickLinkHint) {
         quickLinkHint.hidden = false;
       }
+      
+      if (quickLinkIdentifyBtn) {
+        quickLinkIdentifyBtn.style.display = 'inline-block';
+        quickLinkIdentifyBtn.textContent = '识别';
+        quickLinkIdentifyBtn.disabled = false;
+      }
+    }
 
-      // 异步抓取元数据
-      const metadata = await fetchUrlMetadata(url);
+    quickLinkIdentifyBtn?.addEventListener('click', async () => {
+      if (!pendingQuickLinkUrl) return;
+      
+      const currentUrl = pendingQuickLinkUrl;
+      
+      if (quickLinkIdentifyBtn) {
+        quickLinkIdentifyBtn.textContent = '识别中...';
+        quickLinkIdentifyBtn.disabled = true;
+      }
+      
+      if (quickLinkHintText) {
+        quickLinkHintText.textContent = '正在获取网页信息，请稍候...';
+      }
+
+      const metadata = await fetchUrlMetadata(currentUrl);
       
       // 如果在抓取期间用户已经清空或更改了 URL，则不处理
-      if (pendingQuickLinkUrl !== url) return;
+      if (pendingQuickLinkUrl !== currentUrl) return;
 
       pendingMetadata = metadata;
       
+      if (quickLinkIdentifyBtn) {
+        quickLinkIdentifyBtn.style.display = 'none';
+      }
+
       if (quickLinkHintText) {
         if (metadata?.title) {
           quickLinkHintText.textContent = `已识别：${metadata.title}。点击“添加卡片”即可自动录入。`;
         } else {
-          quickLinkHintText.textContent = `识别到 ${hostLabel} 链接，可直接打开添加卡片弹窗并自动填入网址。`;
+          quickLinkHintText.textContent = `未能获取详细信息，可直接打开添加卡片弹窗并手动填入。`;
         }
       }
-    }
+    });
 
     engineBtn?.addEventListener('click', (e) => {
       e.stopPropagation();

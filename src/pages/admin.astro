@@ -203,7 +203,10 @@ import '../styles/admin.css';
         </div>
         <div class="form-group">
           <label for="linkUrl">链接 URL</label>
-          <input type="url" id="linkUrl" required placeholder="https://example.com" />
+          <div style="display: flex; gap: 8px;">
+            <input type="url" id="linkUrl" required placeholder="https://example.com" style="flex: 1;" />
+            <button type="button" id="identifyLinkBtn" class="action-btn secondary" style="flex-shrink: 0; padding: 0 16px; height: 42px; border-radius: 10px; font-size: 13px;">识别</button>
+          </div>
         </div>
         <div class="form-group">
           <label for="linkDesc">描述信息</label>
@@ -319,6 +322,8 @@ import '../styles/admin.css';
     const linkDescInput = document.getElementById('linkDesc') as HTMLInputElement;
     const linkIconInput = document.getElementById('linkIcon') as HTMLInputElement;
 
+    const identifyLinkBtn = document.getElementById('identifyLinkBtn');
+
 
     const editCatModal = document.getElementById('editCatModal');
     const editCatForm = document.getElementById('editCatForm') as HTMLFormElement;
@@ -390,30 +395,39 @@ import '../styles/admin.css';
       showToast(`已识别 ${getQuickAddHostLabel(pendingQuickAddDraft.url)}，网址已自动带入添加框`, 'info');
     }
 
-    // 监听 URL 输入框失去焦点，自动抓取元数据
-    linkUrlInput?.addEventListener('blur', async () => {
+    // 网页信息手动识别逻辑
+    identifyLinkBtn?.addEventListener('click', async () => {
       const url = linkUrlInput.value.trim();
       const normalizedUrl = normalizeUrlCandidate(url);
-      if (!normalizedUrl) return;
+      if (!normalizedUrl) {
+        showToast('请输入有效的网址', 'info');
+        return;
+      }
 
-      // 如果标题和描述都已经有值了，就不覆盖
-      const currentTitle = linkTitleInput.value.trim();
-      const currentDesc = linkDescInput.value.trim();
-      if (currentTitle && currentDesc) return;
+      const originalBtnText = identifyLinkBtn.textContent;
+      identifyLinkBtn.textContent = '识别中...';
+      (identifyLinkBtn as HTMLButtonElement).disabled = true;
 
       const toastHandle = showToast('正在抓取网页信息...', 'loading');
-      const metadata = await fetchUrlMetadata(normalizedUrl);
-
-      if (metadata) {
-        if (!currentTitle && metadata.title) {
-          linkTitleInput.value = metadata.title;
+      
+      try {
+        const metadata = await fetchUrlMetadata(normalizedUrl);
+        if (metadata) {
+          if (metadata.title) {
+            linkTitleInput.value = metadata.title;
+          }
+          if (metadata.description) {
+            linkDescInput.value = metadata.description;
+          }
+          toastHandle.update('网页信息获取成功', 'success');
+        } else {
+          toastHandle.update('未能获取网页信息', 'info');
         }
-        if (!currentDesc && metadata.description) {
-          linkDescInput.value = metadata.description;
-        }
-        toastHandle.update('网页信息获取成功', 'success');
-      } else {
-        toastHandle.update('未能获取网页信息', 'info');
+      } catch (err) {
+        toastHandle.update('抓取失败，请检查网络或手动输入', 'error');
+      } finally {
+        identifyLinkBtn.textContent = originalBtnText;
+        (identifyLinkBtn as HTMLButtonElement).disabled = false;
       }
     });
 
