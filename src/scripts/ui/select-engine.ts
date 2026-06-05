@@ -279,19 +279,24 @@ function bindOptionsEvents(wrapper: HTMLElement, select: HTMLSelectElement, type
     const optionsList = wrapper.querySelector('.custom-select-options-list') as HTMLElement | null;
 
     if (searchInput && optionsList) {
-      searchInput.addEventListener('click', (e) => e.stopPropagation());
-      searchInput.addEventListener('keydown', (e) => {
-        e.stopPropagation();
-        if (e.key === 'Escape') {
-          wrapper.classList.remove('open');
-        }
-      });
-      searchInput.addEventListener('input', () => {
-        select.dataset.categorySearchQuery = searchInput.value;
-        optionsList.innerHTML = generateOptionsHtml(select, type, searchInput.value);
-        bindOptionsEvents(wrapper, select, type);
-        refreshSelectIcons();
-      });
+      // 增加事件防重标记，防范打字重新绑定导致的事件监听器指数膨胀卡死
+      if (!searchInput.dataset.hasInputListener) {
+        searchInput.dataset.hasInputListener = 'true';
+
+        searchInput.addEventListener('click', (e) => e.stopPropagation());
+        searchInput.addEventListener('keydown', (e) => {
+          e.stopPropagation();
+          if (e.key === 'Escape') {
+            wrapper.classList.remove('open');
+          }
+        });
+        searchInput.addEventListener('input', () => {
+          select.dataset.categorySearchQuery = searchInput.value;
+          optionsList.innerHTML = generateOptionsHtml(select, type, searchInput.value);
+          bindOptionsEvents(wrapper, select, type);
+          refreshSelectIcons();
+        });
+      }
     }
   }
 
