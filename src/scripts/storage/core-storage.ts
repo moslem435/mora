@@ -141,20 +141,15 @@ export const storage = {
   },
 
   getSiteConfig(): SiteConfig {
-    if (typeof window === 'undefined') return DEFAULT_SITE_CONFIG;
-    this.init();
-    const data = localStorage.getItem(KEY_SITE_CONFIG);
-    try {
-      return data ? JSON.parse(data) : DEFAULT_SITE_CONFIG;
-    } catch (e) {
-      console.error('Failed to parse site config', e);
-      return DEFAULT_SITE_CONFIG;
-    }
+    // 彻底弃用 localStorage 缓存，始终返回默认配置作为基准
+    // 实际业务逻辑应使用 fetchSiteConfigCloud 进行实时判断
+    return DEFAULT_SITE_CONFIG;
   },
 
   saveSiteConfig(config: SiteConfig) {
     if (typeof window === 'undefined') return;
     try {
+      // 仅同步至云端，本地缓存仅作极简存根
       localStorage.setItem(KEY_SITE_CONFIG, JSON.stringify(config));
       this.saveSiteConfigCloud(config).catch(err => console.error(err));
     } catch (e) {
