@@ -388,6 +388,33 @@ import '../styles/admin.css';
       showToast(`已识别 ${getQuickAddHostLabel(pendingQuickAddDraft.url)}，网址已自动带入添加框`, 'info');
     }
 
+    // 监听 URL 输入框失去焦点，自动抓取元数据
+    linkUrlInput?.addEventListener('blur', async () => {
+      const url = linkUrlInput.value.trim();
+      const normalizedUrl = normalizeUrlCandidate(url);
+      if (!normalizedUrl) return;
+
+      // 如果标题和描述都已经有值了，就不覆盖
+      const currentTitle = linkTitleInput.value.trim();
+      const currentDesc = linkDescInput.value.trim();
+      if (currentTitle && currentDesc) return;
+
+      const toastHandle = showToast('正在抓取网页信息...', 'loading');
+      const metadata = await fetchUrlMetadata(normalizedUrl);
+
+      if (metadata) {
+        if (!currentTitle && metadata.title) {
+          linkTitleInput.value = metadata.title;
+        }
+        if (!currentDesc && metadata.description) {
+          linkDescInput.value = metadata.description;
+        }
+        toastHandle.update('网页信息获取成功', 'success');
+      } else {
+        toastHandle.update('未能获取网页信息', 'info');
+      }
+    });
+
     function openAddLinkDialog() {
       if (activeTabCatId !== 'all') {
         const select = document.getElementById('linkCatId') as HTMLSelectElement;

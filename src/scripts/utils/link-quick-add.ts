@@ -97,6 +97,17 @@ export function getQuickAddHostLabel(url: string): string {
   }
 }
 
+export async function fetchUrlMetadata(url: string): Promise<{ title?: string, description?: string } | null> {
+  try {
+    const response = await fetch(`/api/metadata?url=${encodeURIComponent(url)}`);
+    if (!response.ok) return null;
+    return await response.json();
+  } catch (e) {
+    console.error('Failed to fetch metadata:', e);
+    return null;
+  }
+}
+
 export function getSuggestedLinkTitle(url: string): string {
   try {
     const hostParts = new URL(url)

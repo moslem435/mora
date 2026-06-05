@@ -430,7 +430,8 @@
   import {
     getQuickAddHostLabel,
     normalizeUrlCandidate,
-    saveQuickAddDraft
+    saveQuickAddDraft,
+    fetchUrlMetadata
   } from '../scripts/utils/link-quick-add';
 
   document.addEventListener('astro:page-load', () => {
@@ -450,6 +451,7 @@
     let activeEngine = 'google';
     let activeAction = 'https://www.google.com/search?q=';
     let pendingQuickLinkUrl = '';
+    let pendingMetadata: { title?: string, description?: string } | null = null;
 
     const savedEngine = localStorage.getItem('nav_search_engine');
     if (savedEngine && savedEngine !== 'local') {
@@ -492,21 +494,39 @@
 
     function hideQuickLinkHint() {
       pendingQuickLinkUrl = '';
+      pendingMetadata = null;
       if (quickLinkHint) {
         quickLinkHint.hidden = true;
       }
     }
 
-    function showQuickLinkHint(url: string) {
+    async function showQuickLinkHint(url: string) {
       pendingQuickLinkUrl = url;
+      pendingMetadata = null; // 重置
       const hostLabel = getQuickAddHostLabel(url);
 
       if (quickLinkHintText) {
-        quickLinkHintText.textContent = `识别到 ${hostLabel} 链接，可直接打开添加卡片弹窗并自动填入网址。`;
+        quickLinkHintText.textContent = `识别到 ${hostLabel} 链接，正在获取网页信息...`;
       }
 
       if (quickLinkHint) {
         quickLinkHint.hidden = false;
+      }
+
+      // 异步抓取元数据
+      const metadata = await fetchUrlMetadata(url);
+      
+      // 如果在抓取期间用户已经清空或更改了 URL，则不处理
+      if (pendingQuickLinkUrl !== url) return;
+
+      pendingMetadata = metadata;
+      
+      if (quickLinkHintText) {
+        if (metadata?.title) {
+          quickLinkHintText.textContent = `已识别：${metadata.title}。点击“添加卡片”即可自动录入。`;
+        } else {
+          quickLinkHintText.textContent = `识别到 ${hostLabel} 链接，可直接打开添加卡片弹窗并自动填入网址。`;
+        }
       }
     }
 
@@ -588,6 +608,8 @@
       if (!pendingQuickLinkUrl) return;
       saveQuickAddDraft({
         url: pendingQuickLinkUrl,
+        title: pendingMetadata?.title,
+        description: pendingMetadata?.description,
         source: 'search-paste'
       });
       window.location.href = '/admin';
