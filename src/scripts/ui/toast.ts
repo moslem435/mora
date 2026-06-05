@@ -100,12 +100,8 @@ export function checkAndShowPendingToast() {
   }
 }
 
-// 自动在客户端环境初始化检测，保证跳转到任何页面都能检测展示
+// 自动在客户端环境初始化检测，保证跳转和加载时均触发展示
 if (typeof window !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkAndShowPendingToast);
-  } else {
-    setTimeout(checkAndShowPendingToast, 50);
-  }
+  document.addEventListener('astro:page-load', checkAndShowPendingToast);
 }
 

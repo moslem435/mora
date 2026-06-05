@@ -146,3 +146,10 @@ create table if not exists public.profiles (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- =========================================================================
+-- 索引配置 (Indexes) - 提升数据库在大并发和多用户查询下的吞吐和检索性能
+-- =========================================================================
+create index if not exists idx_categories_user_id on public.categories(user_id);
+create index if not exists idx_links_user_id on public.links(user_id);
+create index if not exists idx_links_category_id on public.links(category_id);
+

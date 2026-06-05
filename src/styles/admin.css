@@ -858,6 +858,69 @@ html.bg-dark-slate .admin-links-empty {
   transform: scale3d(1.1, 1.1, 1);
 }
 
+
+.custom-select-wrapper.is-searchable-category .custom-options-container {
+  width: 100%;
+  max-width: none;
+  padding: 8px;
+  gap: 8px;
+}
+
+.custom-select-search-shell {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: inherit;
+  padding-bottom: 2px;
+}
+
+.custom-select-search-input {
+  width: 100%;
+  border: 1px solid rgba(226, 222, 211, 0.92);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  color: var(--color-text-main);
+  transition: var(--transition-smooth);
+}
+
+.custom-select-search-input:focus {
+  outline: none;
+  border-color: var(--theme-primary-hover);
+  box-shadow: 0 0 0 3px rgba(163, 179, 182, 0.16);
+}
+
+.custom-select-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.custom-option-create {
+  width: 100%;
+  border: 1px dashed color-mix(in srgb, var(--theme-primary) 30%, rgba(0, 0, 0, 0.06));
+  background: color-mix(in srgb, var(--theme-primary) 8%, rgba(255, 255, 255, 0.92));
+  text-align: left;
+}
+
+.custom-option-create:hover {
+  background: color-mix(in srgb, var(--theme-primary) 14%, rgba(255, 255, 255, 0.96));
+}
+
+.custom-select-empty {
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-sub);
+}
+
+html.bg-dark-slate .custom-select-search-input {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e8e8e8;
+}
+
 /* 模态编辑弹窗 */
 .modal {
   position: fixed;

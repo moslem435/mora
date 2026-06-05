@@ -531,8 +531,4 @@ function initSettingsPage() {
     checkAuth();
   }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initSettingsPage);
-} else {
-  initSettingsPage();
-}
+document.addEventListener('astro:page-load', initSettingsPage);

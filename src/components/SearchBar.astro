@@ -8,49 +8,65 @@
     <div class="engine-selector">
       <button class="current-engine-btn" id="engineBtn" type="button">
         <span class="current-engine-icon-wrapper" id="currentEngineIconWrapper">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" class="engine-icon-img" alt="" />
+          <img src="https://a.favicon.im/google.com" class="engine-icon-img" alt="" />
         </span>
         <span class="engine-name" id="currentEngineName">Google</span>
         <i data-lucide="chevron-down" class="chevron-icon"></i>
       </button>
       <div class="engine-dropdown" id="engineDropdown">
         <button class="engine-item active" type="button" data-engine="google" data-action="https://www.google.com/search?q=">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" class="item-icon" alt="" />
+          <img src="https://a.favicon.im/google.com" class="item-icon" alt="" />
           <span>Google</span>
         </button>
         <button class="engine-item" type="button" data-engine="baidu" data-action="https://www.baidu.com/s?wd=">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=baidu.com" class="item-icon" alt="" />
+          <img src="https://a.favicon.im/baidu.com" class="item-icon" alt="" />
           <span>百度</span>
         </button>
         <button class="engine-item" type="button" data-engine="bing" data-action="https://cn.bing.com/search?q=">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=bing.com" class="item-icon" alt="" />
+          <img src="https://a.favicon.im/bing.com" class="item-icon" alt="" />
           <span>必应</span>
         </button>
         <button class="engine-item" type="button" data-engine="github" data-action="https://github.com/search?q=">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=github.com" class="item-icon" alt="" />
+          <img src="https://a.favicon.im/github.com" class="item-icon" alt="" />
           <span>GitHub</span>
         </button>
       </div>
     </div>
-    
+
     <!-- 分割线 -->
     <div class="divider"></div>
-    
+
     <!-- 输入框 -->
-    <input 
-      type="text" 
-      id="searchInput" 
-      placeholder="在 Google 中搜索..." 
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="在 Google 中搜索..."
       autocomplete="off"
     />
-    
+
     <!-- 键盘提示 -->
     <div class="kbd-hint" id="kbdHint">/</div>
-    
+
     <!-- 清空按钮 -->
     <button class="clear-btn" id="clearBtn" type="button" style="display: none;">
       <i data-lucide="x" class="clear-icon"></i>
     </button>
+  </div>
+
+  <div class="quick-link-hint" id="quickLinkHint" hidden>
+    <div class="quick-link-hint-body">
+      <div class="quick-link-hint-icon">
+        <i data-lucide="link-2"></i>
+      </div>
+      <div class="quick-link-hint-copy">
+        <p class="quick-link-hint-title">检测到网址粘贴</p>
+        <p class="quick-link-hint-text" id="quickLinkHintText">可直接打开添加卡片弹窗，并自动帮你带上网址。</p>
+      </div>
+    </div>
+    <div class="quick-link-hint-actions">
+      <button class="quick-link-hint-btn primary" id="quickLinkAddBtn" type="button">添加卡片</button>
+      <button class="quick-link-hint-btn" id="quickLinkDismissBtn" type="button">继续搜索</button>
+    </div>
   </div>
 </div>
 
@@ -59,6 +75,7 @@
     width: 100%;
     max-width: 650px;
     margin: 0 auto;
+    position: relative;
   }
 
   .search-wrapper {
@@ -140,6 +157,121 @@
   .current-engine-btn:hover .chevron-icon {
     opacity: 0.8;
     transform: translateY(1px);
+  }
+
+  .quick-link-hint {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: calc(var(--radius-md) + 2px);
+    border: 1px solid color-mix(in srgb, var(--theme-primary) 18%, var(--card-border));
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(248, 245, 241, 0.94));
+    box-shadow: 0 12px 28px -20px rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(16px);
+    animation: fadeInUp 0.28s ease;
+  }
+
+  .quick-link-hint[hidden] {
+    display: none;
+  }
+
+  .quick-link-hint-body {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .quick-link-hint-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--theme-primary);
+    background: color-mix(in srgb, var(--theme-primary) 12%, white);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--theme-primary) 18%, transparent);
+    flex-shrink: 0;
+  }
+
+  .quick-link-hint-icon i {
+    width: 16px;
+    height: 16px;
+  }
+
+  .quick-link-hint-copy {
+    min-width: 0;
+  }
+
+  .quick-link-hint-title,
+  .quick-link-hint-text {
+    margin: 0;
+  }
+
+  .quick-link-hint-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    letter-spacing: 0.2px;
+  }
+
+  .quick-link-hint-text {
+    margin-top: 3px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--color-text-sub);
+  }
+
+  .quick-link-hint-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .quick-link-hint-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    white-space: nowrap;
+  }
+
+  .quick-link-hint-btn:hover {
+    transform: translate3d(0, -1px, 0);
+    background: rgba(255, 255, 255, 0.96);
+  }
+
+  .quick-link-hint-btn.primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-primary-hover));
+    border-color: transparent;
+    box-shadow: 0 10px 20px -14px color-mix(in srgb, var(--theme-primary) 60%, black);
+  }
+
+  .quick-link-hint-btn.primary:hover {
+    filter: saturate(1.06) brightness(1.02);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 8px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
   }
 
   .divider {
@@ -295,17 +427,29 @@
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  import {
+    getQuickAddHostLabel,
+    normalizeUrlCandidate,
+    saveQuickAddDraft
+  } from '../scripts/utils/link-quick-add';
+
+  document.addEventListener('astro:page-load', () => {
+    if (!document.querySelector('.search-container')) return;
+
     const engineBtn = document.getElementById('engineBtn');
     const engineDropdown = document.getElementById('engineDropdown');
     const searchInput = document.getElementById('searchInput') as HTMLInputElement;
-    const currentEngineIcon = document.getElementById('currentEngineIcon');
     const currentEngineName = document.getElementById('currentEngineName');
     const clearBtn = document.getElementById('clearBtn') as HTMLElement;
     const kbdHint = document.getElementById('kbdHint') as HTMLElement;
-    
+    const quickLinkHint = document.getElementById('quickLinkHint') as HTMLElement;
+    const quickLinkHintText = document.getElementById('quickLinkHintText') as HTMLElement;
+    const quickLinkAddBtn = document.getElementById('quickLinkAddBtn') as HTMLButtonElement;
+    const quickLinkDismissBtn = document.getElementById('quickLinkDismissBtn') as HTMLButtonElement;
+
     let activeEngine = 'google';
     let activeAction = 'https://www.google.com/search?q=';
+    let pendingQuickLinkUrl = '';
 
     const savedEngine = localStorage.getItem('nav_search_engine');
     if (savedEngine && savedEngine !== 'local') {
@@ -318,7 +462,7 @@
     function selectEngine(element: Element) {
       document.querySelectorAll('.engine-item').forEach(el => el.classList.remove('active'));
       element.classList.add('active');
-      
+
       activeEngine = element.getAttribute('data-engine') || 'google';
       activeAction = element.getAttribute('data-action') || 'https://www.google.com/search?q=';
       const name = element.querySelector('span')?.textContent || '搜索';
@@ -326,7 +470,7 @@
       localStorage.setItem('nav_search_engine', activeEngine);
 
       currentEngineName!.textContent = name;
-      
+
       const iconWrapper = document.getElementById('currentEngineIconWrapper');
       if (iconWrapper) {
         const domainMap: Record<string, string> = {
@@ -336,14 +480,34 @@
           github: 'github.com'
         };
         const domain = domainMap[activeEngine] || 'google.com';
-        iconWrapper.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=64&domain=${domain}" class="engine-icon-img" alt="" />`;
+        iconWrapper.innerHTML = `<img src="https://a.favicon.im/${domain}" class="engine-icon-img" alt="" />`;
       }
-      
+
       if ((window as any).lucide) {
         (window as any).lucide.createIcons();
       }
 
       searchInput.placeholder = `在 ${name} 中搜索...`;
+    }
+
+    function hideQuickLinkHint() {
+      pendingQuickLinkUrl = '';
+      if (quickLinkHint) {
+        quickLinkHint.hidden = true;
+      }
+    }
+
+    function showQuickLinkHint(url: string) {
+      pendingQuickLinkUrl = url;
+      const hostLabel = getQuickAddHostLabel(url);
+
+      if (quickLinkHintText) {
+        quickLinkHintText.textContent = `识别到 ${hostLabel} 链接，可直接打开添加卡片弹窗并自动填入网址。`;
+      }
+
+      if (quickLinkHint) {
+        quickLinkHint.hidden = false;
+      }
     }
 
     engineBtn?.addEventListener('click', (e) => {
@@ -380,8 +544,9 @@
     });
 
     searchInput.addEventListener('input', () => {
-      const val = searchInput.value.trim().toLowerCase();
-      
+      const rawValue = searchInput.value.trim();
+      const val = rawValue.toLowerCase();
+
       if (val) {
         clearBtn.style.display = 'flex';
         kbdHint.style.display = 'none';
@@ -389,6 +554,48 @@
         clearBtn.style.display = 'none';
         kbdHint.style.display = 'block';
       }
+
+      if (!rawValue) {
+        hideQuickLinkHint();
+        return;
+      }
+
+      if (pendingQuickLinkUrl) {
+        const normalizedCurrentUrl = normalizeUrlCandidate(rawValue);
+        if (normalizedCurrentUrl !== pendingQuickLinkUrl) {
+          hideQuickLinkHint();
+        }
+      }
+    });
+
+    searchInput.addEventListener('paste', (e) => {
+      const rawText = e.clipboardData?.getData('text') || '';
+      const normalizedUrl = normalizeUrlCandidate(rawText);
+      if (!normalizedUrl) {
+        hideQuickLinkHint();
+        return;
+      }
+
+      window.setTimeout(() => {
+        const currentUrl = normalizeUrlCandidate(searchInput.value);
+        if (currentUrl === normalizedUrl) {
+          showQuickLinkHint(normalizedUrl);
+        }
+      }, 0);
+    });
+
+    quickLinkAddBtn?.addEventListener('click', () => {
+      if (!pendingQuickLinkUrl) return;
+      saveQuickAddDraft({
+        url: pendingQuickLinkUrl,
+        source: 'search-paste'
+      });
+      window.location.href = '/admin';
+    });
+
+    quickLinkDismissBtn?.addEventListener('click', () => {
+      hideQuickLinkHint();
+      searchInput.focus();
     });
 
     clearBtn?.addEventListener('click', () => {
