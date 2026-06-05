@@ -80,6 +80,12 @@ function initAdminConsole() {
     });
 
     signUpBtn?.addEventListener('click', async () => {
+      const siteConfig = storage.getSiteConfig();
+      if (!siteConfig.allowRegistration) {
+        showToast('全站注册渠道已关闭，请联系管理员', 'error');
+        return;
+      }
+
       const email = authEmail.value.trim();
       const password = authPassword.value;
       
