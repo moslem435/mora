@@ -433,7 +433,9 @@
     saveQuickAddDraft
   } from '../scripts/utils/link-quick-add';
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('astro:page-load', () => {
+    if (!document.querySelector('.search-container')) return;
+
     const engineBtn = document.getElementById('engineBtn');
     const engineDropdown = document.getElementById('engineDropdown');
     const searchInput = document.getElementById('searchInput') as HTMLInputElement;
