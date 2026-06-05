@@ -28,3 +28,7 @@ pnpm-debug.log*
 skills-lock.json
 
 .mcp.json
+
+.claude/
+.github/
+.vscode/
