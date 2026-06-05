@@ -3,12 +3,11 @@ import vercel from '@astrojs/vercel';
 
 // https://astro.build/config
 export default defineConfig({
-  // 将输出模式改为 'server'，以支持运行时 API 接口和 Supabase 身份验证
   output: 'server',
-  // 使用 Vercel 适配器
   adapter: vercel({
-    // 强制使用 Edge Functions 或者 Serverless Functions
-    // 对于抓取任务，Serverless Functions (node) 通常更兼容 fetch
+    // 切换到 edge 模式，绕过 Astro 6 在 Node Serverless 模式下的构建冲突
+    // Edge 模式启动更快，且不需要 applyPolyfills
+    target: 'edge',
     webAnalytics: {
       enabled: true,
     },
