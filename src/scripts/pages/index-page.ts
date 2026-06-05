@@ -1,9 +1,11 @@
 import { storage } from '../storage';
 
 export function initMainPage() {
+  const gridSection = document.getElementById('gridSection');
+  if (!gridSection) return;
+
   const greetingTitle = document.getElementById('greetingTitle');
   const greetingSubtitle = document.getElementById('greetingSubtitle');
-  const gridSection = document.getElementById('gridSection');
   const emptyState = document.getElementById('emptyState');
 
   const greetings = [
@@ -232,8 +234,4 @@ export function initMainPage() {
   });
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initMainPage);
-} else {
-  initMainPage();
-}
+document.addEventListener('astro:page-load', initMainPage);

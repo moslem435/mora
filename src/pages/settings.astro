@@ -883,9 +883,10 @@ import '../styles/settings.css';
     checkAuth();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSettingsPage);
-  } else {
-    initSettingsPage();
-  }
+  // 稳健的安全初始化触发器，适配 View Transitions 生命周期
+  document.addEventListener('astro:page-load', () => {
+    if (document.querySelector('.settings-container')) {
+      initSettingsPage();
+    }
+  });
 </script>

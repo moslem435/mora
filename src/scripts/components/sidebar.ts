@@ -3,6 +3,8 @@ import { refreshLucideIcons } from '../ui/icons';
 
 export function initSidebar() {
   const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+
   const sidebarToggle = document.getElementById('sidebarToggle');
   const clockTime = document.getElementById('clockTime');
   const clockDate = document.getElementById('clockDate');
@@ -123,8 +125,4 @@ export function initSidebar() {
   window.addEventListener('categories-updated', renderNav);
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initSidebar);
-} else {
-  initSidebar();
-}
+document.addEventListener('astro:page-load', initSidebar);
