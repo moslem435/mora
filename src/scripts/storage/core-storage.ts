@@ -160,13 +160,15 @@ export const storage = {
   async fetchSiteConfigCloud(): Promise<SiteConfig | null> {
     if (!supabase) return null;
     try {
+      // 强制请求最新的全站配置
       const { data, error } = await supabase.from('site_config').select('*');
       if (error) throw error;
       
-      const config: SiteConfig = { ...DEFAULT_SITE_CONFIG };
+      const config: SiteConfig = { allowRegistration: false }; // 默认设为 false
       data.forEach(item => {
         if (item.key === 'allow_registration') {
-          config.allowRegistration = !!item.value;
+          // 兼容处理：Supabase 存的是 jsonb，可能是布尔值也可能是对象
+          config.allowRegistration = typeof item.value === 'boolean' ? item.value : !!item.value;
         }
       });
       return config;
@@ -179,13 +181,19 @@ export const storage = {
   async saveSiteConfigCloud(config: SiteConfig) {
     if (!supabase) return;
     try {
+      // 关键修正：确保 key 名与数据库完全一致 'allow_registration'
       const { error } = await supabase.from('site_config').upsert({
         key: 'allow_registration',
-        value: config.allowRegistration
-      });
-      if (error) throw error;
+        value: config.allowRegistration,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'key' });
+      
+      if (error) {
+        console.error('Database update error:', error);
+        throw error;
+      }
     } catch (e) {
-      console.error('Failed to save site config to cloud', e);
+      console.error('Failed to save site config to cloud:', e);
       throw e;
     }
   },
