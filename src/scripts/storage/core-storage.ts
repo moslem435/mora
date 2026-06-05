@@ -138,19 +138,20 @@ export const storage = {
   async syncSiteConfigPublic(): Promise<SiteConfig | null> {
     const cloudSite = await this.fetchSiteConfigCloud();
     if (cloudSite) {
-      const localSiteStr = localStorage.getItem(KEY_SITE_CONFIG);
-      if (JSON.stringify(cloudSite) !== localSiteStr) {
-        localStorage.setItem(KEY_SITE_CONFIG, JSON.stringify(cloudSite));
-        return cloudSite;
-      }
+      localStorage.setItem(KEY_SITE_CONFIG, JSON.stringify(cloudSite));
+      return cloudSite;
     }
     return null;
   },
 
   getSiteConfig(): SiteConfig {
-    // 彻底弃用 localStorage 缓存，始终返回默认配置作为基准
-    // 实际业务逻辑应使用 fetchSiteConfigCloud 进行实时判断
-    return DEFAULT_SITE_CONFIG;
+    if (typeof window === 'undefined') return DEFAULT_SITE_CONFIG;
+    const data = localStorage.getItem(KEY_SITE_CONFIG);
+    try {
+      return data ? JSON.parse(data) : DEFAULT_SITE_CONFIG;
+    } catch (e) {
+      return DEFAULT_SITE_CONFIG;
+    }
   },
 
   saveSiteConfig(config: SiteConfig) {
