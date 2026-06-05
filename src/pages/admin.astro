@@ -593,6 +593,15 @@ import '../styles/admin.css';
       const inputs = form.querySelectorAll('input[required], select[required]');
       for (const input of Array.from(inputs)) {
         const element = input as HTMLInputElement | HTMLSelectElement;
+        
+        // 允许处于待创建新分类状态的 select 元素通过必填校验
+        if (element.tagName.toLowerCase() === 'select') {
+          const sel = element as HTMLSelectElement;
+          if (sel.dataset.pendingCategoryName?.trim()) {
+            continue;
+          }
+        }
+
         if (!element.value.trim()) {
           const formGroup = element.closest('.form-group');
           const label = formGroup?.querySelector('label')?.textContent || '必填字段';
