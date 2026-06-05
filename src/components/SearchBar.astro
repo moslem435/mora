@@ -8,26 +8,26 @@
     <div class="engine-selector">
       <button class="current-engine-btn" id="engineBtn" type="button">
         <span class="current-engine-icon-wrapper" id="currentEngineIconWrapper">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" class="engine-icon-img" alt="" />
+          <img src="https://a.favicon.im/google.com" class="engine-icon-img" alt="" />
         </span>
         <span class="engine-name" id="currentEngineName">Google</span>
         <i data-lucide="chevron-down" class="chevron-icon"></i>
       </button>
       <div class="engine-dropdown" id="engineDropdown">
         <button class="engine-item active" type="button" data-engine="google" data-action="https://www.google.com/search?q=">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=google.com" class="item-icon" alt="" />
+          <img src="https://a.favicon.im/google.com" class="item-icon" alt="" />
           <span>Google</span>
         </button>
         <button class="engine-item" type="button" data-engine="baidu" data-action="https://www.baidu.com/s?wd=">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=baidu.com" class="item-icon" alt="" />
+          <img src="https://a.favicon.im/baidu.com" class="item-icon" alt="" />
           <span>百度</span>
         </button>
         <button class="engine-item" type="button" data-engine="bing" data-action="https://cn.bing.com/search?q=">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=bing.com" class="item-icon" alt="" />
+          <img src="https://a.favicon.im/bing.com" class="item-icon" alt="" />
           <span>必应</span>
         </button>
         <button class="engine-item" type="button" data-engine="github" data-action="https://github.com/search?q=">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=github.com" class="item-icon" alt="" />
+          <img src="https://a.favicon.im/github.com" class="item-icon" alt="" />
           <span>GitHub</span>
         </button>
       </div>
@@ -480,7 +480,7 @@
           github: 'github.com'
         };
         const domain = domainMap[activeEngine] || 'google.com';
-        iconWrapper.innerHTML = `<img src="https://www.google.com/s2/favicons?sz=64&domain=${domain}" class="engine-icon-img" alt="" />`;
+        iconWrapper.innerHTML = `<img src="https://a.favicon.im/${domain}" class="engine-icon-img" alt="" />`;
       }
 
       if ((window as any).lucide) {

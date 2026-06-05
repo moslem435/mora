@@ -64,7 +64,7 @@ export function initMainPage() {
           faviconUrl = cachedFav;
           showImgDirectly = true;
         } else {
-          faviconUrl = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
+          faviconUrl = domain ? `https://a.favicon.im/${domain}` : '';
         }
 
         const cardHtml = `
