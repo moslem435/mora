@@ -189,17 +189,24 @@ export const storage = {
   async saveSiteConfigCloud(config: SiteConfig) {
     if (!supabase) return;
     try {
-      // 关键修正：确保 key 名与数据库完全一致 'allow_registration'
-      const { error } = await supabase.from('site_config').upsert({
-        key: 'allow_registration',
-        value: config.allowRegistration,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'key' });
+      // 使用更明确的 upsert 语法
+      const { error } = await supabase
+        .from('site_config')
+        .upsert(
+          { 
+            key: 'allow_registration', 
+            value: config.allowRegistration,
+            updated_at: new Date().toISOString()
+          },
+          { onConflict: 'key' }
+        );
       
       if (error) {
-        console.error('Database update error:', error);
-        throw error;
+        console.error('[Storage] Site config update failed:', error.message, error.details);
+        // 抛出错误以便上层 UI 捕获并提示用户
+        throw new Error(error.message);
       }
+      console.log('[Storage] Site config saved successfully:', config.allowRegistration);
     } catch (e) {
       console.error('Failed to save site config to cloud:', e);
       throw e;
