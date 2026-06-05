@@ -27,7 +27,7 @@ import '../styles/admin.css';
           <i data-lucide="log-in"></i>
           <span>登录控制台</span>
         </button>
-        <button type="button" id="signUpBtn" class="action-btn secondary" style="width: 100%; height: 42px; justify-content: center; margin-top: 10px; border-radius: 10px;">
+        <button type="button" id="signUpBtn" class="action-btn secondary" style="width: 100%; height: 42px; justify-content: center; margin-top: 10px; border-radius: 10px; display: none;">
           <i data-lucide="user-plus"></i>
           <span>注册新管理员</span>
         </button>
@@ -462,10 +462,17 @@ import '../styles/admin.css';
     const authPassword = document.getElementById('authPassword') as HTMLInputElement;
     const signUpBtn = document.getElementById('signUpBtn');
 
-    const siteConfig = storage.getSiteConfig();
-    if (signUpBtn && !siteConfig.allowRegistration) {
-      signUpBtn.style.display = 'none';
-    }
+    const updateSignUpBtn = () => {
+      const config = storage.getSiteConfig();
+      if (signUpBtn) {
+        signUpBtn.style.display = config.allowRegistration ? 'flex' : 'none';
+      }
+    };
+
+    updateSignUpBtn();
+    storage.syncSiteConfigPublic().then(updated => {
+      if (updated) updateSignUpBtn();
+    });
 
     let hasAutoOpenedQuickAdd = false;
 

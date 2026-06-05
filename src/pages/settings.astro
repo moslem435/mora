@@ -24,7 +24,7 @@ import '../styles/settings.css';
           <i data-lucide="log-in"></i>
           <span>登录设置中心</span>
         </button>
-        <button type="button" id="signUpBtn" class="action-btn secondary wide-btn">
+        <button type="button" id="signUpBtn" class="action-btn secondary wide-btn" style="display: none;">
           <i data-lucide="user-plus"></i>
           <span>注册新管理员</span>
         </button>
@@ -314,10 +314,17 @@ import '../styles/settings.css';
     const authPassword = document.getElementById('authPassword') as HTMLInputElement;
     const signUpBtn = document.getElementById('signUpBtn');
 
-    const siteConfig = storage.getSiteConfig();
-    if (signUpBtn && !siteConfig.allowRegistration) {
-      signUpBtn.style.display = 'none';
-    }
+    const updateSignUpBtn = () => {
+      const config = storage.getSiteConfig();
+      if (signUpBtn) {
+        signUpBtn.style.display = config.allowRegistration ? 'flex' : 'none';
+      }
+    };
+
+    updateSignUpBtn();
+    storage.syncSiteConfigPublic().then(updated => {
+      if (updated) updateSignUpBtn();
+    });
 
     const fontStyleSelect = document.getElementById('fontStyle') as HTMLSelectElement;
     const fontCustomLinkInput = document.getElementById('fontCustomLink') as HTMLInputElement;

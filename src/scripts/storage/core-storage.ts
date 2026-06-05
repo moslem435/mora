@@ -55,11 +55,11 @@ export const storage = {
         targetUserId = import.meta.env.PUBLIC_DEFAULT_ADMIN_USER_ID || null;
       }
 
-      const [catRes, linkRes, appRes, siteRes] = await Promise.all([
+      const [catRes, linkRes, appRes, siteConfig] = await Promise.all([
         supabase.from('categories').select('*').eq('user_id', targetUserId).order('order', { ascending: true }),
         supabase.from('links').select('*').eq('user_id', targetUserId).order('order', { ascending: true }),
         supabase.from('appearance').select('*').eq('user_id', targetUserId).maybeSingle(),
-        this.fetchSiteConfigCloud()
+        this.syncSiteConfigPublic()
       ]);
 
       if (catRes.error || linkRes.error || appRes.error) {
@@ -70,7 +70,7 @@ export const storage = {
       const cloudCats = catRes.data || [];
       const cloudLinks = linkRes.data || [];
       const cloudApp = appRes.data || null;
-      const cloudSite = siteRes;
+      const cloudSite = siteConfig;
 
       const localCatsStr = localStorage.getItem(KEY_CATEGORIES);
       const localLinksStr = localStorage.getItem(KEY_LINKS);
@@ -126,6 +126,18 @@ export const storage = {
       console.error('Quiet cloud sync failed:', e);
       return false;
     }
+  },
+
+  async syncSiteConfigPublic(): Promise<SiteConfig | null> {
+    const cloudSite = await this.fetchSiteConfigCloud();
+    if (cloudSite) {
+      const localSiteStr = localStorage.getItem(KEY_SITE_CONFIG);
+      if (JSON.stringify(cloudSite) !== localSiteStr) {
+        localStorage.setItem(KEY_SITE_CONFIG, JSON.stringify(cloudSite));
+        return cloudSite;
+      }
+    }
+    return null;
   },
 
   getSiteConfig(): SiteConfig {
