@@ -1,0 +1,285 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="404 - 页面未找到" description="抱歉，您访问的页面不存在或已被移除。">
+  <main class="error-container">
+    <div class="error-card">
+      <div class="animation-wrapper">
+        <!-- 漂浮动画背景彩色泡泡 -->
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
+        <h1 class="error-code" id="errorCode">404</h1>
+      </div>
+      
+      <h2 class="error-title" id="errorTitle">迷路了？</h2>
+      <p class="error-msg" id="errorMsg">抱歉，您访问的页面不存在或已被移除。</p>
+      
+      <div class="action-buttons">
+        <a href="/" class="action-btn primary" id="backHomeBtn">
+          <i data-lucide="home"></i>
+          <span>返回首页</span>
+        </a>
+        <button class="action-btn secondary" id="backPrevBtn" type="button">
+          <i data-lucide="arrow-left"></i>
+          <span>返回上一页</span>
+        </button>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style is:global>
+  /* 404 容器全屏居中 */
+  .error-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+  
+  /* 毛玻璃拟态卡片 */
+  .error-card {
+    position: relative;
+    max-width: 460px;
+    width: 100%;
+    padding: 48px 32px;
+    border-radius: var(--radius-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow);
+    backdrop-filter: blur(var(--card-blur-radius, 20px));
+    -webkit-backdrop-filter: blur(var(--card-blur-radius, 20px));
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    transition: var(--transition-smooth);
+    animation: errorCardSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  
+  .error-card:hover {
+    border-color: var(--card-border-hover);
+    box-shadow: var(--card-shadow-hover);
+  }
+  
+  @keyframes errorCardSlideUp {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 30px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  
+  /* 404 数字与漂浮泡泡动画 */
+  .animation-wrapper {
+    position: relative;
+    width: 240px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+  }
+  
+  .error-code {
+    font-size: 96px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -2px;
+    color: var(--theme-primary);
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    z-index: 2;
+    animation: floatText 4s ease-in-out infinite;
+    user-select: none;
+  }
+  
+  @keyframes floatText {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  
+  .floating-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(8px);
+    opacity: 0.15;
+    z-index: 1;
+    transition: var(--transition-smooth);
+  }
+  
+  .circle-1 {
+    width: 70px;
+    height: 70px;
+    background: var(--theme-blue);
+    left: 10px;
+    top: 10px;
+    animation: floatCircle1 7s ease-in-out infinite;
+  }
+  
+  .circle-2 {
+    width: 50px;
+    height: 50px;
+    background: var(--theme-pink);
+    right: 15px;
+    bottom: 20px;
+    animation: floatCircle2 9s ease-in-out infinite;
+  }
+  
+  .circle-3 {
+    width: 30px;
+    height: 30px;
+    background: var(--theme-green);
+    left: 42%;
+    bottom: 0px;
+    animation: floatCircle3 6s ease-in-out infinite;
+  }
+  
+  @keyframes floatCircle1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(12px, -18px) scale(1.1); }
+  }
+  
+  @keyframes floatCircle2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-18px, -12px) scale(0.9); }
+  }
+  
+  @keyframes floatCircle3 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(10px, 15px) scale(1.25); }
+  }
+  
+  /* 错误文本样式 */
+  .error-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-text-main);
+    letter-spacing: 1px;
+    margin: 0;
+  }
+  
+  .error-msg {
+    font-size: 14.5px;
+    color: var(--color-text-sub);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 300px;
+  }
+  
+  /* 操作按钮布局 */
+  .action-buttons {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    margin-top: 8px;
+  }
+  
+  .action-buttons .action-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    border: 1px solid transparent;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+  
+  .action-buttons .action-btn.primary {
+    background: var(--theme-primary);
+    color: #ffffff !important;
+  }
+  
+  .action-buttons .action-btn.primary:hover {
+    background: var(--theme-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -6px var(--theme-primary);
+  }
+  
+  .action-buttons .action-btn.secondary {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--color-text-main);
+    border-color: var(--card-border);
+  }
+  
+  .action-buttons .action-btn.secondary:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: var(--card-border-hover);
+    transform: translateY(-2px);
+  }
+  
+  /* 暗色模式特殊适配 */
+  html.bg-dark-slate .action-buttons .action-btn.secondary {
+    background: rgba(255, 255, 255, 0.04);
+    color: #e8e8e8;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  html.bg-dark-slate .action-buttons .action-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+  }
+  
+  /* 移动端响应式布局 */
+  @media (max-width: 480px) {
+    .error-card {
+      padding: 36px 24px;
+      margin: 16px;
+    }
+    .action-buttons {
+      flex-direction: column;
+      gap: 12px;
+    }
+    .error-code {
+      font-size: 80px;
+    }
+  }
+</style>
+
+<script>
+  import { renderLucideIconsSafe } from '../scripts/ui/icons';
+  
+  // 初始化方法
+  function initErrorPage() {
+    // 渲染 Lucide 图标
+    renderLucideIconsSafe();
+    
+    // 绑定返回上一页按钮事件
+    const backPrevBtn = document.getElementById('backPrevBtn');
+    if (backPrevBtn) {
+      // 强力清理并重新绑定，避免在 Astro transitions SPA 切换模式下产生事件累积
+      const newBtn = backPrevBtn.cloneNode(true) as HTMLButtonElement;
+      backPrevBtn.parentNode?.replaceChild(newBtn, backPrevBtn);
+      newBtn.addEventListener('click', () => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = '/';
+        }
+      });
+    }
+  }
+  
+  // 适配 Astro page-load 跳转
+  document.addEventListener('astro:page-load', initErrorPage);
+</script>
