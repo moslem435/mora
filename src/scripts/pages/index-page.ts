@@ -90,7 +90,21 @@ export function initMainPage() {
 
       catLinks.forEach(link => {
         const domain = getDomain(link.url);
-        const faviconUrl = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
+        const cachedFav = (window as any).getFaviconFromCache ? (window as any).getFaviconFromCache(domain) : null;
+
+        let faviconUrl = '';
+        let showImgDirectly = false;
+        let skipFavicon = false;
+
+        if (cachedFav === 'failed') {
+          skipFavicon = true;
+        } else if (cachedFav) {
+          faviconUrl = cachedFav;
+          showImgDirectly = true;
+        } else {
+          faviconUrl = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
+        }
+
         const cardHtml = `
           <a
             href="${link.url}"
@@ -104,17 +118,16 @@ export function initMainPage() {
               <div class="card-header">
                 <div class="header-main-info">
                   <div class="icon-wrapper">
-                    ${faviconUrl ? `
+                    ${!skipFavicon && faviconUrl ? `
                     <img
                       src="${faviconUrl}"
                       class="card-favicon"
-                      onload="this.style.display='block'; this.nextElementSibling.style.display='none'; const wm = this.closest('.link-card').querySelector('.watermark-favicon'); if (wm) { wm.src = this.src; wm.style.display = 'block'; if (wm.nextElementSibling) wm.nextElementSibling.style.display = 'none'; }"
-                      onerror="window.handleFaviconError && window.handleFaviconError(this, '${domain}')"
-                      style="display: none; width: 28px; height: 28px; border-radius: 6px; object-fit: contain;"
+                      ${showImgDirectly ? '' : `onload="window.handleFaviconSuccess && window.handleFaviconSuccess(this, '${domain}')" onerror="window.handleFaviconError && window.handleFaviconError(this, '${domain}')"`}
+                      style="${showImgDirectly ? 'display: block;' : 'display: none;'} width: 28px; height: 28px; border-radius: 6px; object-fit: contain;"
                       alt=""
                     />
                     ` : ''}
-                    <i data-lucide="${link.icon || 'external-link'}" class="card-icon"></i>
+                    <i data-lucide="${link.icon || 'external-link'}" class="card-icon" style="${showImgDirectly ? 'display: none;' : ''}"></i>
                   </div>
                   <h3 class="card-title">${link.title}</h3>
                 </div>
@@ -125,14 +138,15 @@ export function initMainPage() {
               </div>
             </div>
             <div class="card-watermark">
-              ${faviconUrl ? `
+              ${!skipFavicon && faviconUrl ? `
               <img
+                src="${showImgDirectly ? faviconUrl : ''}"
                 class="watermark-favicon"
-                style="display: none; width: 100%; height: 100%; object-fit: contain;"
+                style="${showImgDirectly ? 'display: block;' : 'display: none;'} width: 100%; height: 100%; object-fit: contain;"
                 alt=""
               />
               ` : ''}
-              <i data-lucide="${link.icon || 'external-link'}"></i>
+              <i data-lucide="${link.icon || 'external-link'}" style="${showImgDirectly ? 'display: none;' : ''}"></i>
             </div>
           </a>
         `;

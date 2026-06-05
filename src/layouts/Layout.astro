@@ -40,30 +40,70 @@ const {
 			})();
 		</script>
 
-		<!-- 全局 Favicon 容灾加载机制 -->
+		<!-- 全局 Favicon 本地缓存与容灾加载机制 -->
 		<script is:inline>
-			window.handleFaviconError = function(img, domain) {
-				if (!domain) {
-					img.style.display = 'none';
-					if (img.nextElementSibling) img.nextElementSibling.style.display = 'block';
-					return;
-				}
-				const sources = [
-					"https://api.iowen.cn/favicon/" + domain + ".png",
-					"https://favicon.t.jiandao.info/" + domain,
-					"https://unavatar.io/" + domain
-				];
-				let idx = parseInt(img.getAttribute('data-fav-idx') || '0');
-				if (idx < sources.length) {
-					img.setAttribute('data-fav-idx', String(idx + 1));
-					img.src = sources[idx];
-				} else {
-					img.style.display = 'none';
-					if (img.nextElementSibling) {
-						img.nextElementSibling.style.display = 'block';
+			(function() {
+				const CACHE_KEY = "mora_favicons_cache";
+				window.getFaviconFromCache = function(domain) {
+					try {
+						const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}");
+						return cache[domain] || null;
+					} catch (e) {
+						return null;
 					}
-				}
-			};
+				};
+				window.setFaviconToCache = function(domain, value) {
+					try {
+						const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}");
+						cache[domain] = value;
+						localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+					} catch (e) {}
+				};
+				window.handleFaviconSuccess = function(img, domain) {
+					img.style.display = 'block';
+					if (img.nextElementSibling) {
+						img.nextElementSibling.style.display = 'none';
+					}
+					if (domain) {
+						window.setFaviconToCache(domain, img.src);
+					}
+					const card = img.closest('.link-card') || img.closest('.admin-link-card');
+					if (card) {
+						const wm = card.querySelector('.watermark-favicon');
+						if (wm) {
+							wm.src = img.src;
+							wm.style.display = 'block';
+							if (wm.nextElementSibling) {
+								wm.nextElementSibling.style.display = 'none';
+							}
+						}
+					}
+				};
+				window.handleFaviconError = function(img, domain) {
+					if (!domain) {
+						img.style.display = 'none';
+						if (img.nextElementSibling) img.nextElementSibling.style.display = 'block';
+						return;
+					}
+					const sources = [
+						"https://api.iowen.cn/favicon/" + domain + ".png",
+						"https://favicon.t.jiandao.info/" + domain,
+						"https://unavatar.io/" + domain
+					];
+					let idx = parseInt(img.getAttribute('data-fav-idx') || '0');
+					if (idx < sources.length) {
+						img.setAttribute('data-fav-idx', String(idx + 1));
+						img.src = sources[idx];
+					} else {
+						img.style.display = 'none';
+						if (img.nextElementSibling) {
+							img.nextElementSibling.style.display = 'block';
+						}
+						// 容灾失败，存入失败记录，防止后续重复尝试
+						window.setFaviconToCache(domain, 'failed');
+					}
+				};
+			})();
 		</script>
 
 		<!-- 首屏极速防闪烁与透明度/模糊度同步脚本 -->

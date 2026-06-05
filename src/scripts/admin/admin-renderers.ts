@@ -183,6 +183,20 @@ export function createAdminRenderers(params: {
       const catColor = cat ? cat.color : 'blue';
       const domain = getDomain(link.url);
 
+      const cachedFav = (window as any).getFaviconFromCache ? (window as any).getFaviconFromCache(domain) : null;
+      let faviconUrl = '';
+      let showImgDirectly = false;
+      let skipFavicon = false;
+
+      if (cachedFav === 'failed') {
+        skipFavicon = true;
+      } else if (cachedFav) {
+        faviconUrl = cachedFav;
+        showImgDirectly = true;
+      } else {
+        faviconUrl = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
+      }
+
       const card = document.createElement('div');
       card.className = 'admin-link-card';
       card.setAttribute('style', `--theme-color: var(--theme-${catColor})`);
@@ -191,15 +205,16 @@ export function createAdminRenderers(params: {
         <div>
           <div class="admin-link-card-header">
             <div class="admin-link-card-icon" style="--theme-color: var(--theme-${catColor})">
+              ${!skipFavicon && faviconUrl ? `
               <img
-                src="https://www.google.com/s2/favicons?sz=64&domain=${domain}"
+                src="${faviconUrl}"
                 class="admin-card-favicon"
-                onload="this.style.display='block'; this.nextElementSibling.style.display='none';"
-                onerror="window.handleFaviconError && window.handleFaviconError(this, '${domain}')"
-                style="display: none; width: 24px; height: 24px; border-radius: 5px; object-fit: contain;"
+                ${showImgDirectly ? '' : `onload="window.handleFaviconSuccess && window.handleFaviconSuccess(this, '${domain}')" onerror="window.handleFaviconError && window.handleFaviconError(this, '${domain}')"`}
+                style="${showImgDirectly ? 'display: block;' : 'display: none;'} width: 24px; height: 24px; border-radius: 5px; object-fit: contain;"
                 alt=""
               />
-              <i data-lucide="${link.icon || 'external-link'}"></i>
+              ` : ''}
+              <i data-lucide="${link.icon || 'external-link'}" style="${showImgDirectly ? 'display: none;' : ''}"></i>
             </div>
             <span class="admin-link-card-title">${link.title}</span>
           </div>
