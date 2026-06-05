@@ -210,11 +210,22 @@ import '../styles/settings.css';
 
         <!-- 会员权限管理：升级为独立的右侧宽栏 Section，列字段拓展为 4 列 -->
         <section id="usersPanel" class="settings-section users-section" style="display: none;">
-          <div class="section-header">
-            <i data-lucide="users" class="section-icon"></i>
+          <div class="section-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
             <div>
+              <i data-lucide="users" class="section-icon"></i>
               <h2>会员权限管理</h2>
               <p>管理注册用户的角色身份与文件上传权限</p>
+            </div>
+            
+            <div class="switch-group site-toggle" style="margin: 0; padding: 10px 14px; background: rgba(var(--theme-primary-rgb), 0.05); border-radius: 12px; border: 1px solid rgba(var(--theme-primary-rgb), 0.1);">
+              <div class="switch-label">
+                <label for="allowRegistration" style="font-size: 13px; font-weight: 600; color: var(--theme-primary);">允许新管理员注册</label>
+                <span class="switch-desc" style="font-size: 11px;">关闭后将隐藏所有页面的注册入口</span>
+              </div>
+              <label class="switch-toggle">
+                <input type="checkbox" id="allowRegistration" />
+                <span class="switch-slider"></span>
+              </label>
             </div>
           </div>
           <div class="users-table-wrapper">
@@ -303,6 +314,11 @@ import '../styles/settings.css';
     const authPassword = document.getElementById('authPassword') as HTMLInputElement;
     const signUpBtn = document.getElementById('signUpBtn');
 
+    const siteConfig = storage.getSiteConfig();
+    if (signUpBtn && !siteConfig.allowRegistration) {
+      signUpBtn.style.display = 'none';
+    }
+
     const fontStyleSelect = document.getElementById('fontStyle') as HTMLSelectElement;
     const fontCustomLinkInput = document.getElementById('fontCustomLink') as HTMLInputElement;
     const fontFamilyNameInput = document.getElementById('fontFamilyName') as HTMLInputElement;
@@ -333,6 +349,15 @@ import '../styles/settings.css';
     const importBtn = document.getElementById('importBtn');
     const importFile = document.getElementById('importFile') as HTMLInputElement;
     const resetBtn = document.getElementById('resetBtn');
+
+    const allowRegistrationInput = document.getElementById('allowRegistration') as HTMLInputElement;
+
+    allowRegistrationInput?.addEventListener('change', () => {
+      const config = storage.getSiteConfig();
+      config.allowRegistration = allowRegistrationInput.checked;
+      storage.saveSiteConfig(config);
+      showToast(config.allowRegistration ? '全站注册渠道已开启' : '全站注册渠道已关闭', 'success');
+    });
 
     function refreshIcons() {
       if ((window as any).lucide) (window as any).lucide.createIcons();
@@ -675,6 +700,12 @@ import '../styles/settings.css';
       if (scrollbarEnabledInput) {
         scrollbarEnabledInput.checked = !!config.scrollbarEnabled;
       }
+      
+      const siteConfig = storage.getSiteConfig();
+      if (allowRegistrationInput) {
+        allowRegistrationInput.checked = siteConfig.allowRegistration;
+      }
+
       syncAppearanceVisibility();
       convertSelectToCustom('fontStyle', 'plain');
       convertSelectToCustom('bgStyle', 'plain');

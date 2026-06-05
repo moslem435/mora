@@ -1,4 +1,4 @@
-import type { AppearanceConfig, Category, Link } from './types';
+import type { AppearanceConfig, Category, Link, SiteConfig } from './types';
 
 export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'cat-1', name: '开发极客', icon: 'code-xml', color: 'blue', order: 1 },
@@ -47,4 +47,10 @@ export const DEFAULT_APPEARANCE: AppearanceConfig = {
   fontCustomLink: '',
   fontFamilyName: '',
   scrollbarEnabled: false
+};
+
+export const KEY_SITE_CONFIG = 'nav_site_config';
+
+export const DEFAULT_SITE_CONFIG: SiteConfig = {
+  allowRegistration: true
 };

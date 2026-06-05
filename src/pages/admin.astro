@@ -462,6 +462,11 @@ import '../styles/admin.css';
     const authPassword = document.getElementById('authPassword') as HTMLInputElement;
     const signUpBtn = document.getElementById('signUpBtn');
 
+    const siteConfig = storage.getSiteConfig();
+    if (signUpBtn && !siteConfig.allowRegistration) {
+      signUpBtn.style.display = 'none';
+    }
+
     let hasAutoOpenedQuickAdd = false;
 
     async function checkAuth() {

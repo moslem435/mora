@@ -153,3 +153,34 @@ create index if not exists idx_categories_user_id on public.categories(user_id);
 create index if not exists idx_links_user_id on public.links(user_id);
 create index if not exists idx_links_category_id on public.links(category_id);
 
+
+-- =========================================================================
+-- 全站全局配置表 (site_config)
+-- =========================================================================
+create table if not exists public.site_config (
+  key text primary key,
+  value jsonb not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 开启行级安全策略
+alter table public.site_config enable row level security;
+
+-- 1. 所有人都可以读取配置
+create policy "Allow public read access to site_config" 
+  on public.site_config for select using (true);
+
+-- 2. 仅管理员可以插入/更新/删除配置
+create policy "Allow admins to modify site_config" 
+  on public.site_config for all using (
+    exists (
+      select 1 from public.profiles
+      where id = auth.uid() and role = 'admin'
+    )
+  );
+
+-- 初始化默认配置
+insert into public.site_config (key, value)
+values ('allow_registration', 'true'::jsonb)
+on conflict (key) do nothing;
+

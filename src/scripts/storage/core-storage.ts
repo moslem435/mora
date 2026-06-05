@@ -1,5 +1,5 @@
-import type { AppearanceConfig, Category, Link } from './types';
-import { DEFAULT_APPEARANCE, DEFAULT_CATEGORIES, DEFAULT_LINKS, KEY_APPEARANCE, KEY_CATEGORIES, KEY_LINKS } from './defaults';
+import type { AppearanceConfig, Category, Link, SiteConfig } from './types';
+import { DEFAULT_APPEARANCE, DEFAULT_CATEGORIES, DEFAULT_LINKS, DEFAULT_SITE_CONFIG, KEY_APPEARANCE, KEY_CATEGORIES, KEY_LINKS, KEY_SITE_CONFIG } from './defaults';
 import { getUserId, isSupabaseConfigured, supabase } from './supabase';
 import { dbStorage } from './assets-storage';
 
@@ -40,6 +40,9 @@ export const storage = {
     if (!localStorage.getItem(KEY_APPEARANCE)) {
       localStorage.setItem(KEY_APPEARANCE, JSON.stringify(DEFAULT_APPEARANCE));
     }
+    if (!localStorage.getItem(KEY_SITE_CONFIG)) {
+      localStorage.setItem(KEY_SITE_CONFIG, JSON.stringify(DEFAULT_SITE_CONFIG));
+    }
   },
 
   async syncFromCloud(): Promise<boolean> {
@@ -52,12 +55,11 @@ export const storage = {
         targetUserId = import.meta.env.PUBLIC_DEFAULT_ADMIN_USER_ID || null;
       }
 
-      if (!targetUserId) return false;
-
-      const [catRes, linkRes, appRes] = await Promise.all([
+      const [catRes, linkRes, appRes, siteRes] = await Promise.all([
         supabase.from('categories').select('*').eq('user_id', targetUserId).order('order', { ascending: true }),
         supabase.from('links').select('*').eq('user_id', targetUserId).order('order', { ascending: true }),
-        supabase.from('appearance').select('*').eq('user_id', targetUserId).maybeSingle()
+        supabase.from('appearance').select('*').eq('user_id', targetUserId).maybeSingle(),
+        this.fetchSiteConfigCloud()
       ]);
 
       if (catRes.error || linkRes.error || appRes.error) {
@@ -68,10 +70,12 @@ export const storage = {
       const cloudCats = catRes.data || [];
       const cloudLinks = linkRes.data || [];
       const cloudApp = appRes.data || null;
+      const cloudSite = siteRes;
 
       const localCatsStr = localStorage.getItem(KEY_CATEGORIES);
       const localLinksStr = localStorage.getItem(KEY_LINKS);
       const localAppStr = localStorage.getItem(KEY_APPEARANCE);
+      const localSiteStr = localStorage.getItem(KEY_SITE_CONFIG);
 
       const formattedCats: Category[] = cloudCats.map(c => ({
         id: c.id,
@@ -110,15 +114,72 @@ export const storage = {
       const catsChanged = JSON.stringify(formattedCats) !== localCatsStr;
       const linksChanged = JSON.stringify(formattedLinks) !== localLinksStr;
       const appChanged = formattedApp && (JSON.stringify(formattedApp) !== localAppStr);
+      const siteChanged = cloudSite && (JSON.stringify(cloudSite) !== localSiteStr);
 
       if (catsChanged) localStorage.setItem(KEY_CATEGORIES, JSON.stringify(formattedCats));
       if (linksChanged) localStorage.setItem(KEY_LINKS, JSON.stringify(formattedLinks));
       if (appChanged && formattedApp) localStorage.setItem(KEY_APPEARANCE, JSON.stringify(formattedApp));
+      if (siteChanged && cloudSite) localStorage.setItem(KEY_SITE_CONFIG, JSON.stringify(cloudSite));
 
-      return catsChanged || linksChanged || appChanged;
+      return catsChanged || linksChanged || appChanged || siteChanged;
     } catch (e) {
       console.error('Quiet cloud sync failed:', e);
       return false;
+    }
+  },
+
+  getSiteConfig(): SiteConfig {
+    if (typeof window === 'undefined') return DEFAULT_SITE_CONFIG;
+    this.init();
+    const data = localStorage.getItem(KEY_SITE_CONFIG);
+    try {
+      return data ? JSON.parse(data) : DEFAULT_SITE_CONFIG;
+    } catch (e) {
+      console.error('Failed to parse site config', e);
+      return DEFAULT_SITE_CONFIG;
+    }
+  },
+
+  saveSiteConfig(config: SiteConfig) {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(KEY_SITE_CONFIG, JSON.stringify(config));
+      this.saveSiteConfigCloud(config).catch(err => console.error(err));
+    } catch (e) {
+      console.error('Failed to save site config', e);
+    }
+  },
+
+  async fetchSiteConfigCloud(): Promise<SiteConfig | null> {
+    if (!supabase) return null;
+    try {
+      const { data, error } = await supabase.from('site_config').select('*');
+      if (error) throw error;
+      
+      const config: SiteConfig = { ...DEFAULT_SITE_CONFIG };
+      data.forEach(item => {
+        if (item.key === 'allow_registration') {
+          config.allowRegistration = !!item.value;
+        }
+      });
+      return config;
+    } catch (e) {
+      console.error('Failed to fetch site config from cloud', e);
+      return null;
+    }
+  },
+
+  async saveSiteConfigCloud(config: SiteConfig) {
+    if (!supabase) return;
+    try {
+      const { error } = await supabase.from('site_config').upsert({
+        key: 'allow_registration',
+        value: config.allowRegistration
+      });
+      if (error) throw error;
+    } catch (e) {
+      console.error('Failed to save site config to cloud', e);
+      throw e;
     }
   },
 

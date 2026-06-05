@@ -28,3 +28,7 @@ export interface AppearanceConfig {
   fontFamilyName?: string;
   scrollbarEnabled?: boolean;
 }
+
+export interface SiteConfig {
+  allowRegistration: boolean;
+}
