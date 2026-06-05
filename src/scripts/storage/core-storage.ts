@@ -42,6 +42,12 @@ export const storage = {
     }
     if (!localStorage.getItem(KEY_SITE_CONFIG)) {
       localStorage.setItem(KEY_SITE_CONFIG, JSON.stringify(DEFAULT_SITE_CONFIG));
+    } else {
+      // 强制校准：如果本地存的是 true，由于我们现在的默认策略是安全关闭，强制先设为 false，等待云端同步
+      const current = localStorage.getItem(KEY_SITE_CONFIG);
+      if (current && current.includes('"allowRegistration":true')) {
+        localStorage.setItem(KEY_SITE_CONFIG, JSON.stringify(DEFAULT_SITE_CONFIG));
+      }
     }
   },
 
