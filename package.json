@@ -16,5 +16,10 @@
     "@vercel/analytics": "^2.0.1",
     "@astrojs/vercel": "^8.1.0",
     "astro": "^6.4.3"
+  },
+  "overrides": {
+    "@astrojs/vercel": {
+      "astro": "$astro"
+    }
   }
 }
