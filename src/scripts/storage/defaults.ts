@@ -52,5 +52,5 @@ export const DEFAULT_APPEARANCE: AppearanceConfig = {
 export const KEY_SITE_CONFIG = 'nav_site_config';
 
 export const DEFAULT_SITE_CONFIG: SiteConfig = {
-  allowRegistration: true
+  allowRegistration: false
 };
