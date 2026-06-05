@@ -89,6 +89,7 @@ export function initMainPage() {
 
       catLinks.forEach(link => {
         const domain = getDomain(link.url);
+        const faviconUrl = domain ? `https://api.iowen.cn/favicon/${domain}.png` : '';
         const cardHtml = `
           <a
             href="${link.url}"
@@ -102,14 +103,16 @@ export function initMainPage() {
               <div class="card-header">
                 <div class="header-main-info">
                   <div class="icon-wrapper">
+                    ${faviconUrl ? `
                     <img
-                      src="https://www.google.com/s2/favicons?sz=64&domain=${domain}"
+                      src="${faviconUrl}"
                       class="card-favicon"
-                      onload="this.style.display='block'; this.nextElementSibling.style.display='none';"
+                      onload="this.style.display='block'; this.nextElementSibling.style.display='none'; const wm = this.closest('.link-card').querySelector('.watermark-favicon'); if (wm) { wm.src = this.src; wm.style.display = 'block'; if (wm.nextElementSibling) wm.nextElementSibling.style.display = 'none'; }"
                       onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
                       style="display: none; width: 28px; height: 28px; border-radius: 6px; object-fit: contain;"
                       alt=""
                     />
+                    ` : ''}
                     <i data-lucide="${link.icon || 'external-link'}" class="card-icon"></i>
                   </div>
                   <h3 class="card-title">${link.title}</h3>
@@ -121,14 +124,13 @@ export function initMainPage() {
               </div>
             </div>
             <div class="card-watermark">
+              ${faviconUrl ? `
               <img
-                src="https://www.google.com/s2/favicons?sz=64&domain=${domain}"
                 class="watermark-favicon"
-                onload="this.style.display='block'; this.nextElementSibling.style.display='none';"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
                 style="display: none; width: 100%; height: 100%; object-fit: contain;"
                 alt=""
               />
+              ` : ''}
               <i data-lucide="${link.icon || 'external-link'}"></i>
             </div>
           </a>
@@ -141,7 +143,7 @@ export function initMainPage() {
 
     const runLucide = () => {
       if ((window as any).lucide) {
-        (window as any).lucide.createIcons();
+        (window as any).lucide.createIcons({ root: gridSection });
       } else {
         setTimeout(runLucide, 50);
       }
@@ -230,7 +232,12 @@ export function initMainPage() {
   });
 
   window.addEventListener('focus', () => {
-    renderMainGrid();
+    storage.syncFromCloud().then(updated => {
+      if (updated) {
+        renderMainGrid();
+        window.dispatchEvent(new CustomEvent('appearance-updated'));
+      }
+    }).catch(e => console.error('Focus background sync failed:', e));
   });
 }
 

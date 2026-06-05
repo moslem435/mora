@@ -580,9 +580,4 @@ function initAdminConsole() {
     refreshAll();
   }
 
-// 稳健的安全初始化触发器，适配 DOMContentLoaded 提前触发的情况
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initAdminConsole);
-} else {
-  initAdminConsole();
-}
+document.addEventListener('astro:page-load', initAdminConsole);
