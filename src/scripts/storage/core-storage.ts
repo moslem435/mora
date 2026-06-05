@@ -78,7 +78,6 @@ export const storage = {
       const cloudCats = catRes.data || [];
       const cloudLinks = linkRes.data || [];
       const cloudApp = appRes.data || null;
-      const cloudSite = siteConfig;
 
       const localCatsStr = localStorage.getItem(KEY_CATEGORIES);
       const localLinksStr = localStorage.getItem(KEY_LINKS);
