@@ -529,6 +529,12 @@ import '../styles/admin.css';
     });
 
     signUpBtn?.addEventListener('click', async () => {
+      const config = storage.getSiteConfig();
+      if (!config.allowRegistration) {
+        showToast('全站注册渠道已关闭，请联系管理员', 'error');
+        return;
+      }
+
       const email = authEmail.value.trim();
       const password = authPassword.value;
       
