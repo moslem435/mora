@@ -5,27 +5,7 @@ export function initMainPage() {
   const gridSection = document.getElementById('gridSection');
   if (!gridSection) return;
 
-  const greetingTitle = document.getElementById('greetingTitle');
-  const greetingSubtitle = document.getElementById('greetingSubtitle');
   const emptyState = document.getElementById('emptyState');
-
-  const greetings = [
-    { hour: 5, text: '清晨好，追光者' },
-    { hour: 9, text: '上午好，专注当下' },
-    { hour: 12, text: '中午好，适当小憩' },
-    { hour: 14, text: '下午好，保持热爱' },
-    { hour: 18, text: '黄昏好，日落温柔' },
-    { hour: 22, text: '夜深了，早点休息' }
-  ];
-
-  const randomSubtitles = [
-    '心之所向，无问西东。',
-    '行而不辍，未来可期。',
-    '不乱于心，不困于情。',
-    '慢品人间烟火色，闲观万事岁月长。',
-    '代码有温度，生活有态度。',
-    '凡是过往，皆为序章。'
-  ];
 
   function getDomain(urlStr: string) {
     try {
@@ -35,24 +15,6 @@ export function initMainPage() {
       return '';
     }
   }
-
-  function updateGreeting() {
-    const hr = new Date().getHours();
-    let greetText = '你好，极客';
-
-    for (let i = greetings.length - 1; i >= 0; i--) {
-      if (hr >= greetings[i].hour) {
-        greetText = greetings[i].text;
-        break;
-      }
-    }
-
-    if (greetingTitle) greetingTitle.textContent = greetText;
-
-    const randomSub = randomSubtitles[Math.floor(Math.random() * randomSubtitles.length)];
-    if (greetingSubtitle) greetingSubtitle.textContent = randomSub;
-  }
-  updateGreeting();
 
   function renderMainGrid() {
     if (!gridSection) return;
