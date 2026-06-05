@@ -6,35 +6,7 @@ import '../styles/settings.css';
 ---
 
 <Layout title="Mora 设置中心">
-  <div id="authContainer" class="settings-auth" style="display: none;">
-    <div class="settings-auth-card">
-      <i data-lucide="shield-check" class="settings-auth-icon"></i>
-      <h2>设置中心身份验证</h2>
-      <p>登录后管理账号、美化和备份配置</p>
-      <form id="authForm" class="settings-form" novalidate>
-        <div class="form-group">
-          <label for="authEmail">管理员邮箱</label>
-          <input type="email" id="authEmail" required placeholder="name@example.com" autocomplete="email" />
-        </div>
-        <div class="form-group">
-          <label for="authPassword">管理员密码</label>
-          <input type="password" id="authPassword" required placeholder="••••••••" autocomplete="current-password" />
-        </div>
-        <button type="submit" class="submit-btn">
-          <i data-lucide="log-in"></i>
-          <span>登录设置中心</span>
-        </button>
-        <button type="button" id="signUpBtn" class="action-btn secondary wide-btn" style="display: none;">
-          <i data-lucide="user-plus"></i>
-          <span>注册新管理员</span>
-        </button>
-      </form>
-      <a href="/" class="back-home-link">
-        <i data-lucide="arrow-left"></i>
-        <span>返回导航主页</span>
-      </a>
-    </div>
-  </div>
+  <!-- 移除冗余的登录界面，统一由 /admin 处理身份验证 -->
 
   <main class="settings-container" style="display: none;">
     <header class="settings-header">
@@ -417,7 +389,7 @@ import '../styles/settings.css';
 
     async function checkAuth() {
       if (!isSupabaseConfigured) {
-        authContainer.style.display = 'none';
+        // 离线模式逻辑保持不变
         settingsContainer.style.display = 'block';
         userAllowUpload = true;
         if (currentEmail) currentEmail.textContent = '本地离线模式';
@@ -433,14 +405,12 @@ import '../styles/settings.css';
 
       const { data: { session } } = await supabase!.auth.getSession();
       if (!session) {
-        authContainer.style.display = 'flex';
-        settingsContainer.style.display = 'none';
-        refreshIcons();
+        // 核心优化：未登录直接跳转到管理后台的登录页面
+        window.location.href = '/admin';
         return;
       }
 
       currentUserId = session.user.id;
-      authContainer.style.display = 'none';
       settingsContainer.style.display = 'block';
       if (logoutBtn) logoutBtn.style.display = 'inline-flex';
       if (currentEmail) currentEmail.textContent = session.user.email || '已登录账号';
