@@ -40,6 +40,32 @@ const {
 			})();
 		</script>
 
+		<!-- 全局 Favicon 容灾加载机制 -->
+		<script is:inline>
+			window.handleFaviconError = function(img, domain) {
+				if (!domain) {
+					img.style.display = 'none';
+					if (img.nextElementSibling) img.nextElementSibling.style.display = 'block';
+					return;
+				}
+				const sources = [
+					"https://api.iowen.cn/favicon/" + domain + ".png",
+					"https://favicon.t.jiandao.info/" + domain,
+					"https://unavatar.io/" + domain
+				];
+				let idx = parseInt(img.getAttribute('data-fav-idx') || '0');
+				if (idx < sources.length) {
+					img.setAttribute('data-fav-idx', String(idx + 1));
+					img.src = sources[idx];
+				} else {
+					img.style.display = 'none';
+					if (img.nextElementSibling) {
+						img.nextElementSibling.style.display = 'block';
+					}
+				}
+			};
+		</script>
+
 		<!-- 首屏极速防闪烁与透明度/模糊度同步脚本 -->
 		<script is:inline>
 			(function () {

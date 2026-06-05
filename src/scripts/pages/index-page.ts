@@ -1,4 +1,5 @@
 import { storage } from '../storage';
+import { renderLucideIconsSafe } from '../ui/icons';
 
 export function initMainPage() {
   const gridSection = document.getElementById('gridSection');
@@ -89,7 +90,7 @@ export function initMainPage() {
 
       catLinks.forEach(link => {
         const domain = getDomain(link.url);
-        const faviconUrl = domain ? `https://api.iowen.cn/favicon/${domain}.png` : '';
+        const faviconUrl = domain ? `https://www.google.com/s2/favicons?sz=64&domain=${domain}` : '';
         const cardHtml = `
           <a
             href="${link.url}"
@@ -108,7 +109,7 @@ export function initMainPage() {
                       src="${faviconUrl}"
                       class="card-favicon"
                       onload="this.style.display='block'; this.nextElementSibling.style.display='none'; const wm = this.closest('.link-card').querySelector('.watermark-favicon'); if (wm) { wm.src = this.src; wm.style.display = 'block'; if (wm.nextElementSibling) wm.nextElementSibling.style.display = 'none'; }"
-                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                      onerror="window.handleFaviconError && window.handleFaviconError(this, '${domain}')"
                       style="display: none; width: 28px; height: 28px; border-radius: 6px; object-fit: contain;"
                       alt=""
                     />
@@ -141,14 +142,7 @@ export function initMainPage() {
       gridSection.appendChild(catBlock);
     });
 
-    const runLucide = () => {
-      if ((window as any).lucide) {
-        (window as any).lucide.createIcons({ root: gridSection });
-      } else {
-        setTimeout(runLucide, 50);
-      }
-    };
-    runLucide();
+    renderLucideIconsSafe();
 
     // 渲染完成后，根据当前输入框内容进行过滤
     if (searchInput) {

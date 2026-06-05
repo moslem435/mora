@@ -4,31 +4,7 @@ import '../styles/admin.css';
 ---
 
 <Layout title="Mora 管理控制台">
-  <!-- 全局 Favicon 容灾加载机制 -->
-  <script is:inline>
-    window.handleFaviconError = function(img, domain) {
-      if (!domain) {
-        img.style.display = 'none';
-        if (img.nextElementSibling) img.nextElementSibling.style.display = 'block';
-        return;
-      }
-      const sources = [
-        "https://api.iowen.cn/favicon/" + domain + ".png",
-        "https://favicon.t.jiandao.info/" + domain,
-        "https://unavatar.io/" + domain
-      ];
-      let idx = parseInt(img.getAttribute('data-fav-idx') || '0');
-      if (idx < sources.length) {
-        img.setAttribute('data-fav-idx', String(idx + 1));
-        img.src = sources[idx];
-      } else {
-        img.style.display = 'none';
-        if (img.nextElementSibling) {
-          img.nextElementSibling.style.display = 'block';
-        }
-      }
-    };
-  </script>
+
 
   <!-- 身份验证面板（毛玻璃磨砂效果） -->
   <div id="authContainer" class="auth-container" style="display: none;">
