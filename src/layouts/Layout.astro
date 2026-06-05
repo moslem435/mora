@@ -47,7 +47,13 @@ const {
 				window.getFaviconFromCache = function(domain) {
 					try {
 						const cache = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}");
-						return cache[domain] || null;
+						const val = cache[domain];
+						if (val && val.indexOf("google.com") !== -1) {
+							delete cache[domain];
+							localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+							return null;
+						}
+						return val || null;
 					} catch (e) {
 						return null;
 					}
