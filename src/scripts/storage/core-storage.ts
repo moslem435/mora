@@ -55,16 +55,24 @@ export const storage = {
         targetUserId = import.meta.env.PUBLIC_DEFAULT_ADMIN_USER_ID || null;
       }
 
-      const [catRes, linkRes, appRes, siteConfig] = await Promise.all([
+      // 1. 始终拉取全站配置（独立于用户信息）
+      const cloudSite = await this.syncSiteConfigPublic();
+
+      // 2. 如果没有有效的 targetUserId，跳过业务数据同步，仅返回全站配置的更新状态
+      if (!targetUserId || targetUserId === 'null') {
+        return !!cloudSite;
+      }
+
+      // 3. 只有在有有效 UUID 时才发起业务数据查询
+      const [catRes, linkRes, appRes] = await Promise.all([
         supabase.from('categories').select('*').eq('user_id', targetUserId).order('order', { ascending: true }),
         supabase.from('links').select('*').eq('user_id', targetUserId).order('order', { ascending: true }),
-        supabase.from('appearance').select('*').eq('user_id', targetUserId).maybeSingle(),
-        this.syncSiteConfigPublic()
+        supabase.from('appearance').select('*').eq('user_id', targetUserId).maybeSingle()
       ]);
 
       if (catRes.error || linkRes.error || appRes.error) {
-        console.warn('Sync from cloud failed:', catRes.error, linkRes.error, appRes.error);
-        return false;
+        console.warn('Sync business data from cloud failed:', catRes.error, linkRes.error, appRes.error);
+        return !!cloudSite;
       }
 
       const cloudCats = catRes.data || [];
