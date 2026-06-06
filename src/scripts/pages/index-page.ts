@@ -16,20 +16,39 @@ export function initMainPage() {
     }
   }
 
+  function renderSkeleton() {
+    if (!gridSection) return;
+    gridSection.innerHTML = `
+      <div class="skeleton-block">
+        <div class="skeleton-title"></div>
+        <div class="skeleton-grid">
+          ${'<div class="skeleton-card"></div>'.repeat(6)}
+        </div>
+      </div>
+      <div class="skeleton-block">
+        <div class="skeleton-title"></div>
+        <div class="skeleton-grid">
+          ${'<div class="skeleton-card"></div>'.repeat(3)}
+        </div>
+      </div>
+    `;
+  }
+
   function renderMainGrid() {
     if (!gridSection) return;
-    gridSection.innerHTML = '';
-
+    
     const categories = storage.getCategories().sort((a, b) => a.order - b.order);
     const links = storage.getLinks().sort((a, b) => a.order - b.order);
 
     if (categories.length === 0) {
+      gridSection.innerHTML = '';
       emptyState!.style.display = 'flex';
       return;
     } else {
       emptyState!.style.display = 'none';
     }
 
+    gridSection.innerHTML = '';
     categories.forEach(cat => {
       const catLinks = links.filter(l => l.categoryId === cat.id);
       if (catLinks.length === 0) return;
@@ -182,7 +201,12 @@ export function initMainPage() {
     });
   }
 
-  renderMainGrid();
+  // 初始渲染逻辑
+  if (storage.getCategories().length === 0) {
+    renderSkeleton();
+  } else {
+    renderMainGrid();
+  }
 
   storage.syncFromCloud().then(updated => {
     if (updated) {

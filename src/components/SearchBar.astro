@@ -586,9 +586,20 @@
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === '/' && document.activeElement !== searchInput) {
+      // / 或 Ctrl+K / Cmd+K 聚焦搜索框
+      if ((e.key === '/' || ((e.ctrlKey || e.metaKey) && e.key === 'k')) && document.activeElement !== searchInput) {
         e.preventDefault();
         searchInput.focus();
+      }
+      
+      // Esc 键逻辑：如果已聚焦则失焦，如果有内容则清空
+      if (e.key === 'Escape') {
+        if (searchInput.value) {
+          searchInput.value = '';
+          searchInput.dispatchEvent(new Event('input'));
+        } else if (document.activeElement === searchInput) {
+          searchInput.blur();
+        }
       }
     });
 

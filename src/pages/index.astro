@@ -357,6 +357,55 @@ import Sidebar from '../components/Sidebar.astro';
       font-size: 22px;
     }
   }
+
+  /* 空状态 */
+  .empty-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 0;
+    color: var(--color-text-sub);
+    gap: 12px;
+  }
+
+  /* 骨架屏动画 */
+  @keyframes skeleton-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .skeleton-block {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .skeleton-title {
+    width: 120px;
+    height: 20px;
+    background: var(--card-bg);
+    border-radius: 6px;
+    animation: skeleton-shimmer 2s infinite linear;
+    background: linear-gradient(90deg, var(--card-bg) 25%, rgba(0,0,0,0.03) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+  }
+
+  .skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .skeleton-card {
+    height: 110px;
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--card-border);
+    animation: skeleton-shimmer 2s infinite linear;
+    background: linear-gradient(90deg, var(--card-bg) 25%, rgba(0,0,0,0.02) 50%, var(--card-bg) 75%);
+    background-size: 200% 100%;
+  }
 </style>
 
 <script src="../scripts/pages/index-page.ts"></script>
