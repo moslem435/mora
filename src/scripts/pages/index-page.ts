@@ -1,6 +1,18 @@
 import { storage } from '../storage';
 import { renderLucideIconsSafe } from '../ui/icons';
 
+interface Widget {
+  id: string;
+  name: string;
+  icon: string;
+  size: 'normal' | 'wide' | 'custom';
+  colSpan?: number;
+  rowSpan?: number;
+  html: string;
+  css: string;
+  js: string;
+}
+
 export function initMainPage() {
   const gridSection = document.getElementById('gridSection');
   if (!gridSection) return;
@@ -60,6 +72,207 @@ export function initMainPage() {
       originalToggle.click(); // 触发原有的侧边栏逻辑
     });
   }
+
+  // ================= 自定义小组件核心逻辑 =================
+  const addWidgetBtn = document.getElementById('addWidgetBtn');
+  const widgetEditor = document.getElementById('widgetEditor');
+  const closeEditor = document.getElementById('closeEditor');
+  const cancelWidget = document.getElementById('cancelWidget');
+  const saveWidgetBtn = document.getElementById('saveWidget');
+  const editorModalTitle = document.getElementById('editorModalTitle');
+  const workbenchGrid = document.querySelector('.workbench-grid');
+
+  const nameInput = document.getElementById('widgetNameInput') as HTMLInputElement;
+  const iconInput = document.getElementById('widgetIconInput') as HTMLInputElement;
+  const sizeInput = document.getElementById('widgetSizeInput') as HTMLSelectElement;
+  const htmlEditor = document.getElementById('htmlEditor') as HTMLTextAreaElement;
+  const cssEditor = document.getElementById('cssEditor') as HTMLTextAreaElement;
+  const jsEditor = document.getElementById('jsEditor') as HTMLTextAreaElement;
+  const tabs = document.querySelectorAll('.tab-btn');
+
+  let editingWidgetId: string | null = null;
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const type = tab.getAttribute('data-tab');
+      htmlEditor.style.display = type === 'html' ? 'block' : 'none';
+      cssEditor.style.display = type === 'css' ? 'block' : 'none';
+      jsEditor.style.display = type === 'js' ? 'block' : 'none';
+    });
+  });
+
+  function openEditor(widget?: Widget) {
+    if (widget) {
+      editingWidgetId = widget.id;
+      editorModalTitle!.textContent = '编辑小组件';
+      nameInput.value = widget.name;
+      iconInput.value = widget.icon;
+      sizeInput.value = widget.size;
+      htmlEditor.value = widget.html;
+      cssEditor.value = widget.css;
+      jsEditor.value = widget.js;
+    } else {
+      editingWidgetId = null;
+      editorModalTitle!.textContent = '新建小组件';
+      nameInput.value = '';
+      iconInput.value = 'code-2';
+      sizeInput.value = 'normal';
+      htmlEditor.value = '';
+      cssEditor.value = '';
+      jsEditor.value = '';
+    }
+    widgetEditor!.style.display = 'flex';
+  }
+
+  addWidgetBtn?.addEventListener('click', () => openEditor());
+  closeEditor?.addEventListener('click', () => widgetEditor!.style.display = 'none');
+  cancelWidget?.addEventListener('click', () => widgetEditor!.style.display = 'none');
+
+  function renderWidgetCard(widget: Widget) {
+    const existing = document.querySelector(`[data-widget-id="${widget.id}"]`);
+    if (existing) existing.remove();
+
+    const card = document.createElement('div');
+    card.className = `widget-card ${widget.size === 'wide' ? 'wide-widget' : ''} custom-code-widget`;
+    card.setAttribute('data-widget-id', widget.id);
+    
+    const srcDoc = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; overflow: hidden; background: transparent; }
+            ${widget.css}
+          </style>
+        </head>
+        <body>
+          ${widget.html}
+          <script>
+            try { ${widget.js} } catch (e) { console.error('Widget Error:', e); }
+          </script>
+        </body>
+      </html>
+    `;
+
+    card.innerHTML = `
+      <div class="widget-header">
+        <div class="header-left">
+          <i data-lucide="${widget.icon || 'code-2'}"></i>
+          <span>${widget.name || '未命名组件'}</span>
+        </div>
+        <div class="widget-actions">
+          <button class="action-btn refresh-btn" title="刷新"><i data-lucide="refresh-cw"></i></button>
+          <button class="action-btn edit-btn" title="编辑"><i data-lucide="edit-3"></i></button>
+          <button class="action-btn delete delete-btn" title="删除"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+      <div style="flex-grow:1; position:relative; overflow: hidden; border-radius: 8px; pointer-events: none;">
+        <iframe class="custom-widget-frame" style="width:100%; height:100%; border:none; background:transparent;" srcdoc='${srcDoc.replace(/'/g, "&apos;")}'></iframe>
+      </div>
+      <div class="resize-handle" title="拖拽调整大小">
+        <i data-lucide="grip-vertical"></i>
+      </div>
+    `;
+
+    // 应用自定义尺寸
+    if (widget.colSpan) card.style.gridColumn = `span ${widget.colSpan}`;
+    else if (widget.size === 'wide') card.style.gridColumn = `span 2`;
+    
+    if (widget.rowSpan) card.style.gridRow = `span ${widget.rowSpan}`;
+
+    // 拖拽缩放逻辑
+    const handle = card.querySelector('.resize-handle') as HTMLElement;
+    handle?.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startColSpan = widget.colSpan || (widget.size === 'wide' ? 2 : 1);
+      const startRowSpan = widget.rowSpan || 1;
+      
+      // 获取网格基础宽度（近似值）
+      const gridRect = workbenchGrid!.getBoundingClientRect();
+      const colWidth = 300 + 24; // min-width + gap
+      const rowHeight = 180 + 24; // min-height + gap
+
+      const onPointerMove = (moveEvent: PointerEvent) => {
+        const deltaX = moveEvent.clientX - startX;
+        const deltaY = moveEvent.clientY - startY;
+        
+        const newColSpan = Math.max(1, Math.min(4, Math.round(startColSpan + deltaX / colWidth)));
+        const newRowSpan = Math.max(1, Math.min(4, Math.round(startRowSpan + deltaY / rowHeight)));
+        
+        if (newColSpan !== widget.colSpan || newRowSpan !== widget.rowSpan) {
+          widget.colSpan = newColSpan;
+          widget.rowSpan = newRowSpan;
+          card.style.gridColumn = `span ${newColSpan}`;
+          card.style.gridRow = `span ${newRowSpan}`;
+        }
+      };
+
+      const onPointerUp = () => {
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        
+        // 保存到本地存储
+        const saved = JSON.parse(localStorage.getItem('custom_widgets') || '[]');
+        const idx = saved.findIndex((w: any) => w.id === widget.id);
+        if (idx > -1) {
+          saved[idx] = widget;
+          localStorage.setItem('custom_widgets', JSON.stringify(saved));
+        }
+      };
+
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+    });
+
+    card.querySelector('.refresh-btn')?.addEventListener('click', () => {
+      const iframe = card.querySelector('iframe');
+      if (iframe) iframe.srcdoc = srcDoc.replace(/'/g, "&apos;");
+    });
+    card.querySelector('.edit-btn')?.addEventListener('click', () => openEditor(widget));
+    card.querySelector('.delete-btn')?.addEventListener('click', () => {
+      if (confirm('确定要删除这个组件吗？')) {
+        const saved = JSON.parse(localStorage.getItem('custom_widgets') || '[]');
+        const filtered = saved.filter((w: any) => w.id !== widget.id);
+        localStorage.setItem('custom_widgets', JSON.stringify(filtered));
+        card.remove();
+      }
+    });
+
+    workbenchGrid?.insertBefore(card, addWidgetBtn);
+    renderLucideIconsSafe();
+  }
+
+  saveWidgetBtn?.addEventListener('click', () => {
+    const widget: Widget = {
+      id: editingWidgetId || Date.now().toString(),
+      name: nameInput.value,
+      icon: iconInput.value,
+      size: sizeInput.value as any,
+      html: htmlEditor.value,
+      css: cssEditor.value,
+      js: jsEditor.value
+    };
+    const saved = JSON.parse(localStorage.getItem('custom_widgets') || '[]');
+    if (editingWidgetId) {
+      const idx = saved.findIndex((w: any) => w.id === editingWidgetId);
+      if (idx > -1) saved[idx] = widget;
+    } else saved.push(widget);
+    localStorage.setItem('custom_widgets', JSON.stringify(saved));
+    renderWidgetCard(widget);
+    widgetEditor!.style.display = 'none';
+  });
+
+  function loadSavedWidgets() {
+    const saved = JSON.parse(localStorage.getItem('custom_widgets') || '[]');
+    saved.forEach((w: Widget) => renderWidgetCard(w));
+  }
+  loadSavedWidgets();
 
   function renderSkeleton() {
     if (!gridSection) return;

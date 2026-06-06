@@ -56,11 +56,10 @@ alter table public.appearance enable row level security;
 -- =========================================================================
 
 -- 5.1 分类表 (categories) 策略
--- 所有人都可以读取分类（以便访客能够看你的导航页）
-create policy "Allow public read access to categories" 
-  on public.categories for select using (true);
+-- 仅所有者可以读取、新增、更新、删除分类
+create policy "Allow owners to read categories" 
+  on public.categories for select using (auth.uid() = user_id);
 
--- 仅所有者可以新增、更新、删除分类
 create policy "Allow owners to insert categories" 
   on public.categories for insert with check (auth.uid() = user_id);
 
@@ -72,11 +71,10 @@ create policy "Allow owners to delete categories"
 
 
 -- 5.2 链接表 (links) 策略
--- 所有人都可以读取链接
-create policy "Allow public read access to links" 
-  on public.links for select using (true);
+-- 仅所有者可以读取、操作链接
+create policy "Allow owners to read links" 
+  on public.links for select using (auth.uid() = user_id);
 
--- 仅所有者可以操作链接
 create policy "Allow owners to insert links" 
   on public.links for insert with check (auth.uid() = user_id);
 
@@ -88,11 +86,10 @@ create policy "Allow owners to delete links"
 
 
 -- 5.3 外观配置表 (appearance) 策略
--- 所有人都可以读取外观配置
-create policy "Allow public read access to appearance" 
-  on public.appearance for select using (true);
+-- 仅所有者可以读取、操作外观配置
+create policy "Allow owners to read appearance" 
+  on public.appearance for select using (auth.uid() = user_id);
 
--- 仅所有者可以操作外观配置
 create policy "Allow owners to insert appearance" 
   on public.appearance for insert with check (auth.uid() = user_id);
 
@@ -145,6 +142,26 @@ create table if not exists public.profiles (
   allow_upload boolean not null default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- 开启 RLS
+alter table public.profiles enable row level security;
+
+-- 1. 用户只能查看自己的资料
+create policy "Allow users to read own profile"
+  on public.profiles for select using (auth.uid() = id);
+
+-- 2. 管理员可以查看所有资料
+create policy "Allow admins to read all profiles"
+  on public.profiles for select using (
+    exists (
+      select 1 from public.profiles
+      where id = auth.uid() and role = 'admin'
+    )
+  );
+
+-- 3. 用户只能更新自己的资料（排除 role 字段的控制通常在应用层或通过更复杂的 policy 处理，这里先做基础权限隔离）
+create policy "Allow users to update own profile"
+  on public.profiles for update using (auth.uid() = id);
 
 -- =========================================================================
 -- 索引配置 (Indexes) - 提升数据库在大并发和多用户查询下的吞吐和检索性能
