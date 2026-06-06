@@ -248,7 +248,10 @@ import '../styles/admin.css';
         </div>
         <div class="form-group">
           <label for="editLinkUrl">链接 URL</label>
-          <input type="url" id="editLinkUrl" required />
+          <div style="display: flex; gap: 8px;">
+            <input type="url" id="editLinkUrl" required style="flex: 1;" />
+            <button type="button" id="identifyEditLinkBtn" class="action-btn secondary" style="flex-shrink: 0; padding: 0 16px; height: 42px; border-radius: 10px; font-size: 13px;">识别</button>
+          </div>
         </div>
         <div class="form-group">
           <label for="editLinkDesc">描述信息</label>
@@ -323,7 +326,7 @@ import '../styles/admin.css';
     const linkIconInput = document.getElementById('linkIcon') as HTMLInputElement;
 
     const identifyLinkBtn = document.getElementById('identifyLinkBtn');
-
+    const identifyEditLinkBtn = document.getElementById('identifyEditLinkBtn');
 
     const editCatModal = document.getElementById('editCatModal');
     const editCatForm = document.getElementById('editCatForm') as HTMLFormElement;
@@ -428,6 +431,46 @@ import '../styles/admin.css';
       } finally {
         identifyLinkBtn.textContent = originalBtnText;
         (identifyLinkBtn as HTMLButtonElement).disabled = false;
+      }
+    });
+
+    // 编辑链接信息手动识别逻辑
+    identifyEditLinkBtn?.addEventListener('click', async () => {
+      const urlInput = document.getElementById('editLinkUrl') as HTMLInputElement;
+      const titleInput = document.getElementById('editLinkTitle') as HTMLInputElement;
+      const descInput = document.getElementById('editLinkDesc') as HTMLInputElement;
+      
+      const url = urlInput.value.trim();
+      const normalizedUrl = normalizeUrlCandidate(url);
+      if (!normalizedUrl) {
+        showToast('请输入有效的网址', 'info');
+        return;
+      }
+
+      const originalBtnText = identifyEditLinkBtn.textContent;
+      identifyEditLinkBtn.textContent = '识别中...';
+      (identifyEditLinkBtn as HTMLButtonElement).disabled = true;
+
+      const toastHandle = showToast('正在重新抓取网页信息...', 'loading');
+      
+      try {
+        const metadata = await fetchUrlMetadata(normalizedUrl);
+        if (metadata) {
+          if (metadata.title) {
+            titleInput.value = metadata.title;
+          }
+          if (metadata.description) {
+            descInput.value = metadata.description;
+          }
+          toastHandle.update('网页信息更新成功', 'success');
+        } else {
+          toastHandle.update('未能获取最新网页信息', 'info');
+        }
+      } catch (err) {
+        toastHandle.update('抓取失败，请检查网络或手动输入', 'error');
+      } finally {
+        identifyEditLinkBtn.textContent = originalBtnText;
+        (identifyEditLinkBtn as HTMLButtonElement).disabled = false;
       }
     });
 
