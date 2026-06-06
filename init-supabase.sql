@@ -179,8 +179,29 @@ create policy "Allow admins to modify site_config"
     )
   );
 
--- 初始化默认配置
-insert into public.site_config (key, value)
-values ('allow_registration', 'true'::jsonb)
-on conflict (key) do nothing;
+-- =========================================================================
+-- 注册安全校验触发器
+-- =========================================================================
+
+-- 创建校验函数
+create or replace function public.check_registration_enabled()
+returns trigger as $$
+begin
+  if not exists (
+    select 1 from public.site_config 
+    where key = 'allow_registration' 
+    and (value::jsonb)::boolean = true
+  ) then
+    raise exception '注册功能已关闭，请联系管理员。';
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+-- 绑定触发器到 auth.users 表
+-- 即使攻击者绕过前端直接调用 API，数据库也会拦截插入操作
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  before insert on auth.users
+  for each row execute function public.check_registration_enabled();
 
