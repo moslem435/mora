@@ -16,6 +16,51 @@ export function initMainPage() {
     }
   }
 
+  const workbenchSection = document.getElementById('workbenchSection');
+  const navModeBtn = document.getElementById('navModeBtn');
+  const workbenchModeBtn = document.getElementById('workbenchModeBtn');
+  const modeSlider = document.getElementById('modeSlider');
+  const greetingHeader = document.getElementById('greetingHeader');
+  const searchSection = document.getElementById('searchSection');
+
+  function switchMode(mode: 'nav' | 'workbench') {
+    if (!gridSection || !workbenchSection || !navModeBtn || !workbenchModeBtn || !modeSlider) return;
+
+    if (mode === 'nav') {
+      gridSection.style.display = 'flex';
+      workbenchSection.style.display = 'none';
+      if (greetingHeader) greetingHeader.style.display = 'block';
+      if (searchSection) searchSection.style.display = 'block';
+      navModeBtn.classList.add('active');
+      workbenchModeBtn.classList.remove('active');
+      modeSlider.style.transform = 'translateX(0)';
+      renderMainGrid(); 
+    } else {
+      gridSection.style.display = 'none';
+      emptyState!.style.display = 'none';
+      workbenchSection.style.display = 'block';
+      if (greetingHeader) greetingHeader.style.display = 'none';
+      if (searchSection) searchSection.style.display = 'none';
+      navModeBtn.classList.remove('active');
+      workbenchModeBtn.classList.add('active');
+      modeSlider.style.transform = 'translateX(calc(100% + 4px))';
+    }
+    
+    renderLucideIconsSafe();
+  }
+
+  navModeBtn?.addEventListener('click', () => switchMode('nav'));
+  workbenchModeBtn?.addEventListener('click', () => switchMode('workbench'));
+
+  // 绑定新的顶栏侧边栏按钮逻辑
+  const topSidebarToggle = document.getElementById('sidebarToggleCopy');
+  const originalToggle = document.getElementById('sidebarToggle');
+  if (topSidebarToggle && originalToggle) {
+    topSidebarToggle.addEventListener('click', () => {
+      originalToggle.click(); // 触发原有的侧边栏逻辑
+    });
+  }
+
   function renderSkeleton() {
     if (!gridSection) return;
     gridSection.innerHTML = `

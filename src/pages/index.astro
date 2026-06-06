@@ -12,8 +12,21 @@ import Sidebar from '../components/Sidebar.astro';
   <main class="main-content" id="mainContent">
     <div class="content-wrapper">
       
+      <!-- 模式切换触发器 -->
+      <div class="mode-switcher-container">
+        <div class="mode-slider" id="modeSlider"></div>
+        <button class="mode-switch-btn active" id="navModeBtn" title="导航模式">
+          <i data-lucide="layout-grid"></i>
+          <span>导航</span>
+        </button>
+        <button class="mode-switch-btn" id="workbenchModeBtn" title="工作台模式">
+          <i data-lucide="box"></i>
+          <span>工作台</span>
+        </button>
+      </div>
+
       <!-- 顶部头部信息 -->
-      <header class="greeting-header">
+      <header class="greeting-header" id="greetingHeader">
         <h1 class="greeting-title" id="greetingTitle">你好，极客</h1>
         <p class="greeting-subtitle" id="greetingSubtitle">用专注和热爱，度过美好的一天。</p>
         <script is:inline>
@@ -59,13 +72,45 @@ import Sidebar from '../components/Sidebar.astro';
       </header>
 
       <!-- 搜索栏区 -->
-      <section class="search-section">
+      <section class="search-section" id="searchSection">
         <SearchBar />
       </section>
 
-      <!-- 导航卡片展示区 -->
+      <!-- 导航卡片展示区 (现有) -->
       <section class="grid-section" id="gridSection">
         <!-- 客户端动态渲染 -->
+      </section>
+
+      <!-- 工作台展示区 (新) -->
+      <section class="workbench-section" id="workbenchSection" style="display: none;">
+        <div class="workbench-grid">
+          <!-- 预留的小组件占位符 -->
+          <div class="widget-card wide-widget">
+            <div class="widget-header">
+              <i data-lucide="github"></i>
+              <span>GitHub Contribution</span>
+            </div>
+            <div class="widget-placeholder">GitHub 绿格子墙正在开发中...</div>
+          </div>
+          
+          <div class="widget-card">
+            <div class="widget-header">
+              <i data-lucide="list-todo"></i>
+              <span>今日待办</span>
+            </div>
+            <div class="widget-placeholder">12 个任务待完成</div>
+          </div>
+
+          <div class="widget-card">
+            <div class="widget-header">
+              <i data-lucide="quote"></i>
+              <span>每日一言</span>
+            </div>
+            <div class="widget-content quote-content">
+              “心之所向，无问西东。”
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 空状态 -->
@@ -82,7 +127,7 @@ import Sidebar from '../components/Sidebar.astro';
   /* 主内容区偏移 */
   .main-content {
     min-height: 100vh;
-    padding: 80px 40px 80px 40px;
+    padding: 48px 40px 80px 40px;
     margin-left: 0;
     transition: var(--transition-smooth);
     display: flex;
@@ -105,7 +150,7 @@ import Sidebar from '../components/Sidebar.astro';
   /* 顶部问候 */
   .greeting-header {
     text-align: center;
-    margin-top: 10px;
+    margin-top: 0;
   }
 
   .greeting-title {
@@ -343,6 +388,201 @@ import Sidebar from '../components/Sidebar.astro';
     to { opacity: 1; transform: translate3d(0, 0, 0); }
   }
 
+  /* ================= 顶栏布局 ================= */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 48px;
+    margin-bottom: 12px;
+  }
+
+  .top-bar-left, .top-bar-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .top-bar-right {
+    justify-content: flex-end;
+  }
+
+  .top-bar-center {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* 顶栏侧边栏按钮样式 */
+  .top-sidebar-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+  }
+
+  .top-sidebar-toggle:hover {
+    background: rgba(0, 0, 0, 0.08);
+    transform: scale(1.05);
+  }
+
+  .top-sidebar-toggle i {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* 隐藏原有的悬浮按钮（仅在首页） */
+  :global(.sidebar-toggle-btn) {
+    display: none !important;
+  }
+
+  /* ================= 模式切换器 ================= */
+  .mode-switcher-container {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 12px;
+    padding: 4px;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 14px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    user-select: none;
+    border: 1px solid rgba(0, 0, 0, 0.02);
+  }
+
+  .mode-slider {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    width: calc(50% - 6px);
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .mode-switch-btn {
+    display: flex;
+    position: relative;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-sub);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease;
+    z-index: 2;
+  }
+
+  .mode-switch-btn i {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.3s ease;
+  }
+
+  .mode-switch-btn.active {
+    color: var(--theme-color);
+  }
+
+  .mode-switch-btn:not(.active):hover {
+    color: var(--color-text-main);
+  }
+
+  .mode-switch-btn:active {
+    transform: scale(0.95);
+  }
+
+  .mode-switch-btn.active i {
+    transform: scale(1.1);
+  }
+
+  /* ================= 工作台样式 ================= */
+  .workbench-section {
+    animation: fadeIn 0.5s ease both;
+  }
+
+  .workbench-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .widget-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 160px;
+    transition: var(--transition-smooth);
+  }
+
+  .widget-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--theme-color);
+  }
+
+  .widget-card.wide-widget {
+    grid-column: 1 / -1;
+    min-height: 200px;
+  }
+
+  .widget-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-main);
+  }
+
+  .widget-header i {
+    width: 18px;
+    height: 18px;
+    color: var(--theme-color);
+  }
+
+  .widget-placeholder {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+    color: var(--color-text-sub);
+    font-size: 13px;
+    border: 1px dashed rgba(0, 0, 0, 0.05);
+  }
+
+  .quote-content {
+    font-size: 16px;
+    font-style: italic;
+    color: var(--color-text-main);
+    text-align: center;
+    margin: auto;
+    line-height: 1.6;
+  }
+
   /* 响应式调整 */
   @media (max-width: 768px) {
     .main-content {
@@ -409,4 +649,5 @@ import Sidebar from '../components/Sidebar.astro';
 </style>
 
 <script src="../scripts/pages/index-page.ts"></script>
+
 
