@@ -204,6 +204,15 @@ import Sidebar from '../components/Sidebar.astro';
 </Layout>
 
 <style is:global>
+  :root {
+    --github-chart-filter: none;
+  }
+
+  /* 当背景为暗色模式时应用滤镜 */
+  :global([data-bg-style="dark-slate"]) {
+    --github-chart-filter: invert(0.9) hue-rotate(180deg) brightness(1.1);
+  }
+
   /* ================= 核心布局 ================= */
   .main-content {
     min-height: 100vh;

@@ -114,7 +114,8 @@ export const storage = {
           fontStyle: cloudApp.font_style,
           fontCustomLink: cloudApp.font_custom_link || '',
           fontFamilyName: cloudApp.font_family_name || '',
-          scrollbarEnabled: cloudApp.scrollbar_enabled !== undefined ? !!cloudApp.scrollbar_enabled : false
+          scrollbarEnabled: cloudApp.scrollbar_enabled !== undefined ? !!cloudApp.scrollbar_enabled : false,
+          githubUsername: cloudApp.github_username || ''
         };
       }
 
@@ -264,7 +265,8 @@ export const storage = {
           fontStyle: cloudApp.font_style,
           fontCustomLink: cloudApp.font_custom_link || '',
           fontFamilyName: cloudApp.font_family_name || '',
-          scrollbarEnabled: cloudApp.scrollbar_enabled !== undefined ? !!cloudApp.scrollbar_enabled : false
+          scrollbarEnabled: cloudApp.scrollbar_enabled !== undefined ? !!cloudApp.scrollbar_enabled : false,
+          githubUsername: cloudApp.github_username || ''
         };
       }
 
@@ -617,7 +619,8 @@ export const storage = {
         font_style: config.fontStyle,
         font_custom_link: config.fontCustomLink,
         font_family_name: config.fontFamilyName,
-        scrollbar_enabled: config.scrollbarEnabled ?? false
+        scrollbar_enabled: config.scrollbarEnabled ?? false,
+        github_username: config.githubUsername || ''
       });
       if (error) {
         throw new Error(`更新云端美化配置失败: ${error.message}`);

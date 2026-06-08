@@ -1,8 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import '../styles/settings.css';
-import '../styles/settings.css';
-import '../styles/settings.css';
 ---
 
 <Layout title="Mora 设置中心">
@@ -177,6 +175,17 @@ import '../styles/settings.css';
                 <span class="switch-slider"></span>
               </label>
             </div>
+
+            <div class="section-divider"></div>
+            
+            <div class="form-group">
+              <label for="githubUsername">GitHub 用户名</label>
+              <div class="input-with-icon">
+                <i data-lucide="github" class="input-icon-left"></i>
+                <input type="text" id="githubUsername" placeholder="输入 GitHub ID 以启用工作台绿格子" />
+              </div>
+              <p class="field-desc">配置后将在工作台模式自动展示您的 GitHub Contribution 贡献图</p>
+            </div>
           </form>
         </section>
 
@@ -323,6 +332,7 @@ import '../styles/settings.css';
     const bgUploadStatus = document.getElementById('bgUploadStatus');
 
     const primaryColorSelect = document.getElementById('primaryColor') as HTMLSelectElement;
+    const githubUsernameInput = document.getElementById('githubUsername') as HTMLInputElement;
     const cardOpacityInput = document.getElementById('cardOpacity') as HTMLInputElement;
     const cardBlurInput = document.getElementById('cardBlur') as HTMLInputElement;
     const scrollbarEnabledInput = document.getElementById('scrollbarEnabled') as HTMLInputElement;
@@ -655,7 +665,8 @@ import '../styles/settings.css';
         primaryColor: primaryColorSelect?.value || 'blue',
         cardOpacity: cardOpacityInput ? parseFloat(cardOpacityInput.value) : 0.65,
         cardBlur: cardBlurInput ? parseFloat(cardBlurInput.value) : 20,
-        scrollbarEnabled: scrollbarEnabledInput ? scrollbarEnabledInput.checked : false
+        scrollbarEnabled: scrollbarEnabledInput ? scrollbarEnabledInput.checked : false,
+        githubUsername: githubUsernameInput?.value.trim() || ''
       };
       console.log('[Settings] saveAndApplyAppearance called. Saving Config:', config);
       storage.saveAppearance(config);
@@ -678,6 +689,7 @@ import '../styles/settings.css';
       if (bgStyleSelect) bgStyleSelect.value = config.bgStyle;
       if (customBgUrlInput) customBgUrlInput.value = config.customBgUrl || '';
       if (primaryColorSelect) primaryColorSelect.value = config.primaryColor;
+      if (githubUsernameInput) githubUsernameInput.value = config.githubUsername || '';
       if (cardOpacityInput) {
         cardOpacityInput.value = String(config.cardOpacity);
         if (opacityVal) opacityVal.textContent = `${Math.round(config.cardOpacity * 100)}%`;
@@ -841,6 +853,7 @@ import '../styles/settings.css';
     primaryColorSelect?.addEventListener('change', saveAndApplyAppearance);
     customBgUrlInput?.addEventListener('input', saveAndApplyAppearance);
     customBgUrlInput?.addEventListener('change', saveAndApplyAppearance);
+    githubUsernameInput?.addEventListener('input', saveAndApplyAppearance);
     appearanceForm?.addEventListener('submit', (e) => e.preventDefault());
 
     exportBtn?.addEventListener('click', () => {

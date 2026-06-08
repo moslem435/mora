@@ -296,6 +296,43 @@
   box-shadow: 0 0 0 3px rgba(154, 168, 173, 0.12);
 }
 
+/* 图标输入框容器 */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-icon-left {
+  position: absolute;
+  left: 13px;
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-sub);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 调整带图标输入框的内边距 */
+.input-with-icon input {
+  padding-left: 40px !important;
+}
+
+.field-desc {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--color-text-sub);
+  line-height: 1.5;
+}
+
+.section-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.05);
+  margin: 10px 0;
+  border: none;
+}
+
 /* 自定义下拉选择框：沿用管理台莫兰迪毛玻璃样式 */
 .custom-select-wrapper {
   position: relative;

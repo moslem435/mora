@@ -27,6 +27,7 @@ export interface AppearanceConfig {
   fontCustomLink?: string;
   fontFamilyName?: string;
   scrollbarEnabled?: boolean;
+  githubUsername?: string;
 }
 
 export interface SiteConfig {

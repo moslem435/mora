@@ -268,6 +268,66 @@ export function initMainPage() {
     widgetEditor!.style.display = 'none';
   });
 
+  // ================= 内置小组件加载逻辑 =================
+  function renderBuiltinWidgets(retryArg: any = 0) {
+    const retryCount = typeof retryArg === 'number' ? retryArg : 0;
+    console.log(`[Workbench-V6] renderBuiltinWidgets execution (attempt ${retryCount + 1})`);
+    
+    const appearance = storage.getAppearance();
+    let githubUser = appearance.githubUsername?.trim() || '';
+    
+    // 深度清洗：移除所有非字母数字和连字符，防止不可见字符干扰 URL
+    githubUser = githubUser.replace(/[^a-zA-Z0-9-]/g, '');
+
+    const githubWidget = document.querySelector('[data-builtin="github"]');
+    
+    if (!githubWidget && retryCount < 5) {
+      setTimeout(() => renderBuiltinWidgets(retryCount + 1), 200);
+      return;
+    }
+
+    if (githubWidget) {
+      const placeholder = githubWidget.querySelector('.widget-placeholder') as HTMLElement;
+      if (!placeholder) return;
+
+      if (!githubUser) {
+        placeholder.style.display = 'flex';
+        placeholder.innerHTML = `
+          <div style="text-align:center; opacity: 0.6; padding: 20px;">
+            <p style="margin-bottom:8px; font-size: 13px;">未配置 GitHub 用户名</p>
+            <a href="/settings" style="color:var(--theme-color); font-size:12px; text-decoration:none; border-bottom: 1px solid var(--theme-color);">去设置中心配置 &rarr;</a>
+          </div>
+        `;
+      } else {
+        console.log('[Workbench-V6] CLEANED USER:', githubUser, 'Length:', githubUser.length);
+        
+        placeholder.style.background = 'transparent';
+        placeholder.style.display = 'flex';
+        placeholder.style.alignItems = 'center';
+        placeholder.style.justifyContent = 'center';
+        placeholder.style.padding = '10px';
+        
+        // 切换到更稳健、无需查询参数的 API：ghchart.rshah.org
+        // 这个 API 直接使用路径，不依赖容易失踪的问号 ?
+        const finalUrl = `https://ghchart.rshah.org/4094B3/${githubUser}`;
+        
+        console.log('[Workbench-V6] Final Image URL:', finalUrl);
+
+        placeholder.innerHTML = `
+          <div class="github-chart-wrapper" style="width:100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;">
+            <img 
+              src="${finalUrl}" 
+              alt="${githubUser}'s GitHub Contributions"
+              style="max-width: none; height: 110px; filter: var(--github-chart-filter); transition: opacity 0.3s;"
+              onload="this.style.opacity='1'"
+              onerror="this.src='https://github-contributions-canvas.vercel.app/api/v1/${githubUser}?format=svg'"
+            />
+          </div>
+        `;
+      }
+    }
+  }
+
   function loadSavedWidgets() {
     const saved = JSON.parse(localStorage.getItem('custom_widgets') || '[]');
     saved.forEach((w: Widget) => renderWidgetCard(w));
@@ -466,12 +526,17 @@ export function initMainPage() {
     renderMainGrid();
   }
 
+  renderBuiltinWidgets();
+
   storage.syncFromCloud().then(updated => {
     if (updated) {
       renderMainGrid();
+      renderBuiltinWidgets();
       window.dispatchEvent(new CustomEvent('appearance-updated'));
     }
   }).catch(e => console.error('Silent background sync failed:', e));
+
+  window.addEventListener('appearance-updated', renderBuiltinWidgets);
 
   gridSection?.addEventListener('click', (e) => {
     const card = (e.target as HTMLElement).closest('.link-card');

@@ -46,7 +46,8 @@ export const DEFAULT_APPEARANCE: AppearanceConfig = {
   fontStyle: 'morandi-sans',
   fontCustomLink: '',
   fontFamilyName: '',
-  scrollbarEnabled: false
+  scrollbarEnabled: false,
+  githubUsername: ''
 };
 
 export const KEY_SITE_CONFIG = 'nav_site_config';
