@@ -82,6 +82,13 @@ export function convertSelectToCustom(
   // 创建显示当前选中的触发器
   const trigger = document.createElement('div');
   trigger.className = 'custom-select-trigger';
+  trigger.setAttribute('role', 'combobox');
+  trigger.setAttribute('tabindex', '0');
+  trigger.setAttribute('aria-haspopup', 'listbox');
+  trigger.setAttribute('aria-expanded', 'false');
+  if (select.id) {
+    trigger.setAttribute('aria-label', select.getAttribute('aria-label') || select.id);
+  }
   trigger.innerHTML = `
     <div class="custom-select-trigger-content"></div>
     <i data-lucide="chevron-down" class="chevron-icon"></i>
@@ -91,16 +98,17 @@ export function convertSelectToCustom(
   // 创建下拉菜单容器
   const optionsContainer = document.createElement('div');
   optionsContainer.className = 'custom-options-container';
+  optionsContainer.setAttribute('role', 'listbox');
   optionsContainer.innerHTML = generateOptionsMarkup(select, type);
   wrapper.appendChild(optionsContainer);
 
-  // 点击触发器展开或收起下拉面板
-  trigger.addEventListener('click', (e) => {
-    e.stopPropagation();
-
+  const toggleOpen = () => {
     // 互斥关闭其它下拉框
     document.querySelectorAll('.custom-select-wrapper').forEach(w => {
-      if (w !== wrapper) w.classList.remove('open');
+      if (w !== wrapper) {
+        w.classList.remove('open');
+        w.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded', 'false');
+      }
     });
 
     // 智能判断弹出方向以防遮挡截断 (如在表格这类小高度容器中)
@@ -114,8 +122,10 @@ export function convertSelectToCustom(
     }
 
     wrapper.classList.toggle('open');
+    const isOpen = wrapper.classList.contains('open');
+    trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 
-    if (wrapper.classList.contains('open') && isCreatableCategorySelect(select, type)) {
+    if (isOpen && isCreatableCategorySelect(select, type)) {
       const searchInput = wrapper.querySelector('.custom-select-search-input') as HTMLInputElement | null;
       if (searchInput) {
         window.setTimeout(() => {
@@ -123,6 +133,34 @@ export function convertSelectToCustom(
           searchInput.select();
         }, 10);
       }
+    } else if (isOpen) {
+      // 聚焦当前选中项，便于键盘上下移动
+      const current = wrapper.querySelector('.custom-option.selected') as HTMLElement | null
+        || wrapper.querySelector('.custom-option') as HTMLElement | null;
+      window.setTimeout(() => current?.focus(), 10);
+    }
+  };
+
+  const closeWrapper = () => {
+    wrapper.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+  };
+
+  // 点击触发器展开或收起下拉面板
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleOpen();
+  });
+
+  // 触发器键盘可达性：Enter/Space/方向键打开，Esc 关闭
+  trigger.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!wrapper.classList.contains('open')) {
+        toggleOpen();
+      }
+    } else if (e.key === 'Escape') {
+      closeWrapper();
     }
   });
 
@@ -302,19 +340,55 @@ function bindOptionsEvents(wrapper: HTMLElement, select: HTMLSelectElement, type
 
   const options = wrapper.querySelectorAll('.custom-option[data-value]');
   options.forEach(opt => {
-    opt.addEventListener('click', (e) => {
-      e.stopPropagation();
+    const el = opt as HTMLElement;
+    // 选项键盘可达性
+    if (!el.hasAttribute('role')) el.setAttribute('role', 'option');
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+    el.setAttribute('aria-selected', el.classList.contains('selected') ? 'true' : 'false');
+
+    const choose = () => {
       const val = opt.getAttribute('data-value') || '';
 
       clearPendingCategoryState(select);
-      options.forEach(o => o.classList.remove('selected'));
+      options.forEach(o => {
+        o.classList.remove('selected');
+        o.setAttribute('aria-selected', 'false');
+      });
       opt.classList.add('selected');
+      opt.setAttribute('aria-selected', 'true');
 
       select.value = val;
-      select.dispatchEvent(new Event('change'));
+      select.dispatchEvent(new Event('change', { bubbles: true }));
 
       updateTriggerDisplay(wrapper, select, type);
       wrapper.classList.remove('open');
+      const trigger = wrapper.querySelector('.custom-select-trigger') as HTMLElement | null;
+      trigger?.setAttribute('aria-expanded', 'false');
+      trigger?.focus();
+    };
+
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      choose();
+    });
+
+    el.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        choose();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        (el.nextElementSibling as HTMLElement | null)?.focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        (el.previousElementSibling as HTMLElement | null)?.focus();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        wrapper.classList.remove('open');
+        const trigger = wrapper.querySelector('.custom-select-trigger') as HTMLElement | null;
+        trigger?.setAttribute('aria-expanded', 'false');
+        trigger?.focus();
+      }
     });
   });
 
@@ -327,7 +401,7 @@ function bindOptionsEvents(wrapper: HTMLElement, select: HTMLSelectElement, type
 
       select.dataset.pendingCategoryName = pendingName;
       select.dataset.categorySearchQuery = pendingName;
-      select.dispatchEvent(new Event('change'));
+      select.dispatchEvent(new Event('change', { bubbles: true }));
 
       updateTriggerDisplay(wrapper, select, type);
       wrapper.classList.remove('open');
@@ -387,6 +461,7 @@ if (typeof document !== 'undefined') {
   document.addEventListener('click', () => {
     document.querySelectorAll('.custom-select-wrapper').forEach(w => {
       w.classList.remove('open');
+      w.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded', 'false');
     });
   });
 }

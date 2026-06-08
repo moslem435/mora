@@ -6,7 +6,7 @@
 
   <div class="dashboard-stats-grid">
     <div class="stat-card">
-      <div class="stat-icon-wrapper" style="background: rgba(var(--theme-blue-rgb), 0.1); color: var(--theme-blue);">
+      <div class="stat-icon-wrapper stat-icon-blue">
         <i data-lucide="users"></i>
       </div>
       <div class="stat-info">
@@ -15,7 +15,7 @@
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon-wrapper" style="background: rgba(var(--theme-purple-rgb), 0.1); color: var(--theme-purple);">
+      <div class="stat-icon-wrapper stat-icon-purple">
         <i data-lucide="folder"></i>
       </div>
       <div class="stat-info">
@@ -24,7 +24,7 @@
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon-wrapper" style="background: rgba(var(--theme-green-rgb), 0.1); color: var(--theme-green);">
+      <div class="stat-icon-wrapper stat-icon-green">
         <i data-lucide="link"></i>
       </div>
       <div class="stat-info">
@@ -34,14 +34,16 @@
     </div>
   </div>
 
-  <div class="dashboard-actions-grid" style="margin-top: 30px;">
-    <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--color-text-main);">快捷操作</h3>
-    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-      <button type="button" class="action-btn primary" onclick="document.querySelector('[data-target=\'content\']').click(); document.getElementById('catName').focus();">
-        <i data-lucide="plus"></i> 新建分类
+  <div class="dashboard-actions-grid">
+    <h3>快捷操作</h3>
+    <div class="dashboard-actions-row">
+      <button type="button" class="action-btn primary" data-admin-quick-target="content" data-admin-focus-target="catName">
+        <i data-lucide="plus"></i>
+        <span>新建分类</span>
       </button>
-      <button type="button" class="action-btn secondary" onclick="document.querySelector('[data-target=\'content\']').click(); document.getElementById('openAddLinkBtn').click();">
-        <i data-lucide="link"></i> 添加新书签
+      <button type="button" class="action-btn secondary" data-admin-quick-target="content" data-admin-click-target="openAddLinkBtn">
+        <i data-lucide="link"></i>
+        <span>添加新书签</span>
       </button>
     </div>
   </div>

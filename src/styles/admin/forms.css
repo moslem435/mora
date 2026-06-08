@@ -70,6 +70,12 @@
   -webkit-backface-visibility: hidden;
 }
 
+/* hidden attribute must win over the inline-flex above */
+.action-btn[hidden],
+.submit-btn[hidden] {
+  display: none !important;
+}
+
 .action-btn i,
 .action-btn svg,
 .submit-btn i,
@@ -121,6 +127,68 @@
   border: 1px solid var(--card-border);
   color: var(--color-text-main);
   cursor: pointer;
+}
+
+/* input + inline action button row (e.g. URL + 识别) */
+.input-action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.input-action-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.identify-btn {
+  flex-shrink: 0;
+  padding: 0 16px;
+  height: 42px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.auth-form {
+  gap: 16px;
+}
+
+/* visually hidden file input, still focusable for programmatic click */
+.visually-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* keyboard focus ring for all interactive admin controls */
+.action-btn:focus-visible,
+.submit-btn:focus-visible,
+.modal-btn:focus-visible,
+.icon-btn:focus-visible,
+.tab-btn:focus-visible,
+.nav-item:focus-visible,
+.empty-add-btn:focus-visible,
+.back-home-btn:focus-visible,
+.back-home-link:focus-visible,
+.custom-select-trigger:focus-visible,
+.custom-option:focus-visible,
+.icon-picker-item:focus-visible,
+.switch-toggle input:focus-visible + .switch-slider {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+.admin-form input:focus-visible,
+.admin-form select:focus-visible,
+.settings-form input:focus-visible,
+.settings-form select:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 1px;
 }
 
 html.bg-dark-slate .admin-form input,

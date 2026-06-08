@@ -45,18 +45,30 @@ export function initIconPicker(wrapperId: string, inputId: string) {
   // 渲染初始图标列表
   renderIconGrid('');
 
-  // 点击/聚焦输入框时展开面板并收拢其他选择器
-  input.addEventListener('focus', (e) => {
-    e.stopPropagation();
-    
+  const openPicker = () => {
     document.querySelectorAll('.icon-picker-wrapper').forEach(w => {
-      if (w !== wrapper) w.classList.remove('open');
+      if (w !== wrapper) {
+        w.classList.remove('open');
+        w.querySelector('input[role="combobox"]')?.setAttribute('aria-expanded', 'false');
+      }
     });
     document.querySelectorAll('.custom-select-wrapper').forEach(w => {
       w.classList.remove('open');
     });
 
     wrapper.classList.add('open');
+    input.setAttribute('aria-expanded', 'true');
+  };
+
+  const closePicker = () => {
+    wrapper.classList.remove('open');
+    input.setAttribute('aria-expanded', 'false');
+  };
+
+  // 点击/聚焦输入框时展开面板并收拢其他选择器
+  input.addEventListener('focus', (e) => {
+    e.stopPropagation();
+    openPicker();
   });
 
   // 阻止下拉区域点击事件向外冒泡导致关闭
@@ -69,6 +81,17 @@ export function initIconPicker(wrapperId: string, inputId: string) {
     const val = searchInput.value.trim().toLowerCase();
     renderIconGrid(val);
   });
+
+  // 键盘可达性：Esc 关闭并把焦点交还输入框
+  const handleEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      closePicker();
+      input.focus();
+    }
+  };
+  input.addEventListener('keydown', handleEscape);
+  searchInput.addEventListener('keydown', handleEscape);
 
   // 阻止输入框本身的点击冒泡
   input.addEventListener('click', (e) => {
@@ -88,27 +111,39 @@ export function initIconPicker(wrapperId: string, inputId: string) {
       const item = document.createElement('button');
       item.type = 'button';
       item.className = 'icon-picker-item';
+      item.setAttribute('role', 'option');
+      item.setAttribute('aria-label', icon);
       if (input.value.trim() === icon) {
         item.classList.add('active');
+        item.setAttribute('aria-selected', 'true');
+      } else {
+        item.setAttribute('aria-selected', 'false');
       }
       item.title = icon;
       item.innerHTML = `<i data-lucide="${icon}"></i>`;
-      
-      item.addEventListener('click', () => {
+
+      const selectIcon = () => {
         input.value = icon;
         // 触发 input 及 change 事件以便 Astro 客户端脚本响应更新
         input.dispatchEvent(new Event('input'));
         input.dispatchEvent(new Event('change'));
-        
+
         // 标记选中状态
-        wrapper.querySelectorAll('.icon-picker-item').forEach(btn => btn.classList.remove('active'));
+        wrapper!.querySelectorAll('.icon-picker-item').forEach(btn => {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+        });
         item.classList.add('active');
-        
+        item.setAttribute('aria-selected', 'true');
+
         // 关闭弹窗并重置搜索
-        wrapper.classList.remove('open');
+        closePicker();
         searchInput.value = '';
         renderIconGrid('');
-      });
+        input.focus();
+      };
+
+      item.addEventListener('click', selectIcon);
 
       grid.appendChild(item);
     });
@@ -122,6 +157,7 @@ if (typeof document !== 'undefined') {
   document.addEventListener('click', () => {
     document.querySelectorAll('.icon-picker-wrapper').forEach(w => {
       w.classList.remove('open');
+      w.querySelector('input[role="combobox"]')?.setAttribute('aria-expanded', 'false');
     });
   });
 }

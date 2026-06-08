@@ -16,6 +16,11 @@
   padding: 20px;
 }
 
+/* hidden attribute must win over the display:flex above */
+.auth-container[hidden] {
+  display: none !important;
+}
+
 .auth-card {
   width: 100%;
   max-width: 400px;
@@ -102,6 +107,23 @@
   height: 12px;
 }
 
+/* auth panel helpers (moved off inline styles) */
+.auth-password-group {
+  margin-bottom: 6px;
+}
+
+.auth-full-btn {
+  width: 100%;
+  height: 42px;
+  justify-content: center;
+  border-radius: 10px;
+  margin-top: 0;
+}
+
+.signup-btn {
+  margin-top: 10px;
+}
+
 .modal {
   position: fixed;
   inset: 0;
@@ -125,6 +147,45 @@
   width: 100%;
   max-width: 460px;
   box-shadow: 0 30px 70px -10px rgba(0, 0, 0, 0.15);
+  animation: modalBoxIn 0.3s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+@keyframes modalBoxIn {
+  from { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.98); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* confirm dialog (moved off inline styles) */
+.confirm-box {
+  max-width: 380px;
+}
+
+.confirm-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.confirm-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--theme-primary);
+  flex: 0 0 auto;
+}
+
+.confirm-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--color-text-main);
+}
+
+.confirm-message {
+  margin: 0 0 20px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-sub);
 }
 
 .modal-box h3 {

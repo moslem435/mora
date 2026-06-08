@@ -1,7 +1,7 @@
 <>
-  <div class="modal" id="editCatModal">
+  <div class="modal" id="editCatModal" role="dialog" aria-modal="true" aria-labelledby="editCatModalTitle">
     <div class="modal-box">
-      <h3>修改分类</h3>
+      <h3 id="editCatModalTitle">修改分类</h3>
       <form id="editCatForm" class="admin-form" novalidate>
         <input type="hidden" id="editCatId" />
         <div class="form-group">
@@ -12,10 +12,10 @@
           <div class="form-group">
             <label for="editCatIcon">Lucide 图标名</label>
             <div class="icon-picker-wrapper" id="editCatIconWrapper">
-              <input type="text" id="editCatIcon" required autocomplete="off" />
+              <input type="text" id="editCatIcon" required autocomplete="off" role="combobox" aria-expanded="false" aria-controls="editCatIconGrid" aria-autocomplete="list" />
               <div class="icon-picker-dropdown">
-                <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
-                <div class="icon-picker-grid"></div>
+                <input type="text" class="icon-picker-search" placeholder="搜索图标..." aria-label="搜索 Lucide 图标" />
+                <div class="icon-picker-grid" id="editCatIconGrid" role="listbox" aria-label="图标候选"></div>
               </div>
             </div>
           </div>
@@ -39,9 +39,9 @@
     </div>
   </div>
 
-  <div class="modal" id="addLinkModal">
+  <div class="modal" id="addLinkModal" role="dialog" aria-modal="true" aria-labelledby="addLinkModalTitle">
     <div class="modal-box">
-      <h3>添加新卡片</h3>
+      <h3 id="addLinkModalTitle">添加新卡片</h3>
       <form id="addLinkForm" class="admin-form" novalidate>
         <div class="form-row">
           <div class="form-group">
@@ -55,9 +55,9 @@
         </div>
         <div class="form-group">
           <label for="linkUrl">链接 URL</label>
-          <div style="display: flex; gap: 8px;">
-            <input type="url" id="linkUrl" required placeholder="https://example.com" style="flex: 1;" />
-            <button type="button" id="identifyLinkBtn" class="action-btn secondary" style="flex-shrink: 0; padding: 0 16px; height: 42px; border-radius: 10px; font-size: 13px;">识别</button>
+          <div class="input-action-row">
+            <input type="url" id="linkUrl" required placeholder="https://example.com" class="input-action-field" />
+            <button type="button" id="identifyLinkBtn" class="action-btn secondary identify-btn">识别</button>
           </div>
         </div>
         <div class="form-group">
@@ -67,10 +67,10 @@
         <div class="form-group">
           <label for="linkIcon">Lucide 图标名</label>
           <div class="icon-picker-wrapper" id="linkIconWrapper">
-            <input type="text" id="linkIcon" required placeholder="如: github, chrome, globe (留空默认 external-link)" value="external-link" autocomplete="off" />
+            <input type="text" id="linkIcon" required placeholder="如: github, chrome, globe (留空默认 external-link)" value="external-link" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="linkIconGrid" aria-autocomplete="list" />
             <div class="icon-picker-dropdown">
-              <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
-              <div class="icon-picker-grid"></div>
+              <input type="text" class="icon-picker-search" placeholder="搜索图标..." aria-label="搜索 Lucide 图标" />
+              <div class="icon-picker-grid" id="linkIconGrid" role="listbox" aria-label="图标候选"></div>
             </div>
           </div>
         </div>
@@ -82,9 +82,9 @@
     </div>
   </div>
 
-  <div class="modal" id="editLinkModal">
+  <div class="modal" id="editLinkModal" role="dialog" aria-modal="true" aria-labelledby="editLinkModalTitle">
     <div class="modal-box">
-      <h3>修改链接卡片</h3>
+      <h3 id="editLinkModalTitle">修改链接卡片</h3>
       <form id="editLinkForm" class="admin-form" novalidate>
         <input type="hidden" id="editLinkId" />
         <div class="form-row">
@@ -99,9 +99,9 @@
         </div>
         <div class="form-group">
           <label for="editLinkUrl">链接 URL</label>
-          <div style="display: flex; gap: 8px;">
-            <input type="url" id="editLinkUrl" required style="flex: 1;" />
-            <button type="button" id="identifyEditLinkBtn" class="action-btn secondary" style="flex-shrink: 0; padding: 0 16px; height: 42px; border-radius: 10px; font-size: 13px;">识别</button>
+          <div class="input-action-row">
+            <input type="url" id="editLinkUrl" required class="input-action-field" />
+            <button type="button" id="identifyEditLinkBtn" class="action-btn secondary identify-btn">识别</button>
           </div>
         </div>
         <div class="form-group">
@@ -111,10 +111,10 @@
         <div class="form-group">
           <label for="editLinkIcon">Lucide 图标</label>
           <div class="icon-picker-wrapper" id="editLinkIconWrapper">
-            <input type="text" id="editLinkIcon" required autocomplete="off" />
+            <input type="text" id="editLinkIcon" required autocomplete="off" role="combobox" aria-expanded="false" aria-controls="editLinkIconGrid" aria-autocomplete="list" />
             <div class="icon-picker-dropdown">
-              <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
-              <div class="icon-picker-grid"></div>
+              <input type="text" class="icon-picker-search" placeholder="搜索图标..." aria-label="搜索 Lucide 图标" />
+              <div class="icon-picker-grid" id="editLinkIconGrid" role="listbox" aria-label="图标候选"></div>
             </div>
           </div>
         </div>

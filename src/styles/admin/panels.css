@@ -1,9 +1,44 @@
 /* account, backup, and appearance panel styles */
+.users-section {
+  padding: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+}
+
+.view-header-with-action {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.registration-toggle {
+  margin: 0;
+  padding: 10px 14px;
+  gap: 12px;
+}
+
+.registration-toggle .switch-label label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--theme-primary);
+  cursor: pointer;
+}
+
+.registration-toggle .switch-desc {
+  font-size: 11px;
+  display: block;
+}
+
 .users-table-wrapper {
   background: rgba(255, 255, 255, 0.4);
   border: 1px solid var(--card-border);
   border-radius: 18px;
   overflow: hidden;
+  overflow-x: auto;
 }
 
 .users-table {
@@ -26,6 +61,29 @@
   padding: 16px 20px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.03);
   font-size: 14px;
+}
+
+.users-table .user-email-cell {
+  font-weight: 550;
+  word-break: break-all;
+}
+
+.users-table .user-date-cell {
+  color: var(--color-text-sub);
+}
+
+.table-state-cell {
+  text-align: center;
+  padding: 30px;
+  color: var(--color-text-sub);
+}
+
+.table-state-cell.error {
+  color: #c47575;
+}
+
+.logout-btn {
+  margin-top: 16px;
 }
 
 .site-toggle {
@@ -218,4 +276,313 @@
   background: rgba(var(--theme-yellow-rgb), 0.06);
   border-radius: 12px;
   border: 1px dashed rgba(var(--theme-yellow-rgb), 0.2);
+}
+
+/* refined personal appearance workbench */
+.appearance-section .section-header {
+  align-items: flex-start;
+  padding-bottom: 20px;
+}
+
+.section-header-info h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.section-header-info p {
+  font-size: 12.5px;
+  color: var(--color-text-sub);
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+
+.appearance-form {
+  position: relative;
+  margin-top: 4px;
+}
+
+.appearance-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+  gap: 24px;
+  align-items: start;
+}
+
+.appearance-main-stack {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.appearance-card,
+.appearance-preview {
+  position: relative;
+  padding: 22px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 4px 20px -12px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: var(--transition-smooth);
+}
+
+.appearance-card:hover {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(var(--theme-primary-rgb), 0.2);
+  box-shadow: 0 12px 30px -15px rgba(0, 0, 0, 0.1);
+}
+
+.appearance-eyebrow,
+.appearance-card-kicker,
+.appearance-preview-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--theme-primary);
+  margin-bottom: 4px;
+}
+
+.appearance-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.appearance-card-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin: 0;
+}
+
+.appearance-card-header > i,
+.appearance-card-header > svg {
+  width: 18px;
+  height: 18px;
+  color: var(--theme-primary);
+  opacity: 0.8;
+}
+
+.appearance-control,
+.appearance-slider-card,
+.appearance-switch-card,
+.appearance-conditional-stack {
+  position: relative;
+}
+
+.appearance-control-grid {
+  gap: 16px;
+}
+
+.appearance-section .form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-bottom: 8px;
+}
+
+.appearance-section .custom-select-trigger,
+.appearance-section .settings-form input[type="text"],
+.appearance-section .settings-form input[type="url"] {
+  min-height: 42px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.8);
+  border-color: var(--card-border);
+}
+
+.appearance-section .custom-select-trigger:hover,
+.appearance-section .settings-form input[type="text"]:hover,
+.appearance-section .settings-form input[type="url"]:hover {
+  border-color: var(--theme-primary);
+  background: #fff;
+}
+
+.appearance-conditional {
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.4);
+  border: 1px dashed var(--card-border);
+}
+
+.appearance-upload-btn {
+  border-style: dashed;
+}
+
+.appearance-slider-card,
+.appearance-switch-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(var(--theme-primary-rgb), 0.08);
+}
+
+.appearance-slider-card + .appearance-slider-card,
+.appearance-switch-card {
+  margin-top: 10px;
+}
+
+.appearance-section .slider-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.appearance-section .slider-label label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin: 0;
+}
+
+.appearance-section .slider-label span {
+  font-family: 'Outfit', var(--font-global);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--theme-primary);
+  background: rgba(var(--theme-primary-rgb), 0.08);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.appearance-section .switch-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.appearance-section .switch-desc {
+  font-size: 11px;
+  color: var(--color-text-sub);
+}
+
+.appearance-preview {
+  min-height: 400px;
+  background: 
+    linear-gradient(145deg, rgba(255,255,255,0.6), rgba(255,255,255,0.3)),
+    var(--color-bg);
+}
+
+.appearance-preview-orb {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  right: -60px;
+  top: -60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--theme-primary-rgb), 0.2), transparent 70%);
+  filter: blur(10px);
+}
+
+.appearance-preview-card {
+  position: relative;
+  margin-top: 70px;
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 20px 40px -20px rgba(0,0,0,0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.appearance-preview-card h3 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--color-text-main);
+  margin: 8px 0 4px;
+}
+
+.appearance-preview-card p {
+  margin: 0 0 20px;
+  color: var(--color-text-sub);
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.appearance-preview-palette {
+  display: flex;
+  gap: 8px;
+}
+
+.appearance-preview-palette span {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.palette-blue { background: var(--theme-blue); }
+.palette-green { background: var(--theme-green); }
+.palette-purple { background: var(--theme-purple); }
+.palette-orange { background: var(--theme-orange); }
+
+.appearance-preview-note {
+  position: relative;
+  margin-top: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  color: var(--color-text-sub);
+  font-size: 12px;
+  line-height: 1.5;
+  background: rgba(255,255,255,0.4);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.appearance-preview-note i,
+.appearance-preview-note svg {
+  width: 15px;
+  height: 15px;
+  color: var(--theme-primary);
+  margin-top: 2px;
+}
+
+html.bg-dark-slate .appearance-card,
+html.bg-dark-slate .appearance-preview {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.08);
+}
+
+html.bg-dark-slate .appearance-preview {
+  background: linear-gradient(145deg, rgba(30,33,34,0.6), rgba(30,33,34,0.3));
+}
+
+html.bg-dark-slate .appearance-section .custom-select-trigger,
+html.bg-dark-slate .appearance-section .settings-form input[type="text"],
+html.bg-dark-slate .appearance-section .settings-form input[type="url"],
+html.bg-dark-slate .appearance-conditional,
+html.bg-dark-slate .appearance-slider-card,
+html.bg-dark-slate .appearance-switch-card,
+html.bg-dark-slate .appearance-preview-card,
+html.bg-dark-slate .appearance-preview-note {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.08);
+}
+
+@media (max-width: 900px) {
+  .appearance-layout {
+    grid-template-columns: 1fr;
+  }
+  .appearance-preview {
+    min-height: auto;
+    padding: 20px;
+  }
+  .appearance-preview-card {
+    margin-top: 30px;
+  }
 }

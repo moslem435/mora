@@ -68,10 +68,10 @@ export function createAdminRenderers(params: {
           <span class="cat-name-text">${cat.name}</span>
         </div>
         <div class="cat-actions">
-          <button class="icon-btn edit-cat-btn" data-id="${cat.id}" title="编辑分类" type="button">
+          <button class="icon-btn edit-cat-btn" data-id="${cat.id}" title="编辑分类" aria-label="编辑分类 ${cat.name}" type="button">
             <i data-lucide="pencil"></i>
           </button>
-          <button class="icon-btn delete-btn delete-cat-btn" data-id="${cat.id}" title="删除分类" type="button">
+          <button class="icon-btn delete-btn delete-cat-btn" data-id="${cat.id}" title="删除分类" aria-label="删除分类 ${cat.name}" type="button">
             <i data-lucide="trash-2"></i>
           </button>
         </div>
@@ -154,12 +154,12 @@ export function createAdminRenderers(params: {
     if (filteredLinks.length === 0) {
       linksList.innerHTML = `
         <div class="admin-links-empty">
-          <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(0, 0, 0, 0.02); display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
-            <i data-lucide="folder-open" style="width: 20px; height: 20px; color: var(--color-text-sub); opacity: 0.7;"></i>
+          <div class="admin-links-empty-icon">
+            <i data-lucide="folder-open"></i>
           </div>
           <p>该分类下暂无任何卡片，开始创建吧！</p>
           <button class="empty-add-btn" type="button">
-            <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+            <i data-lucide="plus"></i>
             <span>添加卡片</span>
           </button>
         </div>
@@ -210,27 +210,27 @@ export function createAdminRenderers(params: {
                 src="${faviconUrl}"
                 class="admin-card-favicon"
                 ${showImgDirectly ? '' : `onload="window.handleFaviconSuccess && window.handleFaviconSuccess(this, '${domain}')" onerror="window.handleFaviconError && window.handleFaviconError(this, '${domain}')"`}
-                style="${showImgDirectly ? 'display: block;' : 'display: none;'} width: 24px; height: 24px; border-radius: 5px; object-fit: contain;"
+                ${showImgDirectly ? '' : 'data-favicon-hidden="true"'}
                 alt=""
               />
               ` : ''}
-              <i data-lucide="${link.icon || 'external-link'}" style="${showImgDirectly ? 'display: none;' : ''}"></i>
+              <i data-lucide="${link.icon || 'external-link'}" class="${showImgDirectly ? 'admin-link-fallback-icon hidden' : 'admin-link-fallback-icon'}"></i>
             </div>
             <span class="admin-link-card-title">${link.title}</span>
           </div>
           <p class="admin-link-card-desc" title="${link.description}">${link.description}</p>
-          <a href="${link.url}" target="_blank" class="admin-link-card-url" title="${link.url}">${link.url}</a>
+          <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="admin-link-card-url" title="${link.url}">${link.url}</a>
         </div>
         <div class="admin-link-card-footer">
           <span class="admin-link-card-clicks">
-            <i data-lucide="mouse-pointer-click" style="width: 11px; height: 11px; margin-right: 4px; display: inline-block; vertical-align: -1px;"></i>
+            <i data-lucide="mouse-pointer-click" class="clicks-icon"></i>
             ${link.clicks || 0} 次点击
           </span>
           <div class="admin-link-card-actions">
-            <button class="icon-btn edit-link-btn" data-id="${link.id}" title="编辑卡片" type="button">
+            <button class="icon-btn edit-link-btn" data-id="${link.id}" title="编辑卡片" aria-label="编辑卡片 ${link.title}" type="button">
               <i data-lucide="pencil"></i>
             </button>
-            <button class="icon-btn delete-btn delete-link-btn" data-id="${link.id}" title="删除卡片" type="button">
+            <button class="icon-btn delete-btn delete-link-btn" data-id="${link.id}" title="删除卡片" aria-label="删除卡片 ${link.title}" type="button">
               <i data-lucide="trash-2"></i>
             </button>
           </div>

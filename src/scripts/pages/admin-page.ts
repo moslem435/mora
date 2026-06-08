@@ -312,7 +312,7 @@ function initAdminConsole() {
     if (!user) return;
 
     if (currentEmail) currentEmail.textContent = user.email || '未知用户';
-    if (logoutBtn) logoutBtn.style.display = 'flex';
+    if (logoutBtn) (logoutBtn as HTMLElement).hidden = false;
 
     logoutBtn?.addEventListener('click', async () => {
       const ok = await showConfirm('退出登录', '确定要退出当前管理账号吗？');
@@ -364,6 +364,10 @@ function initAdminConsole() {
     setVal('cardBlur', appearance.cardBlur);
     setVal('scrollbarEnabled', appearance.scrollbarEnabled);
     setVal('githubUsername', appearance.githubUsername || '');
+
+    refreshCustomSelect(document.getElementById('fontStyle') as HTMLSelectElement | null, 'plain');
+    refreshCustomSelect(document.getElementById('primaryColor') as HTMLSelectElement | null, 'plain');
+    refreshCustomSelect(document.getElementById('bgStyle') as HTMLSelectElement | null, 'plain');
 
     const opacityVal = document.getElementById('opacityVal');
     if (opacityVal) opacityVal.textContent = `${Math.round(appearance.cardOpacity * 100)}%`;
@@ -722,31 +726,80 @@ function initAdminConsole() {
     });
   }
 
+  function bindDashboardQuickActions() {
+    const quickButtons = document.querySelectorAll<HTMLElement>('[data-admin-quick-target]');
+    quickButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-admin-quick-target');
+        const focusTarget = btn.getAttribute('data-admin-focus-target');
+        const clickTarget = btn.getAttribute('data-admin-click-target');
+
+        if (target) {
+          const navItem = document.querySelector(`.sidebar-nav .nav-item[data-target="${target}"]`) as HTMLElement | null;
+          navItem?.click();
+        }
+
+        window.setTimeout(() => {
+          if (focusTarget) {
+            (document.getElementById(focusTarget) as HTMLElement | null)?.focus();
+          }
+          if (clickTarget) {
+            (document.getElementById(clickTarget) as HTMLElement | null)?.click();
+          }
+        }, 60);
+      });
+    });
+  }
+
   function bindNavigation() {
     const navItems = document.querySelectorAll('.sidebar-nav .nav-item[data-target]');
     const adminViews = document.querySelectorAll('.admin-content-wrapper .admin-view');
+    const sidebar = document.querySelector('.admin-sidebar');
+    const backdrop = document.getElementById('adminSidebarBackdrop');
+    const menuBtn = document.getElementById('mobileMenuBtn');
+
+    const closeMobileSidebar = () => {
+      sidebar?.classList.remove('mobile-open');
+      backdrop?.classList.remove('show');
+      if (backdrop) backdrop.hidden = true;
+      menuBtn?.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    };
+
+    const openMobileSidebar = () => {
+      sidebar?.classList.add('mobile-open');
+      if (backdrop) backdrop.hidden = false;
+      backdrop?.classList.add('show');
+      menuBtn?.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    };
 
     navItems.forEach((item) => {
       item.addEventListener('click', () => {
-        navItems.forEach((nav) => nav.classList.remove('active'));
+        navItems.forEach((nav) => {
+          nav.classList.remove('active');
+          nav.removeAttribute('aria-current');
+        });
         item.classList.add('active');
+        item.setAttribute('aria-current', 'page');
 
         const targetId = `view-${item.getAttribute('data-target')}`;
         adminViews.forEach((view) => {
-          const element = view as HTMLElement;
           if (view.id === targetId) {
             view.classList.add('active');
-            element.style.display = 'block';
+            (view as HTMLElement).hidden = false;
+            view.setAttribute('aria-hidden', 'false');
             if (item.getAttribute('data-target') === 'users') {
               void renderUsersList();
             }
           } else {
             view.classList.remove('active');
-            element.style.display = 'none';
+            (view as HTMLElement).hidden = true;
+            view.setAttribute('aria-hidden', 'true');
           }
         });
 
-        document.querySelector('.admin-sidebar')?.classList.remove('mobile-open');
+        closeMobileSidebar();
       });
     });
 
@@ -763,14 +816,36 @@ function initAdminConsole() {
       }
     }
 
-    document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
-      document.querySelector('.admin-sidebar')?.classList.toggle('mobile-open');
+    menuBtn?.addEventListener('click', () => {
+      if (sidebar?.classList.contains('mobile-open')) {
+        closeMobileSidebar();
+      } else {
+        openMobileSidebar();
+      }
+    });
+
+    backdrop?.addEventListener('click', closeMobileSidebar);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && sidebar?.classList.contains('mobile-open')) {
+        closeMobileSidebar();
+      }
     });
   }
 
   async function checkAuth() {
     const authContainer = document.getElementById('authContainer');
     const adminLayout = document.querySelector('.admin-layout') as HTMLElement | null;
+
+    const showAdmin = () => {
+      if (authContainer) authContainer.hidden = true;
+      if (adminLayout) adminLayout.hidden = false;
+    };
+
+    const showAuth = () => {
+      if (authContainer) authContainer.hidden = false;
+      if (adminLayout) adminLayout.hidden = true;
+    };
 
     const openPendingDraftWhenReady = () => {
       if (!pendingQuickAddDraft || hasAutoOpenedQuickAdd) return;
@@ -781,8 +856,7 @@ function initAdminConsole() {
     };
 
     if (!isSupabaseConfigured) {
-      if (authContainer) authContainer.style.display = 'none';
-      if (adminLayout) adminLayout.style.display = 'flex';
+      showAdmin();
       openPendingDraftWhenReady();
       void initDashboardStats();
       return;
@@ -790,20 +864,18 @@ function initAdminConsole() {
 
     const { data: { session } } = await supabase!.auth.getSession();
     if (session) {
-      if (authContainer) authContainer.style.display = 'none';
-      if (adminLayout) adminLayout.style.display = 'flex';
+      showAdmin();
       openPendingDraftWhenReady();
       void initDashboardStats();
       void initRegistrationToggle();
     } else {
-      if (authContainer) authContainer.style.display = 'flex';
-      if (adminLayout) adminLayout.style.display = 'none';
+      showAuth();
     }
   }
 
   const updateSignUpBtn = (config: any) => {
     if (signUpBtn) {
-      signUpBtn.style.display = config.allowRegistration ? 'flex' : 'none';
+      signUpBtn.hidden = !config.allowRegistration;
     }
   };
 
@@ -1077,6 +1149,7 @@ function initAdminConsole() {
 
   storage.init();
   bindNavigation();
+  bindDashboardQuickActions();
   initCustomSelects();
   initAppearanceForm();
   initBackupLogic();

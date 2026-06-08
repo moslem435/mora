@@ -17,13 +17,27 @@ import BackupSettings from '../components/admin/BackupSettings.astro';
 <Layout title="Mora 管理控制台">
   <AdminAuthPanel />
 
-  <div class="admin-layout">
+  <div class="admin-layout" hidden>
     <AdminSidebar />
+    <button
+      type="button"
+      id="adminSidebarBackdrop"
+      class="admin-sidebar-backdrop"
+      aria-label="关闭管理菜单"
+      hidden
+    ></button>
 
     <main class="admin-main">
       <header class="mobile-header">
         <div class="mobile-header-left">
-          <button type="button" id="mobileMenuBtn" class="action-btn secondary" style="margin:0; padding: 8px;">
+          <button
+            type="button"
+            id="mobileMenuBtn"
+            class="action-btn secondary mobile-menu-btn"
+            aria-label="打开管理菜单"
+            aria-controls="adminSidebar"
+            aria-expanded="false"
+          >
             <i data-lucide="menu"></i>
           </button>
           <span class="mobile-title">Mora 控制台</span>

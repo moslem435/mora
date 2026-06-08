@@ -21,7 +21,7 @@
       </div>
     </div>
 
-    <button type="button" id="logoutBtn" class="action-btn danger wide-btn" style="display: none; margin-top: 16px;">
+    <button type="button" id="logoutBtn" class="action-btn danger wide-btn logout-btn" hidden>
       <i data-lucide="log-out"></i>
       <span>退出当前账号</span>
     </button>
@@ -51,8 +51,7 @@
         <span>恢复默认</span>
       </button>
     </div>
-    <input type="file" id="importFile" accept=".json" style="display: none;" />
+    <input type="file" id="importFile" accept=".json" class="visually-hidden-input" />
     <p class="backup-note">注意：导入和恢复默认会覆盖当前本地与云端数据，执行前建议先导出备份。</p>
   </section>
 </div>
-

@@ -1,35 +1,35 @@
-<div id="view-users" class="admin-view" style="display: none;">
-  <div class="view-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+<div id="view-users" class="admin-view" hidden aria-hidden="true">
+  <div class="view-header view-header-with-action">
     <div>
       <h2>成员管理</h2>
       <p>管理注册用户的角色身份与文件上传权限。</p>
     </div>
 
-    <div class="switch-group site-toggle" style="margin: 0; padding: 10px 14px; background: rgba(var(--theme-primary-rgb), 0.05); border-radius: 12px; border: 1px solid rgba(var(--theme-primary-rgb), 0.1); display: flex; align-items: center; gap: 12px;">
+    <div class="switch-group site-toggle registration-toggle">
       <div class="switch-label">
-        <label for="allowRegistration" style="font-size: 13px; font-weight: 600; color: var(--theme-primary); cursor: pointer;">允许新管理员注册</label>
-        <span class="switch-desc" style="font-size: 11px; display: block; color: var(--color-text-sub);">关闭后将隐藏注册入口</span>
+        <label for="allowRegistration">允许新管理员注册</label>
+        <span class="switch-desc">关闭后将隐藏注册入口</span>
       </div>
-      <label class="switch-toggle">
+      <label class="switch-toggle" aria-label="允许新管理员注册">
         <input type="checkbox" id="allowRegistration" />
         <span class="switch-slider"></span>
       </label>
     </div>
   </div>
 
-  <div class="admin-section" style="padding: 0; overflow: hidden; background: rgba(255,255,255,0.4); border-radius: 16px;">
-    <div class="users-table-wrapper" style="overflow-x: auto;">
-      <table class="users-table" style="width: 100%; border-collapse: collapse;">
+  <div class="admin-section users-section">
+    <div class="users-table-wrapper">
+      <table class="users-table">
         <thead>
-          <tr style="background: rgba(0,0,0,0.02); text-align: left;">
-            <th style="padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--color-text-sub); text-transform: uppercase;">会员邮箱</th>
-            <th style="padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--color-text-sub); text-transform: uppercase;">加入时间</th>
-            <th style="padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--color-text-sub); text-transform: uppercase;">角色权限</th>
-            <th style="padding: 14px 20px; font-size: 12px; font-weight: 600; color: var(--color-text-sub); text-transform: uppercase;">上传权限</th>
+          <tr>
+            <th>会员邮箱</th>
+            <th>加入时间</th>
+            <th>角色权限</th>
+            <th>上传权限</th>
           </tr>
         </thead>
         <tbody id="usersListBody">
-          <tr><td colspan="4" style="text-align:center; padding:30px; color: var(--color-text-sub);">载入成员列表中...</td></tr>
+          <tr class="users-state-row"><td colspan="4" class="table-state-cell">载入成员列表中...</td></tr>
         </tbody>
       </table>
     </div>

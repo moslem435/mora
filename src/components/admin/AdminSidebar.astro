@@ -1,14 +1,14 @@
-<aside class="admin-sidebar">
+<aside id="adminSidebar" class="admin-sidebar" aria-label="管理控制台导航">
   <div class="sidebar-header">
     <a href="/" class="sidebar-logo">
       <i data-lucide="compass" class="logo-icon"></i>
       <span>Mora</span>
     </a>
   </div>
-  <nav class="sidebar-nav">
+  <nav class="sidebar-nav" aria-label="后台管理视图">
     <div class="nav-group">
       <div class="nav-group-title">核心管理</div>
-      <button type="button" class="nav-item active" data-target="dashboard">
+      <button type="button" class="nav-item active" data-target="dashboard" aria-current="page">
         <i data-lucide="layout-dashboard" class="nav-icon"></i>
         <span>概览看板</span>
       </button>
@@ -34,7 +34,7 @@
     </div>
   </nav>
   <div class="sidebar-footer">
-    <a href="/" class="back-home-btn" style="width: 100%; justify-content: center; background: rgba(0,0,0,0.03);">
+    <a href="/" class="back-home-btn back-home-btn-full">
       <i data-lucide="arrow-left" class="btn-icon"></i>
       <span>返回前台主页</span>
     </a>

@@ -1,8 +1,123 @@
 /* responsive admin rules */
+
+/* tablet and below: collapse sidebar to off-canvas drawer */
 @media (max-width: 1024px) {
-  .admin-sidebar { transform: translateX(-100%); }
-  .admin-sidebar.mobile-open { transform: translateX(0); }
-  .admin-main { margin-left: 0; padding: 20px; }
-  .mobile-header { display: flex; }
-  .backup-account-grid { grid-template-columns: 1fr; }
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+  .admin-sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 0 0 60px -10px rgba(0, 0, 0, 0.25);
+  }
+  .admin-main {
+    margin-left: 0;
+    padding: 20px;
+  }
+  .mobile-header {
+    display: flex;
+  }
+  .backup-account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* content management collapses to a single column */
+  .admin-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* small tablet / large phone */
+@media (max-width: 768px) {
+  .admin-main {
+    padding: 16px;
+  }
+
+  .view-header h2 {
+    font-size: 24px;
+  }
+
+  .view-header-with-action {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .registration-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* two-column forms stack */
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* tighter modal padding on small screens */
+  .modal {
+    padding: 16px;
+  }
+  .modal-box {
+    padding: 24px;
+    border-radius: 20px;
+  }
+
+  /* link cards relax to fill width */
+  .admin-links-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+/* phone */
+@media (max-width: 520px) {
+  .admin-main {
+    padding: 14px;
+  }
+
+  .view-header h2 {
+    font-size: 21px;
+  }
+
+  /* keep URL + 识别 button stacked so neither gets crushed */
+  .input-action-row {
+    flex-wrap: wrap;
+  }
+  .input-action-field {
+    flex: 1 1 100%;
+  }
+  .identify-btn {
+    width: 100%;
+  }
+
+  /* dashboard quick actions stack full-width */
+  .dashboard-actions-row .action-btn {
+    width: 100%;
+  }
+
+  /* backup actions wrap full width */
+  .backup-actions .action-btn {
+    flex: 1 1 100%;
+  }
+
+  /* compact user table cells */
+  .users-table th,
+  .users-table td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .admin-links-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* toast should not overflow small viewports */
+  .custom-toast {
+    min-width: 0;
+    width: calc(100vw - 32px);
+    max-width: 360px;
+  }
 }

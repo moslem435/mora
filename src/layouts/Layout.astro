@@ -281,6 +281,13 @@ inject();
 		--radius-lg: 28px;
 		--transition-smooth: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 		--transition-elastic: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+		/* 更窄的过渡 token：仅动画 transform/颜色/阴影，避免 transition: all 触发布局抖动 */
+		--transition-ui: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+			box-shadow 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+			background-color 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+			border-color 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+			color 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+			opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 	}
 
 	/* 全局重置与基础样式 */
