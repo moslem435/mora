@@ -404,7 +404,7 @@
 .appearance-section .custom-select-trigger:hover,
 .appearance-section .settings-form input[type="text"]:hover,
 .appearance-section .settings-form input[type="url"]:hover {
-  border-color: var(--theme-primary);
+  border-color: color-mix(in srgb, var(--theme-primary) 40%, var(--card-border));
   background: #fff;
 }
 

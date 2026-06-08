@@ -152,7 +152,7 @@
 
 .nav-item:not(.active):hover {
   background: rgba(var(--theme-primary-rgb), 0.075);
-  border-color: rgba(var(--theme-primary-rgb), 0.08);
+  border-color: color-mix(in srgb, var(--theme-primary) 25%, transparent);
   color: var(--color-text-main);
   transform: translate3d(2px, 0, 0);
   box-shadow: inset 3px 0 0 rgba(var(--theme-primary-rgb), 0.24), 0 8px 20px -18px rgba(var(--theme-primary-rgb), 0.55);
@@ -211,7 +211,7 @@
 
 .back-home-btn:hover {
   background: rgba(var(--theme-primary-rgb), 0.08);
-  border-color: rgba(var(--theme-primary-rgb), 0.2);
+  border-color: color-mix(in srgb, var(--theme-primary) 35%, var(--card-border));
   color: var(--theme-primary);
   transform: translate3d(-1px, 0, 0);
   box-shadow: 0 8px 18px -16px rgba(var(--theme-primary-rgb), 0.6);

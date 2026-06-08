@@ -834,14 +834,14 @@ inject();
 	}
 
 	select:hover {
-		border-color: var(--theme-primary-hover);
+		border-color: color-mix(in srgb, var(--theme-primary) 35%, var(--card-border));
 		background-color: #fff;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 	}
 
 	select:focus {
-		border-color: var(--theme-primary);
-		box-shadow: 0 0 0 3px rgba(154, 168, 173, 0.15);
+		border-color: color-mix(in srgb, var(--theme-primary) 50%, var(--card-border));
+		box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.12);
 		background-color: #fff;
 	}
 

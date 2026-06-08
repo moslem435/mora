@@ -27,12 +27,12 @@
 }
 
 .custom-select-trigger:hover {
-  border-color: var(--theme-primary-hover);
+  border-color: color-mix(in srgb, var(--theme-primary) 40%, var(--card-border));
   background: #fff;
 }
 
 .custom-select-wrapper.open .custom-select-trigger {
-  border-color: var(--theme-primary-hover);
+  border-color: color-mix(in srgb, var(--theme-primary) 50%, var(--card-border));
   box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.2);
   background: #fff;
 }
@@ -212,7 +212,7 @@
 
 .custom-select-search-input:focus {
   outline: none;
-  border-color: var(--theme-primary-hover);
+  border-color: color-mix(in srgb, var(--theme-primary) 50%, var(--card-border));
   box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.16);
 }
 

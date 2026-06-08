@@ -140,10 +140,10 @@
 .category-item:hover {
   background: var(--card-bg-hover);
   transform: translate3d(6px, 0, 0);
-  border-color: color-mix(in srgb, var(--theme-color, var(--theme-primary)) 40%, var(--card-border));
+  border-color: color-mix(in srgb, var(--theme-color, var(--theme-primary)) 25%, var(--card-border));
   box-shadow:
-    0 6px 16px -8px color-mix(in srgb, var(--theme-color, var(--theme-primary)) 25%, rgba(0, 0, 0, 0.08)),
-    0 0 0 1px color-mix(in srgb, var(--theme-color, var(--theme-primary)) 10%, transparent);
+    0 6px 16px -8px color-mix(in srgb, var(--theme-color, var(--theme-primary)) 15%, rgba(0, 0, 0, 0.05)),
+    0 0 0 1px color-mix(in srgb, var(--theme-color, var(--theme-primary)) 8%, transparent);
 }
 
 .category-item.dragging {
@@ -225,7 +225,7 @@
 .icon-btn:hover {
   background: #fff;
   color: var(--theme-primary);
-  border-color: var(--theme-primary-hover);
+  border-color: color-mix(in srgb, var(--theme-primary) 40%, var(--card-border));
   transform: translate3d(0, -1px, 0);
 }
 
