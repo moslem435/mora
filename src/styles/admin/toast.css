@@ -1,0 +1,110 @@
+/* toast styles used by ui/toast.ts */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.custom-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 260px;
+  max-width: 350px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--card-border);
+  border-left: 4px solid var(--theme-blue);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 1px 1px rgba(0, 0, 0, 0.03);
+  color: var(--color-text-main);
+  font-size: 13px;
+  font-weight: 600;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transform: translate3d(0, -20px, 0);
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1), transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.custom-toast.show {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+.custom-toast.fade-out {
+  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 0;
+}
+
+.custom-toast.success {
+  background: color-mix(in srgb, var(--theme-green) 18%, var(--card-bg)) !important;
+  border-color: color-mix(in srgb, var(--theme-green) 35%, var(--card-border)) !important;
+  border-left-color: var(--theme-green) !important;
+  color: color-mix(in srgb, var(--theme-green) 75%, var(--color-text-main)) !important;
+}
+
+.custom-toast.success i,
+.custom-toast.success svg {
+  color: var(--theme-green) !important;
+}
+
+.custom-toast.error {
+  background: color-mix(in srgb, #c47575 14%, var(--card-bg)) !important;
+  border-color: color-mix(in srgb, #c47575 35%, var(--card-border)) !important;
+  border-left-color: #c47575 !important;
+  color: color-mix(in srgb, #c47575 75%, var(--color-text-main)) !important;
+}
+
+.custom-toast.error i,
+.custom-toast.error svg {
+  color: #c47575 !important;
+}
+
+.custom-toast.info {
+  background: color-mix(in srgb, var(--theme-blue) 18%, var(--card-bg)) !important;
+  border-color: color-mix(in srgb, var(--theme-blue) 35%, var(--card-border)) !important;
+  border-left-color: var(--theme-blue) !important;
+  color: color-mix(in srgb, var(--theme-blue) 75%, var(--color-text-main)) !important;
+}
+
+.custom-toast.info i,
+.custom-toast.info svg {
+  color: var(--theme-blue) !important;
+}
+
+.custom-toast.loading {
+  background: color-mix(in srgb, var(--theme-purple) 18%, var(--card-bg)) !important;
+  border-color: color-mix(in srgb, var(--theme-purple) 35%, var(--card-border)) !important;
+  border-left-color: var(--theme-purple) !important;
+  color: color-mix(in srgb, var(--theme-purple) 75%, var(--color-text-main)) !important;
+}
+
+@keyframes toast-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.custom-toast.loading i,
+.custom-toast.loading svg {
+  animation: toast-spin 1s linear infinite !important;
+  color: var(--theme-purple) !important;
+}
+
+html.bg-dark-slate .custom-toast {
+  background: rgba(38, 41, 43, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #e8e8e8 !important;
+  box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.4) !important;
+}

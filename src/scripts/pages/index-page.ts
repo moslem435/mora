@@ -295,7 +295,7 @@ export function initMainPage() {
         placeholder.innerHTML = `
           <div style="text-align:center; opacity: 0.6; padding: 20px;">
             <p style="margin-bottom:8px; font-size: 13px;">未配置 GitHub 用户名</p>
-            <a href="/settings" style="color:var(--theme-color); font-size:12px; text-decoration:none; border-bottom: 1px solid var(--theme-color);">去设置中心配置 &rarr;</a>
+            <a href="/admin?tab=appearance" style="color:var(--theme-color); font-size:12px; text-decoration:none; border-bottom: 1px solid var(--theme-color);">去管理后台配置 &rarr;</a>
           </div>
         `;
       } else {

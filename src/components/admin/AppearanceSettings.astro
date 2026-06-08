@@ -1,0 +1,342 @@
+<section class="admin-section appearance-section settings-scoped">
+  <div class="section-header">
+    <i data-lucide="palette" class="section-icon"></i>
+    <div>
+      <h2>美化配置</h2>
+      <p>即时调整全站字体、背景和卡片质感</p>
+    </div>
+  </div>
+
+  <form id="appearanceForm" class="settings-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="fontStyle">全局字体风格</label>
+        <select id="fontStyle">
+          <option value="system-sans">本地系统黑体</option>
+          <option value="morandi-sans">思源莫兰迪黑体</option>
+          <option value="custom-link">自定义在线字体链接</option>
+          <option value="custom-file">本地上传字体包文件</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="primaryColor">全站高亮主色</label>
+        <select id="primaryColor">
+          <option value="blue">烟雨蓝</option>
+          <option value="green">烟草绿</option>
+          <option value="purple">丁香灰</option>
+          <option value="pink">珊瑚粉</option>
+          <option value="orange">燕麦杏</option>
+          <option value="yellow">芥末黄</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group" id="customFontLinkGroup" style="display: none;">
+      <label for="fontCustomLink">在线字体地址</label>
+      <input type="url" id="fontCustomLink" placeholder="输入 https://... 字体或 CSS 链接" />
+    </div>
+    <div class="form-group" id="customFontFamilyGroup" style="display: none;">
+      <label for="fontFamilyName">自定义字体族名称</label>
+      <input type="text" id="fontFamilyName" placeholder="如：Noto Serif SC" />
+    </div>
+    <div class="form-group" id="customFontFileGroup" style="display: none;">
+      <label for="fontCustomFile">本地上传字体包</label>
+      <input type="file" id="fontCustomFile" accept=".ttf,.otf,.woff,.woff2" style="display: none;" />
+      <button type="button" id="uploadFontBtn" class="action-btn secondary wide-btn">
+        <i data-lucide="upload-cloud"></i>
+        <span>选择字体文件</span>
+      </button>
+      <span id="fontUploadStatus" class="upload-status">未上传本地文件</span>
+    </div>
+
+    <div class="form-group">
+      <label for="bgStyle">全局背景风格</label>
+      <select id="bgStyle">
+        <option value="morandi-glow">莫兰迪流光</option>
+        <option value="solid-cream">暖米纯色</option>
+        <option value="dark-slate">静谧深空暗调</option>
+        <option value="custom-url">在线壁纸图片链接</option>
+        <option value="custom-file">本地上传壁纸图片</option>
+      </select>
+    </div>
+    <div class="form-group" id="customBgUrlGroup" style="display: none;">
+      <label for="customBgUrl">壁纸图片 URL</label>
+      <input type="url" id="customBgUrl" placeholder="输入高清图片链接" />
+    </div>
+    <div class="form-group" id="customBgFileGroup" style="display: none;">
+      <label for="bgCustomFile">本地上传壁纸</label>
+      <input type="file" id="bgCustomFile" accept="image/*" style="display: none;" />
+      <button type="button" id="uploadBgBtn" class="action-btn secondary wide-btn">
+        <i data-lucide="image"></i>
+        <span>选择背景图片</span>
+      </button>
+      <span id="bgUploadStatus" class="upload-status">未上传本地文件</span>
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label"><label for="cardOpacity">卡片不透明度</label><span id="opacityVal">65%</span></div>
+      <input type="range" id="cardOpacity" min="0.2" max="0.95" step="any" value="0.65" />
+    </div>
+    <div class="slider-group">
+      <div class="slider-label"><label for="cardBlur">毛玻璃虚化度</label><span id="blurVal">50%</span></div>
+      <input type="range" id="cardBlur" min="0" max="40" step="any" value="20" />
+    </div>
+    <div class="switch-group">
+      <div class="switch-label">
+        <label for="scrollbarEnabled">显示自定义滚动条</label>
+        <span class="switch-desc">开启后显示适配主题色的极简滚动条</span>
+      </div>
+      <label class="switch-toggle">
+        <input type="checkbox" id="scrollbarEnabled" />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+
+    <div class="section-divider"></div>
+    
+    <div class="form-group">
+      <label for="githubUsername">GitHub 用户名</label>
+      <div class="input-with-icon">
+        <i data-lucide="github" class="input-icon-left"></i>
+        <input type="text" id="githubUsername" placeholder="输入 GitHub ID 以启用工作台绿格子" />
+      </div>
+      <p class="field-desc">配置后将在工作台模式自动展示您的 GitHub Contribution 贡献图</p>
+    </div>
+  </form>
+</section>
+
+<style>
+  .settings-scoped .sync-opt-btn {
+    transform: translate3d(0, 0, 0);
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .settings-scoped .sync-opt-btn:hover {
+    background: #fff !important;
+    border-color: var(--theme-primary) !important;
+    transform: translate3d(0, -1px, 0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
+
+  .settings-scoped .settings-header,
+  .settings-scoped .admin-section,
+  .settings-scoped .settings-auth-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--card-shadow);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .settings-scoped .header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    letter-spacing: 0.5px;
+    margin: 0;
+  }
+
+  .settings-scoped .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.06);
+  }
+
+  .settings-scoped .section-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-main);
+  }
+
+  .settings-scoped .section-header p {
+    margin: 3px 0 0;
+    color: var(--color-text-sub);
+    font-size: 12px;
+  }
+
+  .settings-scoped .section-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--theme-primary);
+    flex: 0 0 auto;
+  }
+
+  .settings-scoped .settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .settings-scoped .settings-form .form-group input, 
+  .settings-scoped .settings-form .form-group select {
+    width: 100%;
+    padding: 11px 13px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--color-text-main);
+    outline: none;
+    transition: var(--transition-smooth);
+  }
+
+  .settings-scoped .settings-form .form-group input:focus,
+  .settings-scoped .settings-form .form-group select:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 3px rgba(154, 168, 173, 0.12);
+  }
+
+  .settings-scoped .input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .settings-scoped .input-icon-left {
+    position: absolute;
+    left: 13px;
+    width: 16px;
+    height: 16px;
+    color: var(--color-text-sub);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .settings-scoped .input-with-icon input {
+    padding-left: 40px !important;
+  }
+
+  .settings-scoped .field-desc {
+    margin: 6px 0 0;
+    font-size: 11px;
+    color: var(--color-text-sub);
+    line-height: 1.5;
+  }
+
+  .settings-scoped .section-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.05);
+    margin: 10px 0;
+    border: none;
+  }
+
+  .settings-scoped .switch-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.36);
+  }
+
+  .settings-scoped .switch-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+  }
+
+  .settings-scoped .switch-label label {
+    font-size: 12px;
+    font-weight: 650;
+    color: var(--color-text-main);
+  }
+
+  .settings-scoped .switch-desc {
+    font-size: 11px;
+    color: var(--color-text-sub);
+  }
+
+  .settings-scoped .switch-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .settings-scoped .switch-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .settings-scoped .switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.1);
+    transition: .3s;
+    border-radius: 24px;
+    border: 1px solid var(--card-border);
+  }
+
+  .settings-scoped .switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  }
+
+  .settings-scoped .switch-toggle input:checked + .switch-slider {
+    background-color: var(--theme-primary);
+    border-color: var(--theme-primary);
+  }
+
+  .settings-scoped .switch-toggle input:checked + .switch-slider:before {
+    transform: translateX(20px);
+  }
+
+  .settings-scoped .slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.36);
+  }
+
+  .settings-scoped .slider-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .settings-scoped .slider-label span {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-sub);
+    font-family: monospace;
+  }
+
+  .settings-scoped html.bg-dark-slate .switch-group,
+  .settings-scoped html.bg-dark-slate .slider-group {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .settings-scoped html.bg-dark-slate .switch-slider {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .settings-scoped html.bg-dark-slate .switch-slider:before {
+    background-color: #e8e8e8;
+  }
+</style>

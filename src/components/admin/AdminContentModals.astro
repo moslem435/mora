@@ -1,0 +1,128 @@
+<>
+  <div class="modal" id="editCatModal">
+    <div class="modal-box">
+      <h3>修改分类</h3>
+      <form id="editCatForm" class="admin-form" novalidate>
+        <input type="hidden" id="editCatId" />
+        <div class="form-group">
+          <label for="editCatName">分类名称</label>
+          <input type="text" id="editCatName" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editCatIcon">Lucide 图标名</label>
+            <div class="icon-picker-wrapper" id="editCatIconWrapper">
+              <input type="text" id="editCatIcon" required autocomplete="off" />
+              <div class="icon-picker-dropdown">
+                <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
+                <div class="icon-picker-grid"></div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="editCatColor">莫兰迪色</label>
+            <select id="editCatColor">
+              <option value="blue">烟雨蓝</option>
+              <option value="green">烟草绿</option>
+              <option value="purple">丁香灰</option>
+              <option value="pink">珊瑚粉</option>
+              <option value="orange">燕麦杏</option>
+              <option value="yellow">芥末黄</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="modal-btn secondary" id="closeCatModal">取消</button>
+          <button type="submit" class="modal-btn primary">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="addLinkModal">
+    <div class="modal-box">
+      <h3>添加新卡片</h3>
+      <form id="addLinkForm" class="admin-form" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="linkTitle">卡片名称</label>
+            <input type="text" id="linkTitle" required placeholder="如：GitHub" />
+          </div>
+          <div class="form-group">
+            <label for="linkCatId">所属分类</label>
+            <select id="linkCatId" required></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="linkUrl">链接 URL</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="url" id="linkUrl" required placeholder="https://example.com" style="flex: 1;" />
+            <button type="button" id="identifyLinkBtn" class="action-btn secondary" style="flex-shrink: 0; padding: 0 16px; height: 42px; border-radius: 10px; font-size: 13px;">识别</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="linkDesc">描述信息</label>
+          <input type="text" id="linkDesc" required placeholder="请用一句话简短介绍网站功能..." />
+        </div>
+        <div class="form-group">
+          <label for="linkIcon">Lucide 图标名</label>
+          <div class="icon-picker-wrapper" id="linkIconWrapper">
+            <input type="text" id="linkIcon" required placeholder="如: github, chrome, globe (留空默认 external-link)" value="external-link" autocomplete="off" />
+            <div class="icon-picker-dropdown">
+              <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
+              <div class="icon-picker-grid"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="modal-btn secondary" id="closeAddLinkModal">取消</button>
+          <button type="submit" class="modal-btn primary">确认添加</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="editLinkModal">
+    <div class="modal-box">
+      <h3>修改链接卡片</h3>
+      <form id="editLinkForm" class="admin-form" novalidate>
+        <input type="hidden" id="editLinkId" />
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editLinkTitle">卡片名称</label>
+            <input type="text" id="editLinkTitle" required />
+          </div>
+          <div class="form-group">
+            <label for="editLinkCatId">所属分类</label>
+            <select id="editLinkCatId" required></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editLinkUrl">链接 URL</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="url" id="editLinkUrl" required style="flex: 1;" />
+            <button type="button" id="identifyEditLinkBtn" class="action-btn secondary" style="flex-shrink: 0; padding: 0 16px; height: 42px; border-radius: 10px; font-size: 13px;">识别</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editLinkDesc">描述信息</label>
+          <input type="text" id="editLinkDesc" required />
+        </div>
+        <div class="form-group">
+          <label for="editLinkIcon">Lucide 图标</label>
+          <div class="icon-picker-wrapper" id="editLinkIconWrapper">
+            <input type="text" id="editLinkIcon" required autocomplete="off" />
+            <div class="icon-picker-dropdown">
+              <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
+              <div class="icon-picker-grid"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="modal-btn secondary" id="closeLinkModal">取消</button>
+          <button type="submit" class="modal-btn primary">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</>

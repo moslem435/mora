@@ -1,0 +1,17 @@
+<>
+  <div class="modal" id="customConfirmModal">
+    <div class="modal-box" style="max-width: 380px;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+        <i data-lucide="help-circle" id="confirmIcon" style="color: var(--theme-primary); width: 22px; height: 22px;"></i>
+        <h3 id="confirmTitle" style="margin: 0; font-size: 15px;">确认操作</h3>
+      </div>
+      <p id="confirmMessage" style="font-size: 13px; color: var(--color-text-sub); line-height: 1.6; margin-bottom: 20px;">确定要执行此操作吗？</p>
+      <div class="modal-buttons">
+        <button type="button" class="modal-btn secondary" id="confirmCancelBtn">取消</button>
+        <button type="button" class="modal-btn primary" id="confirmOkBtn" style="background: var(--theme-primary);">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+</>

@@ -1,0 +1,48 @@
+<div id="view-dashboard" class="admin-view active">
+  <div class="view-header">
+    <h2>概览看板</h2>
+    <p>欢迎回到 Mora 管理控制台，这里是您的站点运行数据。</p>
+  </div>
+
+  <div class="dashboard-stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-wrapper" style="background: rgba(var(--theme-blue-rgb), 0.1); color: var(--theme-blue);">
+        <i data-lucide="users"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">总注册用户</span>
+        <span class="stat-value" id="statUsers">...</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrapper" style="background: rgba(var(--theme-purple-rgb), 0.1); color: var(--theme-purple);">
+        <i data-lucide="folder"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">分类总数</span>
+        <span class="stat-value" id="statCategories">...</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon-wrapper" style="background: rgba(var(--theme-green-rgb), 0.1); color: var(--theme-green);">
+        <i data-lucide="link"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">收录链接总数</span>
+        <span class="stat-value" id="statLinks">...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-actions-grid" style="margin-top: 30px;">
+    <h3 style="margin-bottom: 16px; font-size: 15px; color: var(--color-text-main);">快捷操作</h3>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <button type="button" class="action-btn primary" onclick="document.querySelector('[data-target=\'content\']').click(); document.getElementById('catName').focus();">
+        <i data-lucide="plus"></i> 新建分类
+      </button>
+      <button type="button" class="action-btn secondary" onclick="document.querySelector('[data-target=\'content\']').click(); document.getElementById('openAddLinkBtn').click();">
+        <i data-lucide="link"></i> 添加新书签
+      </button>
+    </div>
+  </div>
+</div>

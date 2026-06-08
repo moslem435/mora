@@ -1,0 +1,221 @@
+/* account, backup, and appearance panel styles */
+.users-table-wrapper {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table th {
+  background: rgba(0, 0, 0, 0.02);
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.users-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  font-size: 14px;
+}
+
+.site-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(var(--theme-primary-rgb), 0.05);
+  border-radius: 14px;
+  border: 1px solid rgba(var(--theme-primary-rgb), 0.1);
+}
+
+.slider-group, .switch-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+}
+
+.switch-group {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slider-label, .switch-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slider-label label, .switch-label label {
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--color-text-main);
+}
+
+.slider-label span, .switch-desc {
+  font-size: 11.5px;
+  color: var(--color-text-sub);
+}
+
+.switch-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch-toggle input { opacity: 0; width: 0; height: 0; }
+
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.1);
+  transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 24px;
+}
+
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.switch-toggle input:checked + .switch-slider { background-color: var(--theme-primary); }
+.switch-toggle input:checked + .switch-slider:before { transform: translateX(20px); }
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-left {
+  position: absolute;
+  left: 14px;
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-sub);
+  opacity: 0.7;
+}
+
+.input-with-icon input { padding-left: 42px !important; }
+
+.upload-status {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  margin-top: 4px;
+}
+
+.backup-account-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.account-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+}
+
+.account-avatar {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: var(--theme-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px -4px rgba(var(--theme-primary-rgb), 0.3);
+}
+
+.account-avatar i { width: 26px; height: 26px; }
+
+.account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.account-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.account-info h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin: 0;
+}
+
+.account-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.role-badge {
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.role-badge.admin {
+  background: rgba(var(--theme-blue-rgb), 0.1);
+  color: var(--theme-blue);
+}
+
+.role-badge.user {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-sub);
+}
+
+.backup-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.backup-note {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  line-height: 1.7;
+  padding: 14px;
+  background: rgba(var(--theme-yellow-rgb), 0.06);
+  border-radius: 12px;
+  border: 1px dashed rgba(var(--theme-yellow-rgb), 0.2);
+}

@@ -1,0 +1,58 @@
+<div class="backup-account-grid settings-scoped">
+  <!-- 账号信息 -->
+  <section class="admin-section account-section">
+    <div class="section-header">
+      <i data-lucide="user-cog" class="section-icon"></i>
+      <div>
+        <h2>账号安全</h2>
+        <p>查看当前登录状态和会员权限</p>
+      </div>
+    </div>
+
+    <div class="account-card">
+      <div class="account-avatar"><i data-lucide="user"></i></div>
+      <div class="account-info">
+        <p class="account-label">当前登录账号</p>
+        <h3 id="currentEmail">本地离线模式</h3>
+        <div class="account-badges">
+          <span id="currentRole" class="role-badge user">普通会员</span>
+          <span id="uploadPermission" class="role-badge user">文件上传：未启用</span>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" id="logoutBtn" class="action-btn danger wide-btn" style="display: none; margin-top: 16px;">
+      <i data-lucide="log-out"></i>
+      <span>退出当前账号</span>
+    </button>
+  </section>
+
+  <!-- 备份恢复 -->
+  <section class="admin-section backup-section" id="backup-section">
+    <div class="section-header">
+      <i data-lucide="archive-restore" class="section-icon"></i>
+      <div>
+        <h2>数据备份</h2>
+        <p>导出、导入或重置您的完整导航数据</p>
+      </div>
+    </div>
+
+    <div class="backup-actions">
+      <button id="exportBtn" class="action-btn secondary" title="导出数据为 JSON 文件" type="button">
+        <i data-lucide="download"></i>
+        <span>导出备份</span>
+      </button>
+      <button id="importBtn" class="action-btn secondary" title="从 JSON 文件导入数据" type="button">
+        <i data-lucide="upload"></i>
+        <span>导入备份</span>
+      </button>
+      <button id="resetBtn" class="action-btn danger" title="重置项目到出厂种子配置" type="button">
+        <i data-lucide="rotate-ccw"></i>
+        <span>恢复默认</span>
+      </button>
+    </div>
+    <input type="file" id="importFile" accept=".json" style="display: none;" />
+    <p class="backup-note">注意：导入和恢复默认会覆盖当前本地与云端数据，执行前建议先导出备份。</p>
+  </section>
+</div>
+

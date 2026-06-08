@@ -1,0 +1,69 @@
+<div id="view-content" class="admin-view" style="display: none;">
+  <div class="view-header" style="margin-bottom: 24px;">
+    <h2>内容管理</h2>
+    <p>在此管理您的专属分类和所有的书签链接。</p>
+  </div>
+  <div class="admin-content">
+    <section class="admin-section category-section">
+      <div class="section-header">
+        <i data-lucide="folder-open" class="section-icon"></i>
+        <h2>分类管理</h2>
+      </div>
+
+      <div class="category-list" id="categoryList"></div>
+
+      <div class="admin-form-box">
+        <h3>新建分类</h3>
+        <form id="addCatForm" class="admin-form" novalidate>
+          <div class="form-group">
+            <label for="catName">分类名称</label>
+            <input type="text" id="catName" required placeholder="如：工作效率、常用社交" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="catIcon">Lucide 图标名</label>
+              <div class="icon-picker-wrapper" id="catIconWrapper">
+                <input type="text" id="catIcon" required placeholder="如: wrench, star" value="folder" autocomplete="off" />
+                <div class="icon-picker-dropdown">
+                  <input type="text" class="icon-picker-search" placeholder="搜索图标..." style="margin-bottom: 8px; width: 100%; padding: 8px 12px; font-size: 12px;" />
+                  <div class="icon-picker-grid"></div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="catColor">莫兰迪色</label>
+              <select id="catColor">
+                <option value="blue">烟雨蓝</option>
+                <option value="green">烟草绿</option>
+                <option value="purple">丁香灰</option>
+                <option value="pink">珊瑚粉</option>
+                <option value="orange">燕麦杏</option>
+                <option value="yellow">芥末黄</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="submit-btn">
+            <i data-lucide="plus"></i>
+            <span>添加分类</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <section class="admin-section links-section">
+      <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <i data-lucide="link-2" class="section-icon"></i>
+          <h2>链接管理</h2>
+        </div>
+        <button id="openAddLinkBtn" class="action-btn secondary" style="margin: 0; padding: 6px 12px; font-size: 12.5px; border-radius: 8px; gap: 6px;" type="button">
+          <i data-lucide="plus" style="width: 13px; height: 13px;"></i>
+          <span>添加卡片</span>
+        </button>
+      </div>
+
+      <div class="category-tabs" id="categoryTabs"></div>
+      <div class="admin-links-grid" id="linksList"></div>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,8 @@
+/* responsive admin rules */
+@media (max-width: 1024px) {
+  .admin-sidebar { transform: translateX(-100%); }
+  .admin-sidebar.mobile-open { transform: translateX(0); }
+  .admin-main { margin-left: 0; padding: 20px; }
+  .mobile-header { display: flex; }
+  .backup-account-grid { grid-template-columns: 1fr; }
+}
