@@ -145,6 +145,47 @@
   border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
+.back-home-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--card-border);
+  color: var(--color-text-main);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: var(--transition-smooth);
+  transform: translate3d(0, 0, 0);
+  will-change: transform, box-shadow, background-color, border-color;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.back-home-btn:hover {
+  background: #fff;
+  border-color: var(--theme-primary);
+  color: var(--theme-primary);
+  transform: translate3d(-3px, 0, 0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+html.bg-dark-slate .back-home-btn {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #e8e8e8 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.bg-dark-slate .back-home-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+}
+
 .admin-section {
   background: var(--card-bg);
   border: 1px solid var(--card-border);

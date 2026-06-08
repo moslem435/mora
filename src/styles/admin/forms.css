@@ -27,6 +27,7 @@
 .admin-form select,
 .settings-form input,
 .settings-form select {
+  width: 100%;
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid var(--card-border);
   padding: 11px 14px;
@@ -46,9 +47,11 @@
   box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.12);
 }
 
-.action-btn {
-  display: flex;
+.action-btn,
+.submit-btn {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 10px 18px;
   border-radius: 10px;
@@ -59,11 +62,35 @@
   transition: var(--transition-smooth);
   height: 42px;
   box-sizing: border-box;
+  font-family: inherit;
+  text-decoration: none;
+  transform: translate3d(0, 0, 0);
+  will-change: transform, box-shadow, background-color;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.action-btn i,
+.action-btn svg,
+.submit-btn i,
+.submit-btn svg,
+.btn-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 .action-btn.primary, .submit-btn {
   background: var(--theme-primary);
   color: #fff;
+  box-shadow: 0 6px 14px rgba(var(--theme-primary-rgb), 0.22);
+}
+
+.action-btn.primary:hover,
+.submit-btn:hover {
+  background: var(--theme-primary-hover);
+  transform: translate3d(0, -2px, 0);
+  box-shadow: 0 8px 18px rgba(var(--theme-primary-rgb), 0.3);
 }
 
 .action-btn.secondary {
@@ -78,7 +105,46 @@
   border: 1px solid rgba(196, 117, 117, 0.15);
 }
 
-.action-btn:hover {
+.action-btn.secondary:hover,
+.action-btn.danger:hover {
   transform: translate3d(0, -2px, 0);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+}
+
+.role-select,
+.upload-select {
+  min-width: 112px;
+  font-size: 12px !important;
+  padding: 6px 28px 6px 10px !important;
+  border-radius: 8px !important;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--card-border);
+  color: var(--color-text-main);
+  cursor: pointer;
+}
+
+html.bg-dark-slate .admin-form input,
+html.bg-dark-slate .admin-form select,
+html.bg-dark-slate .settings-form input,
+html.bg-dark-slate .settings-form select {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #e8e8e8 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.bg-dark-slate .admin-form input:focus,
+html.bg-dark-slate .admin-form select:focus,
+html.bg-dark-slate .settings-form input:focus,
+html.bg-dark-slate .settings-form select:focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: var(--theme-primary-hover) !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05) !important;
+}
+
+html.bg-dark-slate .action-btn.secondary,
+html.bg-dark-slate .role-select,
+html.bg-dark-slate .upload-select {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #e8e8e8 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
