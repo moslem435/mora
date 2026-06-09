@@ -158,6 +158,10 @@ inject();
 						"var(--theme-" + primaryColor + ")",
 					);
 					doc.style.setProperty(
+						"--theme-primary-rgb",
+						"var(--theme-" + primaryColor + "-rgb)",
+					);
+					doc.style.setProperty(
 						"--theme-primary-hover",
 						"var(--theme-" +
 							primaryColor +
@@ -265,14 +269,21 @@ inject();
 
 		/* 莫兰迪分类色彩组合（低饱和度，温润沉静） */
 		--theme-blue: #9aa8ad; /* 烟雨蓝 */
+		--theme-blue-rgb: 154, 168, 173;
 		--theme-green: #a0b0a3; /* 烟草绿 */
+		--theme-green-rgb: 160, 176, 163;
 		--theme-purple: #b5abb0; /* 丁香灰 */
+		--theme-purple-rgb: 181, 171, 176;
 		--theme-pink: #ccbab0; /* 珊瑚粉 */
+		--theme-pink-rgb: 204, 186, 176;
 		--theme-orange: #d1c1b3; /* 燕麦杏 */
+		--theme-orange-rgb: 209, 193, 179;
 		--theme-yellow: #cab99b; /* 芥末黄 */
+		--theme-yellow-rgb: 202, 185, 155;
 
 		/* 默认莫兰迪主题色（用于主按钮/高亮） */
 		--theme-primary: var(--theme-blue);
+		--theme-primary-rgb: var(--theme-blue-rgb);
 		--theme-primary-hover: #8ea0a4;
 
 		/* 圆角和过渡时间 */
@@ -637,7 +648,7 @@ inject();
 
 	/* 管理卡片 hover (去变色，亮边框) */
 	html.bg-dark-slate .admin-link-card:hover {
-		border-color: rgba(255, 255, 255, 0.15) !important;
+		border-color: rgba(var(--theme-primary-rgb), 0.5) !important;
 		background: rgba(255, 255, 255, 0.06) !important;
 		box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5) !important;
 	}
@@ -651,6 +662,7 @@ inject();
 	/* 首页 link-card hover (去变色，亮边框) */
 	html.bg-dark-slate a.link-card:hover {
 		background: rgba(255, 255, 255, 0.06) !important;
+		border-color: var(--theme-color) !important;
 		box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5) !important;
 	}
 
@@ -1012,6 +1024,10 @@ inject();
 		doc.style.setProperty(
 			"--theme-primary",
 			`var(--theme-${config.primaryColor})`,
+		);
+		doc.style.setProperty(
+			"--theme-primary-rgb",
+			`var(--theme-${config.primaryColor}-rgb)`,
 		);
 		doc.style.setProperty(
 			"--theme-primary-hover",

@@ -8,6 +8,10 @@ interface Widget {
   size: 'normal' | 'wide' | 'custom';
   colSpan?: number;
   rowSpan?: number;
+  width?: number;
+  height?: number;
+  x?: number;
+  y?: number;
   html: string;
   css: string;
   js: string;
@@ -29,6 +33,7 @@ export function initMainPage() {
   }
 
   const workbenchSection = document.getElementById('workbenchSection');
+  const mainContent = document.getElementById('mainContent');
   const navModeBtn = document.getElementById('navModeBtn');
   const workbenchModeBtn = document.getElementById('workbenchModeBtn');
   const modeSlider = document.getElementById('modeSlider');
@@ -45,6 +50,7 @@ export function initMainPage() {
       if (searchSection) searchSection.style.display = 'block';
       navModeBtn.classList.add('active');
       workbenchModeBtn.classList.remove('active');
+      mainContent?.classList.remove('workbench-active');
       modeSlider.style.transform = 'translateX(0)';
       renderMainGrid(); 
     } else {
@@ -55,7 +61,9 @@ export function initMainPage() {
       if (searchSection) searchSection.style.display = 'none';
       navModeBtn.classList.remove('active');
       workbenchModeBtn.classList.add('active');
+      mainContent?.classList.add('workbench-active');
       modeSlider.style.transform = 'translateX(calc(100% + 4px))';
+      positionDragLayoutItems();
     }
     
     renderLucideIconsSafe();
@@ -80,7 +88,10 @@ export function initMainPage() {
   const cancelWidget = document.getElementById('cancelWidget');
   const saveWidgetBtn = document.getElementById('saveWidget');
   const editorModalTitle = document.getElementById('editorModalTitle');
-  const workbenchGrid = document.querySelector('.workbench-grid');
+  const workbenchGrid = document.querySelector('.workbench-grid') as HTMLElement | null;
+  const arrangeModeBtn = document.getElementById('arrangeModeBtn') as HTMLButtonElement | null;
+  const dragModeBtn = document.getElementById('dragModeBtn') as HTMLButtonElement | null;
+  const workbenchLayoutSlider = document.getElementById('workbenchLayoutSlider');
 
   const nameInput = document.getElementById('widgetNameInput') as HTMLInputElement;
   const iconInput = document.getElementById('widgetIconInput') as HTMLInputElement;
@@ -91,6 +102,171 @@ export function initMainPage() {
   const tabs = document.querySelectorAll('.tab-btn');
 
   let editingWidgetId: string | null = null;
+  let workbenchLayoutMode: 'arrange' | 'drag' = localStorage.getItem('workbench_layout_mode') === 'drag' ? 'drag' : 'arrange';
+
+  const CUSTOM_WIDGETS_KEY = 'custom_widgets';
+  const WORKBENCH_LAYOUT_KEY = 'workbench_layout';
+  const WIDGET_GAP = 24;
+  const GRID_COLUMN_WIDTH = 220;
+  const GRID_ROW_HEIGHT = 24;
+  const DEFAULT_WIDGET_WIDTH = 300;
+  const DEFAULT_WIDGET_HEIGHT = 180;
+  const WIDE_WIDGET_WIDTH = 624;
+
+  function escapeHtml(value: string) {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safeParse<T>(key: string, fallback: T): T {
+    try {
+      return JSON.parse(localStorage.getItem(key) || '') || fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function getSavedWidgets(): Widget[] {
+    return safeParse<Widget[]>(CUSTOM_WIDGETS_KEY, []);
+  }
+
+  function saveWidgets(widgets: Widget[]) {
+    localStorage.setItem(CUSTOM_WIDGETS_KEY, JSON.stringify(widgets));
+  }
+
+  function updateSavedWidget(widget: Widget) {
+    const saved = getSavedWidgets();
+    const idx = saved.findIndex((w) => w.id === widget.id);
+    if (idx > -1) {
+      saved[idx] = widget;
+      saveWidgets(saved);
+    }
+  }
+
+  function getWorkbenchLayouts(): Record<string, { x?: number; y?: number; width?: number; height?: number }> {
+    return safeParse(WORKBENCH_LAYOUT_KEY, {});
+  }
+
+  function saveWorkbenchLayouts(layouts: Record<string, { x?: number; y?: number; width?: number; height?: number }>) {
+    localStorage.setItem(WORKBENCH_LAYOUT_KEY, JSON.stringify(layouts));
+  }
+
+  function getCardLayoutId(card: HTMLElement) {
+    return card.dataset.widgetId || card.dataset.builtin || null;
+  }
+
+  function getCardDefaultWidth(card: HTMLElement) {
+    return card.classList.contains('wide-widget') ? WIDE_WIDGET_WIDTH : DEFAULT_WIDGET_WIDTH;
+  }
+
+  function applyCardSize(card: HTMLElement, width?: number, height?: number) {
+    const nextWidth = Math.max(220, Math.round(width || getCardDefaultWidth(card)));
+    const nextHeight = Math.max(140, Math.round(height || DEFAULT_WIDGET_HEIGHT));
+    const colSpan = Math.max(1, Math.min(4, Math.round((nextWidth + WIDGET_GAP) / (GRID_COLUMN_WIDTH + WIDGET_GAP))));
+    const rowSpan = Math.max(5, Math.ceil(nextHeight / GRID_ROW_HEIGHT));
+
+    card.style.setProperty('--widget-width', `${nextWidth}px`);
+    card.style.setProperty('--widget-height', `${nextHeight}px`);
+    card.style.setProperty('--widget-col-span', String(colSpan));
+    card.style.setProperty('--widget-row-span', String(rowSpan));
+  }
+
+  function persistCardLayout(card: HTMLElement) {
+    const id = getCardLayoutId(card);
+    if (!id) return;
+
+    const layouts = getWorkbenchLayouts();
+    layouts[id] = {
+      ...layouts[id],
+      x: Number.parseFloat(card.style.left) || layouts[id]?.x || 0,
+      y: Number.parseFloat(card.style.top) || layouts[id]?.y || 0,
+      width: Number.parseFloat(card.style.getPropertyValue('--widget-width')) || card.offsetWidth,
+      height: Number.parseFloat(card.style.getPropertyValue('--widget-height')) || card.offsetHeight,
+    };
+    saveWorkbenchLayouts(layouts);
+  }
+
+  function applySavedLayout(card: HTMLElement, widget?: Widget) {
+    const id = getCardLayoutId(card);
+    const layout = id ? getWorkbenchLayouts()[id] : null;
+    applyCardSize(card, widget?.width || layout?.width, widget?.height || layout?.height);
+  }
+
+  function positionDragLayoutItems() {
+    if (!workbenchGrid || workbenchLayoutMode !== 'drag') return;
+
+    const layouts = getWorkbenchLayouts();
+    const cards = Array.from(workbenchGrid.querySelectorAll<HTMLElement>('.widget-card'));
+    const containerWidth = Math.max(workbenchGrid.clientWidth, DEFAULT_WIDGET_WIDTH);
+    let x = 0;
+    let y = 0;
+    let rowHeight = 0;
+    let maxBottom = DEFAULT_WIDGET_HEIGHT;
+
+    cards.forEach((card) => {
+      const id = getCardLayoutId(card);
+      const layout = id ? layouts[id] : null;
+      const width = Math.min(layout?.width || card.offsetWidth || getCardDefaultWidth(card), containerWidth);
+      const height = layout?.height || card.offsetHeight || DEFAULT_WIDGET_HEIGHT;
+
+      if (!layout || layout.x === undefined || layout.y === undefined) {
+        if (x + width > containerWidth && x > 0) {
+          x = 0;
+          y += rowHeight + WIDGET_GAP;
+          rowHeight = 0;
+        }
+        if (id) layouts[id] = { ...layout, x, y, width, height };
+        x += width + WIDGET_GAP;
+        rowHeight = Math.max(rowHeight, height);
+      }
+
+      const current = id ? layouts[id] : layout;
+      card.style.left = `${Math.max(0, current?.x || 0)}px`;
+      card.style.top = `${Math.max(0, current?.y || 0)}px`;
+      applyCardSize(card, current?.width || width, current?.height || height);
+      maxBottom = Math.max(maxBottom, (current?.y || 0) + (current?.height || height));
+    });
+
+    saveWorkbenchLayouts(layouts);
+    workbenchGrid.style.setProperty('--workbench-drag-height', `${maxBottom + DEFAULT_WIDGET_HEIGHT + WIDGET_GAP}px`);
+    workbenchGrid.style.setProperty('--workbench-add-top', `${maxBottom + WIDGET_GAP}px`);
+  }
+
+  function setWorkbenchLayoutMode(mode: 'arrange' | 'drag') {
+    if (!workbenchGrid) return;
+
+    workbenchLayoutMode = mode;
+    localStorage.setItem('workbench_layout_mode', mode);
+    workbenchGrid.classList.toggle('drag-layout', mode === 'drag');
+    arrangeModeBtn?.classList.toggle('active', mode === 'arrange');
+    dragModeBtn?.classList.toggle('active', mode === 'drag');
+    arrangeModeBtn?.setAttribute('aria-pressed', String(mode === 'arrange'));
+    dragModeBtn?.setAttribute('aria-pressed', String(mode === 'drag'));
+    if (workbenchLayoutSlider) {
+      workbenchLayoutSlider.style.transform = mode === 'drag' ? 'translateX(calc(100% + 4px))' : 'translateX(0)';
+    }
+
+    const items = workbenchGrid.querySelectorAll<HTMLElement>('.widget-card, .add-widget-btn');
+    items.forEach((item) => {
+      if (mode === 'arrange') {
+        item.style.left = '';
+        item.style.top = '';
+        if (item.classList.contains('widget-card')) {
+          item.style.width = '';
+          item.style.minHeight = '';
+        }
+      }
+    });
+
+    if (mode === 'drag') positionDragLayoutItems();
+  }
+
+  arrangeModeBtn?.addEventListener('click', () => setWorkbenchLayoutMode('arrange'));
+  dragModeBtn?.addEventListener('click', () => setWorkbenchLayoutMode('drag'));
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -130,6 +306,73 @@ export function initMainPage() {
   closeEditor?.addEventListener('click', () => widgetEditor!.style.display = 'none');
   cancelWidget?.addEventListener('click', () => widgetEditor!.style.display = 'none');
 
+  function bindWidgetInteractions(card: HTMLElement, widget?: Widget) {
+    const handle = card.querySelector('.resize-handle') as HTMLElement | null;
+    handle?.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      card.classList.add('resizing');
+
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startWidth = card.offsetWidth;
+      const startHeight = card.offsetHeight;
+
+      const onPointerMove = (moveEvent: PointerEvent) => {
+        const nextWidth = Math.max(220, startWidth + moveEvent.clientX - startX);
+        const nextHeight = Math.max(140, startHeight + moveEvent.clientY - startY);
+        applyCardSize(card, nextWidth, nextHeight);
+        if (widget) {
+          widget.size = nextWidth > 420 ? 'wide' : 'normal';
+          widget.width = nextWidth;
+          widget.height = nextHeight;
+        }
+      };
+
+      const onPointerUp = () => {
+        card.classList.remove('resizing');
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        if (widget) updateSavedWidget(widget);
+        persistCardLayout(card);
+      };
+
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+    });
+
+    const header = card.querySelector('.widget-header') as HTMLElement | null;
+    header?.addEventListener('pointerdown', (e) => {
+      if (workbenchLayoutMode !== 'drag' || (e.target as HTMLElement).closest('button')) return;
+      e.preventDefault();
+      card.classList.add('dragging');
+
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startLeft = Number.parseFloat(card.style.left) || 0;
+      const startTop = Number.parseFloat(card.style.top) || 0;
+      const maxLeft = Math.max(0, (workbenchGrid?.clientWidth || card.offsetWidth) - card.offsetWidth);
+
+      const onPointerMove = (moveEvent: PointerEvent) => {
+        const nextLeft = Math.min(maxLeft, Math.max(0, startLeft + moveEvent.clientX - startX));
+        const nextTop = Math.max(0, startTop + moveEvent.clientY - startY);
+        card.style.left = `${nextLeft}px`;
+        card.style.top = `${nextTop}px`;
+      };
+
+      const onPointerUp = () => {
+        card.classList.remove('dragging');
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        persistCardLayout(card);
+        positionDragLayoutItems();
+      };
+
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+    });
+  }
+
   function renderWidgetCard(widget: Widget) {
     const existing = document.querySelector(`[data-widget-id="${widget.id}"]`);
     if (existing) existing.remove();
@@ -137,6 +380,7 @@ export function initMainPage() {
     const card = document.createElement('div');
     card.className = `widget-card ${widget.size === 'wide' ? 'wide-widget' : ''} custom-code-widget`;
     card.setAttribute('data-widget-id', widget.id);
+    applySavedLayout(card, widget);
     
     const srcDoc = `
       <!DOCTYPE html>
@@ -150,7 +394,7 @@ export function initMainPage() {
         <body>
           ${widget.html}
           <script>
-            try { ${widget.js} } catch (e) { console.error('Widget Error:', e); }
+            try { ${widget.js.replace(/<\/script/gi, '<\\/script')} } catch (e) { console.error('Widget Error:', e); }
           </script>
         </body>
       </html>
@@ -159,8 +403,8 @@ export function initMainPage() {
     card.innerHTML = `
       <div class="widget-header">
         <div class="header-left">
-          <i data-lucide="${widget.icon || 'code-2'}"></i>
-          <span>${widget.name || '未命名组件'}</span>
+          <i data-lucide="${escapeHtml(widget.icon || 'code-2')}"></i>
+          <span>${escapeHtml(widget.name || '未命名组件')}</span>
         </div>
         <div class="widget-actions">
           <button class="action-btn refresh-btn" title="刷新"><i data-lucide="refresh-cw"></i></button>
@@ -169,87 +413,44 @@ export function initMainPage() {
         </div>
       </div>
       <div style="flex-grow:1; position:relative; overflow: hidden; border-radius: 8px; pointer-events: none;">
-        <iframe class="custom-widget-frame" style="width:100%; height:100%; border:none; background:transparent;" srcdoc='${srcDoc.replace(/'/g, "&apos;")}'></iframe>
+        <iframe class="custom-widget-frame" sandbox="allow-scripts" style="width:100%; height:100%; border:none; background:transparent;"></iframe>
       </div>
       <div class="resize-handle" title="拖拽调整大小">
         <i data-lucide="grip-vertical"></i>
       </div>
     `;
 
-    // 应用自定义尺寸
-    if (widget.colSpan) card.style.gridColumn = `span ${widget.colSpan}`;
-    else if (widget.size === 'wide') card.style.gridColumn = `span 2`;
-    
-    if (widget.rowSpan) card.style.gridRow = `span ${widget.rowSpan}`;
+    const iframe = card.querySelector('iframe');
+    if (iframe) iframe.srcdoc = srcDoc;
 
-    // 拖拽缩放逻辑
-    const handle = card.querySelector('.resize-handle') as HTMLElement;
-    handle?.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const startX = e.clientX;
-      const startY = e.clientY;
-      const startColSpan = widget.colSpan || (widget.size === 'wide' ? 2 : 1);
-      const startRowSpan = widget.rowSpan || 1;
-      
-      // 获取网格基础宽度（近似值）
-      const gridRect = workbenchGrid!.getBoundingClientRect();
-      const colWidth = 300 + 24; // min-width + gap
-      const rowHeight = 180 + 24; // min-height + gap
-
-      const onPointerMove = (moveEvent: PointerEvent) => {
-        const deltaX = moveEvent.clientX - startX;
-        const deltaY = moveEvent.clientY - startY;
-        
-        const newColSpan = Math.max(1, Math.min(4, Math.round(startColSpan + deltaX / colWidth)));
-        const newRowSpan = Math.max(1, Math.min(4, Math.round(startRowSpan + deltaY / rowHeight)));
-        
-        if (newColSpan !== widget.colSpan || newRowSpan !== widget.rowSpan) {
-          widget.colSpan = newColSpan;
-          widget.rowSpan = newRowSpan;
-          card.style.gridColumn = `span ${newColSpan}`;
-          card.style.gridRow = `span ${newRowSpan}`;
-        }
-      };
-
-      const onPointerUp = () => {
-        document.removeEventListener('pointermove', onPointerMove);
-        document.removeEventListener('pointerup', onPointerUp);
-        
-        // 保存到本地存储
-        const saved = JSON.parse(localStorage.getItem('custom_widgets') || '[]');
-        const idx = saved.findIndex((w: any) => w.id === widget.id);
-        if (idx > -1) {
-          saved[idx] = widget;
-          localStorage.setItem('custom_widgets', JSON.stringify(saved));
-        }
-      };
-
-      document.addEventListener('pointermove', onPointerMove);
-      document.addEventListener('pointerup', onPointerUp);
-    });
+    bindWidgetInteractions(card, widget);
 
     card.querySelector('.refresh-btn')?.addEventListener('click', () => {
       const iframe = card.querySelector('iframe');
-      if (iframe) iframe.srcdoc = srcDoc.replace(/'/g, "&apos;");
+      if (iframe) iframe.srcdoc = srcDoc;
     });
     card.querySelector('.edit-btn')?.addEventListener('click', () => openEditor(widget));
     card.querySelector('.delete-btn')?.addEventListener('click', () => {
       if (confirm('确定要删除这个组件吗？')) {
-        const saved = JSON.parse(localStorage.getItem('custom_widgets') || '[]');
-        const filtered = saved.filter((w: any) => w.id !== widget.id);
-        localStorage.setItem('custom_widgets', JSON.stringify(filtered));
+        const filtered = getSavedWidgets().filter((w) => w.id !== widget.id);
+        const layouts = getWorkbenchLayouts();
+        delete layouts[widget.id];
+        saveWidgets(filtered);
+        saveWorkbenchLayouts(layouts);
         card.remove();
+        positionDragLayoutItems();
       }
     });
 
     workbenchGrid?.insertBefore(card, addWidgetBtn);
+    setWorkbenchLayoutMode(workbenchLayoutMode);
     renderLucideIconsSafe();
   }
 
   saveWidgetBtn?.addEventListener('click', () => {
+    const previous = editingWidgetId ? getSavedWidgets().find((w) => w.id === editingWidgetId) : null;
     const widget: Widget = {
+      ...previous,
       id: editingWidgetId || Date.now().toString(),
       name: nameInput.value,
       icon: iconInput.value,
@@ -258,12 +459,12 @@ export function initMainPage() {
       css: cssEditor.value,
       js: jsEditor.value
     };
-    const saved = JSON.parse(localStorage.getItem('custom_widgets') || '[]');
+    const saved = getSavedWidgets();
     if (editingWidgetId) {
-      const idx = saved.findIndex((w: any) => w.id === editingWidgetId);
+      const idx = saved.findIndex((w) => w.id === editingWidgetId);
       if (idx > -1) saved[idx] = widget;
     } else saved.push(widget);
-    localStorage.setItem('custom_widgets', JSON.stringify(saved));
+    saveWidgets(saved);
     renderWidgetCard(widget);
     widgetEditor!.style.display = 'none';
   });
@@ -329,10 +530,18 @@ export function initMainPage() {
   }
 
   function loadSavedWidgets() {
-    const saved = JSON.parse(localStorage.getItem('custom_widgets') || '[]');
+    const saved = getSavedWidgets();
     saved.forEach((w: Widget) => renderWidgetCard(w));
   }
   loadSavedWidgets();
+
+  workbenchGrid?.querySelectorAll<HTMLElement>('.widget-card').forEach((card) => {
+    applySavedLayout(card);
+    bindWidgetInteractions(card);
+  });
+  setWorkbenchLayoutMode(workbenchLayoutMode);
+  renderBuiltinWidgets();
+  window.addEventListener('resize', () => positionDragLayoutItems());
 
   function renderSkeleton() {
     if (!gridSection) return;
@@ -525,8 +734,6 @@ export function initMainPage() {
   } else {
     renderMainGrid();
   }
-
-  renderBuiltinWidgets();
 
   storage.syncFromCloud().then(updated => {
     if (updated) {

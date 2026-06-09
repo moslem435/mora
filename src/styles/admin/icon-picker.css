@@ -41,8 +41,12 @@
   transition: var(--transition-smooth);
 }
 
+.icon-picker-search:hover {
+  border-color: rgba(var(--theme-primary-rgb), 0.6);
+}
+
 .icon-picker-search:focus {
-  border-color: color-mix(in srgb, var(--theme-primary) 50%, var(--card-border));
+  border-color: var(--theme-primary);
   box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.16);
 }
 

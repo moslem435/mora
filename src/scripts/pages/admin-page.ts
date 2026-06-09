@@ -374,6 +374,23 @@ function initAdminConsole() {
     const blurVal = document.getElementById('blurVal');
     if (blurVal) blurVal.textContent = `${appearance.cardBlur}px`;
 
+    // 绑定预览面板中调色板的点击事件
+    const paletteColors = document.querySelectorAll('.appearance-preview-palette .palette-color');
+    paletteColors.forEach(el => {
+      el.addEventListener('click', (e) => {
+        const color = (e.currentTarget as HTMLElement).getAttribute('data-color');
+        if (color) {
+          const primaryColorSelect = document.getElementById('primaryColor') as HTMLSelectElement;
+          if (primaryColorSelect) {
+            primaryColorSelect.value = color;
+            refreshCustomSelect(primaryColorSelect, 'plain');
+            // 触发 change 事件以同步保存和刷新
+            primaryColorSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+      });
+    });
+
     const toggleGroups = () => {
       const fontStyle = (document.getElementById('fontStyle') as HTMLSelectElement | null)?.value;
       const bgStyle = (document.getElementById('bgStyle') as HTMLSelectElement | null)?.value;
@@ -392,8 +409,21 @@ function initAdminConsole() {
 
     toggleGroups();
 
-    form.addEventListener('change', async (event) => {
-      toggleGroups();
+    const getFormData = () => ({
+      fontStyle: (document.getElementById('fontStyle') as HTMLSelectElement).value as any,
+      fontCustomLink: (document.getElementById('fontCustomLink') as HTMLInputElement).value,
+      fontFamilyName: (document.getElementById('fontFamilyName') as HTMLInputElement).value,
+      primaryColor: (document.getElementById('primaryColor') as HTMLSelectElement).value as any,
+      bgStyle: (document.getElementById('bgStyle') as HTMLSelectElement).value as any,
+      customBgUrl: (document.getElementById('customBgUrl') as HTMLInputElement).value,
+      cardOpacity: parseFloat((document.getElementById('cardOpacity') as HTMLInputElement).value),
+      cardBlur: parseFloat((document.getElementById('cardBlur') as HTMLInputElement).value),
+      scrollbarEnabled: (document.getElementById('scrollbarEnabled') as HTMLInputElement).checked,
+      githubUsername: (document.getElementById('githubUsername') as HTMLInputElement).value.trim(),
+    });
+
+    // 实时拖拽更新（仅更新数值标签、本地存储和派发事件，不触发云同步）
+    form.addEventListener('input', (event) => {
       const target = event.target as HTMLInputElement | HTMLSelectElement;
 
       if (target.id === 'cardOpacity' && opacityVal) {
@@ -403,18 +433,19 @@ function initAdminConsole() {
         blurVal.textContent = `${target.value}px`;
       }
 
-      const newAppearance = {
-        fontStyle: (document.getElementById('fontStyle') as HTMLSelectElement).value as any,
-        fontCustomLink: (document.getElementById('fontCustomLink') as HTMLInputElement).value,
-        fontFamilyName: (document.getElementById('fontFamilyName') as HTMLInputElement).value,
-        primaryColor: (document.getElementById('primaryColor') as HTMLSelectElement).value as any,
-        bgStyle: (document.getElementById('bgStyle') as HTMLSelectElement).value as any,
-        customBgUrl: (document.getElementById('customBgUrl') as HTMLInputElement).value,
-        cardOpacity: parseFloat((document.getElementById('cardOpacity') as HTMLInputElement).value),
-        cardBlur: parseFloat((document.getElementById('cardBlur') as HTMLInputElement).value),
-        scrollbarEnabled: (document.getElementById('scrollbarEnabled') as HTMLInputElement).checked,
-        githubUsername: (document.getElementById('githubUsername') as HTMLInputElement).value.trim(),
-      };
+      // 对于滑动条，实时保存到本地并刷新预览
+      if (target.type === 'range') {
+        const newAppearance = getFormData();
+        storage.saveAppearance(newAppearance);
+        window.dispatchEvent(new CustomEvent('appearance-updated'));
+      }
+    });
+
+    // 表单控件改变（包含滑动条松开后的 change），触发云同步和组显隐逻辑
+    form.addEventListener('change', async (event) => {
+      toggleGroups();
+      
+      const newAppearance = getFormData();
 
       storage.saveAppearance(newAppearance);
       window.dispatchEvent(new CustomEvent('appearance-updated'));

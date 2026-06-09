@@ -1,12 +1,4 @@
 /* admin shell layout */
-:root {
-  --theme-blue-rgb: 154, 168, 173;
-  --theme-green-rgb: 160, 176, 163;
-  --theme-purple-rgb: 181, 171, 176;
-  --theme-pink-rgb: 204, 186, 176;
-  --theme-orange-rgb: 209, 193, 179;
-  --theme-yellow-rgb: 202, 185, 155;
-}
 
 .admin-layout {
   display: flex;
@@ -297,6 +289,14 @@ html.bg-dark-slate .back-home-btn:hover {
   align-items: center;
   gap: 20px;
   backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  border-color: rgba(var(--theme-primary-rgb), 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px -10px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.85);
 }
 
 .stat-icon-wrapper {

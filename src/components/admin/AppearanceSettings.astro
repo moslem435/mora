@@ -1,28 +1,23 @@
-<section class="admin-section appearance-section settings-scoped">
-  <div class="section-header">
-    <i data-lucide="palette" class="section-icon"></i>
-    <div class="section-header-info">
-      <h2>个性美化</h2>
-      <p>实时调整全站字体、背景和卡片虚化质感，打造专属视觉风格。</p>
-    </div>
-  </div>
-
+<div class="appearance-settings-wrapper settings-scoped">
   <form id="appearanceForm" class="settings-form appearance-form">
     <div class="appearance-layout">
       <div class="appearance-main-stack">
-        <article class="appearance-card appearance-card--foundation">
-          <div class="appearance-card-header">
-            <div>
-              <span class="appearance-card-kicker">Foundation</span>
-              <h3>视觉基底</h3>
+        
+        <section class="admin-section appearance-section">
+          <div class="section-header modern-header">
+            <div class="header-icon-box">
+              <i data-lucide="sparkles" class="section-icon"></i>
             </div>
-            <i data-lucide="sparkles" aria-hidden="true"></i>
+            <div class="header-text-box">
+              <h2>视觉基底</h2>
+              <p>实时调整全站字体、背景和卡片质感</p>
+            </div>
           </div>
 
-          <div class="form-row appearance-control-grid">
+          <div class="appearance-control-grid">
             <div class="form-group appearance-control">
               <label for="fontStyle">全局字体风格</label>
-              <select id="fontStyle">
+              <select id="fontStyle" class="modern-select">
                 <option value="system-sans">本地系统黑体</option>
                 <option value="morandi-sans">思源莫兰迪黑体</option>
                 <option value="custom-link">自定义在线字体链接</option>
@@ -31,7 +26,7 @@
             </div>
             <div class="form-group appearance-control">
               <label for="primaryColor">全站高亮主色</label>
-              <select id="primaryColor">
+              <select id="primaryColor" class="modern-select">
                 <option value="blue">烟雨蓝</option>
                 <option value="green">烟草绿</option>
                 <option value="purple">丁香灰</option>
@@ -44,7 +39,7 @@
 
           <div class="form-group appearance-control">
             <label for="bgStyle">全局背景风格</label>
-            <select id="bgStyle">
+            <select id="bgStyle" class="modern-select">
               <option value="morandi-glow">莫兰迪流光</option>
               <option value="solid-cream">暖米纯色</option>
               <option value="dark-slate">静谧深空暗调</option>
@@ -56,134 +51,171 @@
           <div class="appearance-conditional-stack">
             <div class="form-group appearance-control appearance-conditional" id="customFontLinkGroup" style="display: none;">
               <label for="fontCustomLink">在线字体地址</label>
-              <input type="url" id="fontCustomLink" placeholder="输入 https://... 字体或 CSS 链接" />
+              <div class="input-with-icon">
+                <i data-lucide="link" class="input-icon-left"></i>
+                <input type="url" id="fontCustomLink" placeholder="输入 https://... 字体或 CSS 链接" class="modern-input" />
+              </div>
             </div>
             <div class="form-group appearance-control appearance-conditional" id="customFontFamilyGroup" style="display: none;">
               <label for="fontFamilyName">自定义字体族名称</label>
-              <input type="text" id="fontFamilyName" placeholder="如：Noto Serif SC" />
+              <div class="input-with-icon">
+                <i data-lucide="type" class="input-icon-left"></i>
+                <input type="text" id="fontFamilyName" placeholder="如：Noto Serif SC" class="modern-input" />
+              </div>
             </div>
             <div class="form-group appearance-control appearance-conditional" id="customFontFileGroup" style="display: none;">
               <label for="fontCustomFile">本地上传字体包</label>
-              <input type="file" id="fontCustomFile" accept=".ttf,.otf,.woff,.woff2" style="display: none;" />
-              <button type="button" id="uploadFontBtn" class="action-btn secondary wide-btn appearance-upload-btn">
-                <i data-lucide="upload-cloud"></i>
-                <span>选择字体文件</span>
-              </button>
-              <span id="fontUploadStatus" class="upload-status">未上传本地文件</span>
+              <div class="upload-zone">
+                <input type="file" id="fontCustomFile" accept=".ttf,.otf,.woff,.woff2" class="visually-hidden-input" />
+                <button type="button" id="uploadFontBtn" class="action-btn secondary wide-btn appearance-upload-btn">
+                  <i data-lucide="upload-cloud"></i>
+                  <span>选择字体文件</span>
+                </button>
+                <span id="fontUploadStatus" class="upload-status">未选择文件</span>
+              </div>
             </div>
             <div class="form-group appearance-control appearance-conditional" id="customBgUrlGroup" style="display: none;">
               <label for="customBgUrl">壁纸图片 URL</label>
-              <input type="url" id="customBgUrl" placeholder="输入高清图片链接" />
+              <div class="input-with-icon">
+                <i data-lucide="image" class="input-icon-left"></i>
+                <input type="url" id="customBgUrl" placeholder="输入高清图片链接" class="modern-input" />
+              </div>
             </div>
             <div class="form-group appearance-control appearance-conditional" id="customBgFileGroup" style="display: none;">
               <label for="bgCustomFile">本地上传壁纸</label>
-              <input type="file" id="bgCustomFile" accept="image/*" style="display: none;" />
-              <button type="button" id="uploadBgBtn" class="action-btn secondary wide-btn appearance-upload-btn">
-                <i data-lucide="image"></i>
-                <span>选择背景图片</span>
-              </button>
-              <span id="bgUploadStatus" class="upload-status">未上传本地文件</span>
+              <div class="upload-zone">
+                <input type="file" id="bgCustomFile" accept="image/*" class="visually-hidden-input" />
+                <button type="button" id="uploadBgBtn" class="action-btn secondary wide-btn appearance-upload-btn">
+                  <i data-lucide="image-plus"></i>
+                  <span>选择背景图片</span>
+                </button>
+                <span id="bgUploadStatus" class="upload-status">未选择文件</span>
+              </div>
             </div>
           </div>
-        </article>
+        </section>
 
-        <article class="appearance-card appearance-card--glass">
-          <div class="appearance-card-header">
-            <div>
-              <span class="appearance-card-kicker">Glass texture</span>
-              <h3>玻璃质感</h3>
+        <section class="admin-section appearance-section">
+          <div class="section-header modern-header">
+            <div class="header-icon-box">
+              <i data-lucide="layers-3" class="section-icon"></i>
             </div>
-            <i data-lucide="layers-3" aria-hidden="true"></i>
+            <div class="header-text-box">
+              <h2>玻璃质感</h2>
+              <p>控制组件的透明与虚化层次</p>
+            </div>
           </div>
 
           <div class="slider-group appearance-slider-card">
-            <div class="slider-label"><label for="cardOpacity">卡片不透明度</label><span id="opacityVal">65%</span></div>
-            <input type="range" id="cardOpacity" min="0.2" max="0.95" step="any" value="0.65" />
+            <div class="slider-label">
+              <label for="cardOpacity">卡片不透明度</label>
+              <span id="opacityVal" class="value-badge">65%</span>
+            </div>
+            <div class="slider-wrapper">
+              <input type="range" id="cardOpacity" class="modern-slider" min="0.2" max="0.95" step="any" value="0.65" />
+            </div>
           </div>
           <div class="slider-group appearance-slider-card">
-            <div class="slider-label"><label for="cardBlur">毛玻璃虚化度</label><span id="blurVal">50%</span></div>
-            <input type="range" id="cardBlur" min="0" max="40" step="any" value="20" />
+            <div class="slider-label">
+              <label for="cardBlur">毛玻璃虚化度</label>
+              <span id="blurVal" class="value-badge">20px</span>
+            </div>
+            <div class="slider-wrapper">
+              <input type="range" id="cardBlur" class="modern-slider" min="0" max="40" step="any" value="20" />
+            </div>
           </div>
+          
           <div class="switch-group appearance-switch-card">
-            <div class="switch-label">
-              <label for="scrollbarEnabled">显示自定义滚动条</label>
-              <span class="switch-desc">开启后显示适配主题色的极简滚动条</span>
+            <div class="switch-content">
+              <div class="switch-icon-box">
+                <i data-lucide="mouse-pointer-click"></i>
+              </div>
+              <div class="switch-label">
+                <label for="scrollbarEnabled">显示自定义滚动条</label>
+                <span class="switch-desc">开启后显示适配主题色的极简滚动条</span>
+              </div>
             </div>
             <label class="switch-toggle">
               <input type="checkbox" id="scrollbarEnabled" />
               <span class="switch-slider"></span>
             </label>
           </div>
-        </article>
+        </section>
 
-        <article class="appearance-card appearance-card--identity">
-          <div class="appearance-card-header">
-            <div>
-              <span class="appearance-card-kicker">Workspace identity</span>
-              <h3>工作台身份</h3>
+        <section class="admin-section appearance-section">
+          <div class="section-header modern-header">
+            <div class="header-icon-box">
+              <i data-lucide="github" class="section-icon"></i>
             </div>
-            <i data-lucide="github" aria-hidden="true"></i>
+            <div class="header-text-box">
+              <h2>工作台身份</h2>
+              <p>展示您的开源影响力</p>
+            </div>
           </div>
 
           <div class="form-group appearance-control">
             <label for="githubUsername">GitHub 用户名</label>
             <div class="input-with-icon">
               <i data-lucide="github" class="input-icon-left"></i>
-              <input type="text" id="githubUsername" placeholder="输入 GitHub ID 以启用工作台绿格子" />
+              <input type="text" id="githubUsername" placeholder="输入 ID 启用贡献图" class="modern-input" />
             </div>
-            <p class="field-desc">配置后将在工作台模式自动展示您的 GitHub Contribution 贡献图。</p>
+            <p class="field-desc">配置后将在前台工作台模式自动展示您的 GitHub Contribution 热力图。</p>
           </div>
-        </article>
+        </section>
+
       </div>
 
-      <aside class="appearance-preview" aria-label="视觉预览">
-        <div class="appearance-preview-orb" aria-hidden="true"></div>
-        <div class="appearance-preview-card">
-          <span class="appearance-preview-label">Preview</span>
-          <h3>Mora</h3>
-          <p>Soft glass, muted color, personal rhythm.</p>
-          <div class="appearance-preview-palette" aria-hidden="true">
-            <span class="palette-blue"></span>
-            <span class="palette-green"></span>
-            <span class="palette-purple"></span>
-            <span class="palette-orange"></span>
+      <aside class="appearance-preview-container">
+        <div class="appearance-preview" aria-label="视觉预览">
+          <div class="appearance-preview-orb" aria-hidden="true"></div>
+          
+          <div class="appearance-preview-card">
+            <div class="preview-header">
+              <div class="preview-dots">
+                <span class="dot close"></span>
+                <span class="dot min"></span>
+                <span class="dot max"></span>
+              </div>
+            </div>
+            <div class="preview-body">
+              <span class="appearance-preview-label">
+                <i data-lucide="zap"></i> Live Preview
+              </span>
+              <h3>Mora</h3>
+              <p class="preview-subtitle">Soft glass, muted color, personal rhythm.</p>
+              
+              <div class="preview-mock-search">
+                <i data-lucide="search"></i>
+                <span>Search everything...</span>
+              </div>
+              
+              <div class="preview-mock-links">
+                <div class="mock-link">
+                  <div class="mock-icon primary-bg"><i data-lucide="github"></i></div>
+                  <div class="mock-text">
+                    <div class="mock-title">GitHub</div>
+                    <div class="mock-desc">Source code</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="appearance-preview-palette">
+                <span class="palette-color palette-blue" data-color="blue" title="Blue"></span>
+                <span class="palette-color palette-green" data-color="green" title="Green"></span>
+                <span class="palette-color palette-purple" data-color="purple" title="Purple"></span>
+                <span class="palette-color palette-pink" data-color="pink" title="Pink"></span>
+                <span class="palette-color palette-orange" data-color="orange" title="Orange"></span>
+                <span class="palette-color palette-yellow" data-color="yellow" title="Yellow"></span>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="appearance-preview-note">
-          <i data-lucide="wand-sparkles" aria-hidden="true"></i>
-          <span>调整后会即时同步到前台视觉变量。</span>
+
+          <div class="appearance-preview-note">
+            <i data-lucide="wand-sparkles" aria-hidden="true"></i>
+            <span>调整后会即时同步到前台视觉变量，无需刷新页面即可预览效果。</span>
+          </div>
         </div>
       </aside>
     </div>
   </form>
-</section>
-
-<style>
-  .settings-scoped .sync-opt-btn {
-    transform: translate3d(0, 0, 0);
-    will-change: transform, box-shadow;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  .settings-scoped .sync-opt-btn:hover {
-    background: #fff !important;
-    border-color: var(--theme-primary) !important;
-    transform: translate3d(0, -1px, 0);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  }
-
-  html.bg-dark-slate .settings-scoped .switch-group,
-  html.bg-dark-slate .settings-scoped .slider-group {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-
-  html.bg-dark-slate .settings-scoped .switch-slider {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  html.bg-dark-slate .settings-scoped .switch-slider:before {
-    background-color: #e8e8e8;
-  }
-</style>
+</div>

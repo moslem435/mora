@@ -59,8 +59,8 @@ const { id, title, url, description, icon = "external-link", color = "blue" } = 
   /* 悬浮动效 */
   .link-card:hover {
     transform: translateY(-4px) scale(1.015);
-    border-color: var(--card-border-hover);
-    box-shadow: var(--card-shadow-hover);
+    border-color: var(--theme-color);
+    box-shadow: 0 12px 25px -10px rgba(var(--theme-primary-rgb), 0.15), var(--card-shadow-hover);
   }
 
   .card-header {
