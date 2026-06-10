@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import SearchBar from '../components/SearchBar.astro';
 import Sidebar from '../components/Sidebar.astro';
+import '../styles/admin/toast.css';
 ---
 
 <Layout title="Mora - 个人导航">
@@ -95,6 +96,25 @@ import Sidebar from '../components/Sidebar.astro';
       <!-- 工作台展示区 -->
       <section class="workbench-section" id="workbenchSection" style="display: none;">
         <div class="workbench-toolbar" id="workbenchToolbar">
+          <div class="workbench-manage-actions" aria-label="工作台管理">
+            <button class="workbench-tool-btn" id="lockWorkbenchBtn" type="button" title="锁定布局">
+              <i data-lucide="lock-open"></i>
+              <span>锁定</span>
+            </button>
+            <button class="workbench-tool-btn" id="resetWorkbenchBtn" type="button" title="重置布局">
+              <i data-lucide="rotate-ccw"></i>
+              <span>重置</span>
+            </button>
+            <button class="workbench-tool-btn" id="exportWorkbenchBtn" type="button" title="导出工作台">
+              <i data-lucide="download"></i>
+              <span>导出</span>
+            </button>
+            <button class="workbench-tool-btn" id="importWorkbenchBtn" type="button" title="导入工作台">
+              <i data-lucide="upload"></i>
+              <span>导入</span>
+            </button>
+            <input id="importWorkbenchInput" type="file" accept="application/json,.json" hidden />
+          </div>
           <div class="workbench-layout-switch" role="group" aria-label="工作台布局模式">
             <div class="workbench-layout-slider" id="workbenchLayoutSlider"></div>
             <button class="workbench-layout-btn active" id="arrangeModeBtn" type="button" aria-pressed="true" title="自由排列">
@@ -162,57 +182,150 @@ import Sidebar from '../components/Sidebar.astro';
         </div>
       </section>
 
-      <!-- 专业级组件编辑器 -->
+      <!-- 小组件编辑器 -->
       <div class="widget-editor-overlay" id="widgetEditor">
-        <div class="widget-editor-content">
+        <div class="widget-editor-content widget-editor-pro">
           <div class="editor-header">
             <div class="editor-title-group">
+              <span class="editor-eyebrow">Workbench Widget</span>
               <h3 id="editorModalTitle">新建小组件</h3>
-              <p class="editor-subtitle">编写 HTML/CSS/JS 打造专属看板</p>
+              <p class="editor-subtitle">从模板开始，或使用 HTML/CSS/JS 打造专属看板。</p>
             </div>
-            <button class="close-editor-btn" id="closeEditor">
+            <button class="close-editor-btn" id="closeEditor" type="button" aria-label="关闭编辑器">
               <i data-lucide="x"></i>
             </button>
           </div>
-          
-          <div class="editor-config-panel">
-            <div class="config-row">
-              <div class="config-item flex-2">
-                <label>组件名称</label>
-                <input type="text" id="widgetNameInput" placeholder="例如：我的时钟">
-              </div>
-              <div class="config-item">
-                <label>Lucide 图标名</label>
-                <input type="text" id="widgetIconInput" placeholder="clock">
-              </div>
-              <div class="config-item">
-                <label>尺寸</label>
-                <select id="widgetSizeInput">
-                  <option value="normal">普通 (1x1)</option>
-                  <option value="wide">宽幅 (2x1)</option>
-                </select>
-              </div>
-            </div>
-          </div>
 
-          <div class="editor-body">
-            <div class="editor-tabs">
-              <button class="tab-btn active" data-tab="html">HTML</button>
-              <button class="tab-btn" data-tab="css">CSS</button>
-              <button class="tab-btn" data-tab="js">JS</button>
-            </div>
-            <div class="editor-panes">
-              <textarea id="htmlEditor" spellcheck="false" placeholder="<!-- 输入 HTML -->"></textarea>
-              <textarea id="cssEditor" spellcheck="false" style="display: none;" placeholder="/* 输入 CSS */"></textarea>
-              <textarea id="jsEditor" spellcheck="false" style="display: none;" placeholder="// 输入 JavaScript"></textarea>
+          <div class="widget-editor-shell">
+            <aside class="widget-template-panel" aria-label="小组件模板">
+              <div class="template-panel-title">选择模板</div>
+              <button class="widget-template-card active" type="button" data-template="clock">
+                <i data-lucide="clock-3"></i>
+                <span>数字时钟</span>
+                <small>实时显示时间</small>
+              </button>
+              <button class="widget-template-card" type="button" data-template="note">
+                <i data-lucide="sticky-note"></i>
+                <span>便签</span>
+                <small>轻量文本卡片</small>
+              </button>
+              <button class="widget-template-card" type="button" data-template="countdown">
+                <i data-lucide="timer"></i>
+                <span>倒计时</span>
+                <small>纪念日/目标日</small>
+              </button>
+              <button class="widget-template-card" type="button" data-template="blank">
+                <i data-lucide="code-2"></i>
+                <span>自定义代码</span>
+                <small>HTML / CSS / JS</small>
+              </button>
+            </aside>
+
+            <div class="widget-editor-main">
+              <div class="editor-config-panel">
+                <div class="config-row">
+                  <div class="config-item flex-2">
+                    <label>组件名称</label>
+                    <input type="text" id="widgetNameInput" placeholder="例如：我的时钟">
+                  </div>
+                  <div class="config-item">
+                    <label>Lucide 图标名</label>
+                    <input type="text" id="widgetIconInput" placeholder="clock">
+                  </div>
+                  <div class="config-item size-config-item">
+                    <label>尺寸</label>
+                    <select id="widgetSizeInput" aria-label="组件尺寸">
+                      <option value="normal">普通</option>
+                      <option value="wide">宽幅</option>
+                    </select>
+                    <div class="widget-size-options" id="widgetSizeOptions" aria-label="组件尺寸快捷选择">
+                      <button class="widget-size-btn active" type="button" data-size="normal">普通</button>
+                      <button class="widget-size-btn" type="button" data-size="wide">宽幅</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="editor-body split-editor-body">
+                <div class="code-editor-area">
+                  <div class="editor-tabs">
+                    <button class="tab-btn active" data-tab="html" type="button">HTML</button>
+                    <button class="tab-btn" data-tab="css" type="button">CSS</button>
+                    <button class="tab-btn" data-tab="js" type="button">JS</button>
+                  </div>
+                  <div class="editor-panes">
+                    <textarea id="htmlEditor" spellcheck="false" placeholder="<!-- 输入 HTML -->"></textarea>
+                    <textarea id="cssEditor" spellcheck="false" style="display: none;" placeholder="/* 输入 CSS */"></textarea>
+                    <textarea id="jsEditor" spellcheck="false" style="display: none;" placeholder="// 输入 JavaScript"></textarea>
+                  </div>
+                </div>
+
+                <section class="widget-preview-panel" aria-label="实时预览">
+                  <div class="preview-header">
+                    <div>
+                      <span>实时预览</span>
+                      <small>沙盒运行</small>
+                    </div>
+                    <button class="preview-refresh-btn" id="refreshWidgetPreview" type="button">
+                      <i data-lucide="refresh-cw"></i>
+                      刷新
+                    </button>
+                  </div>
+                  <div class="preview-stage">
+                    <iframe id="widgetPreviewFrame" sandbox="allow-scripts" title="小组件预览"></iframe>
+                  </div>
+                </section>
+              </div>
             </div>
           </div>
 
           <div class="editor-footer">
-            <button class="cancel-btn" id="cancelWidget">取消</button>
-            <button class="save-widget-btn" id="saveWidget">保存组件</button>
+            <p class="editor-storage-note">当前小组件仅保存在本机浏览器，暂不参与云端同步。</p>
+            <div class="editor-footer-actions">
+              <button class="cancel-btn" id="cancelWidget" type="button">取消</button>
+              <button class="save-widget-btn" id="saveWidget" type="button">保存组件</button>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div class="widget-viewer-overlay" id="widgetViewer" aria-hidden="true">
+        <div class="widget-viewer-dialog" role="dialog" aria-modal="true" aria-labelledby="widgetViewerTitle">
+          <div class="widget-viewer-header">
+            <div class="widget-viewer-title-group">
+              <i data-lucide="code-2" id="widgetViewerIcon"></i>
+              <div>
+                <span class="widget-viewer-eyebrow">Widget Preview</span>
+                <h3 id="widgetViewerTitle">小组件</h3>
+              </div>
+            </div>
+            <div class="widget-viewer-actions">
+              <button class="widget-viewer-action" id="refreshWidgetViewer" type="button" title="刷新">
+                <i data-lucide="refresh-cw"></i>
+              </button>
+              <button class="widget-viewer-action" id="editWidgetViewer" type="button" title="编辑">
+                <i data-lucide="edit-3"></i>
+              </button>
+              <button class="widget-viewer-action" id="toggleWidgetViewerFullscreen" type="button" title="全屏">
+                <i data-lucide="maximize-2"></i>
+              </button>
+              <button class="widget-viewer-action" id="closeWidgetViewer" type="button" title="关闭">
+                <i data-lucide="x"></i>
+              </button>
+            </div>
+          </div>
+          <div class="widget-viewer-stage">
+            <iframe id="widgetViewerFrame" sandbox="allow-scripts" title="小组件详情"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget-context-menu" id="widgetContextMenu" aria-hidden="true">
+        <button type="button" data-action="open"><i data-lucide="maximize-2"></i><span>打开详情</span></button>
+        <button type="button" data-action="edit"><i data-lucide="edit-3"></i><span>编辑组件</span></button>
+        <button type="button" data-action="duplicate"><i data-lucide="copy"></i><span>复制组件</span></button>
+        <button type="button" data-action="reset"><i data-lucide="rotate-ccw"></i><span>重置尺寸</span></button>
+        <button type="button" data-action="delete" class="danger"><i data-lucide="trash-2"></i><span>删除组件</span></button>
       </div>
 
       <!-- 空状态 -->
@@ -336,10 +449,45 @@ import Sidebar from '../components/Sidebar.astro';
   .workbench-section { animation: fadeIn 0.5s ease both; position: relative; padding-top: 2px; }
   .workbench-toolbar {
     position: sticky; top: 14px; z-index: 20; overflow: hidden;
-    display: flex; justify-content: flex-end; pointer-events: none;
+    display: flex; justify-content: flex-end; gap: 10px; pointer-events: none;
     width: 100%; margin: -10px 0 12px; padding: 0;
   }
   .workbench-toolbar::before { display: none; }
+  .workbench-manage-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.035);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    pointer-events: auto;
+  }
+  .workbench-tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 30px;
+    padding: 0 10px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--color-text-sub);
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+  }
+  .workbench-tool-btn:hover,
+  .workbench-tool-btn.active {
+    color: var(--theme-color);
+    background: #fff;
+  }
+  .workbench-tool-btn:active { transform: scale(0.96); }
+  .workbench-tool-btn i {
+    width: 14px;
+    height: 14px;
+  }
   .workbench-layout-switch {
     position: relative; z-index: 1; pointer-events: auto;
     display: flex; gap: 3px; padding: 3px;
@@ -378,7 +526,7 @@ import Sidebar from '../components/Sidebar.astro';
   }
   .workbench-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     grid-auto-rows: 6px;
     grid-auto-flow: dense;
     column-gap: 24px;
@@ -396,7 +544,7 @@ import Sidebar from '../components/Sidebar.astro';
     grid-row: span var(--widget-row-span, 5);
     background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-md);
     padding: 16px; display: flex; flex-direction: column; gap: 12px; height: var(--widget-height, 180px); transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; position: relative;
-    box-sizing: border-box; backdrop-filter: blur(10px); touch-action: none; overflow: hidden;
+    box-sizing: border-box; backdrop-filter: blur(10px); touch-action: pan-y; overflow: hidden;
     min-height: 0;
   }
   .widget-card:hover {
@@ -423,6 +571,9 @@ import Sidebar from '../components/Sidebar.astro';
     background: var(--card-bg);
   }
   .widget-card.dragging { cursor: grabbing; }
+  .workbench-grid.layout-locked .widget-header { cursor: default; }
+  .workbench-grid.layout-locked .resize-handle { display: none; }
+  .workbench-grid.layout-locked .widget-card:hover { transform: none; }
   .widget-card.resizing iframe,
   .widget-card.dragging iframe { pointer-events: none; }
   .widget-header {
@@ -433,6 +584,8 @@ import Sidebar from '../components/Sidebar.astro';
   }
   .workbench-grid.drag-layout .widget-header { cursor: grab; }
   .workbench-grid.drag-layout .widget-header:active { cursor: grabbing; }
+  .workbench-grid.drag-layout .widget-header,
+  .resize-handle { touch-action: none; }
   .header-left { display: flex; align-items: center; gap: 10px; }
   .header-left i { color: var(--theme-color); width: 18px; }
 
@@ -449,6 +602,208 @@ import Sidebar from '../components/Sidebar.astro';
   }
   .action-btn:hover { background: var(--theme-color); color: #fff; }
   .action-btn.delete:hover { background: #ff4d4f; }
+  .widget-open-surface {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.02);
+    overflow: hidden;
+    cursor: zoom-in;
+    text-align: inherit;
+  }
+  .widget-open-surface iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    pointer-events: none;
+  }
+  .widget-open-surface::after {
+    content: '点击查看';
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.86);
+    color: var(--color-text-sub);
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 8px 18px -14px rgba(0,0,0,0.4);
+  }
+  .widget-open-surface:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .widget-viewer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    background: rgba(24, 22, 20, 0.42);
+    backdrop-filter: blur(14px);
+  }
+  .widget-viewer-overlay.open {
+    display: flex;
+  }
+  .widget-viewer-overlay.fullscreen {
+    padding: 10px;
+  }
+  .widget-viewer-dialog {
+    width: min(980px, 94vw);
+    height: min(760px, 88vh);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 24px;
+    background: linear-gradient(180deg, #ffffff, #faf8f4);
+    border: 1px solid rgba(255,255,255,0.72);
+    box-shadow: 0 34px 110px rgba(0,0,0,0.28);
+    animation: zoomIn 0.24s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .widget-viewer-overlay.fullscreen .widget-viewer-dialog {
+    width: 100%;
+    height: 100%;
+    border-radius: 18px;
+  }
+  .widget-viewer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    background: rgba(255,255,255,0.78);
+  }
+  .widget-viewer-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+  .widget-viewer-title-group > i {
+    width: 22px;
+    height: 22px;
+    color: var(--theme-color);
+    flex-shrink: 0;
+  }
+  .widget-viewer-eyebrow {
+    display: block;
+    margin-bottom: 3px;
+    color: color-mix(in srgb, var(--color-text-sub) 78%, transparent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .widget-viewer-title-group h3 {
+    margin: 0;
+    color: var(--color-text-main);
+    font-size: 17px;
+    line-height: 1.2;
+    font-weight: 760;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .widget-viewer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .widget-viewer-action {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: #fff;
+    color: var(--color-text-sub);
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .widget-viewer-action:hover {
+    color: var(--theme-color);
+    border-color: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 34%, transparent);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px -18px color-mix(in srgb, var(--theme-primary, var(--theme-color)) 45%, transparent);
+  }
+  .widget-viewer-action i {
+    width: 17px;
+    height: 17px;
+  }
+  .widget-viewer-stage {
+    flex: 1;
+    min-height: 0;
+    padding: 16px;
+    background: radial-gradient(circle at top, rgba(255,255,255,0.96), rgba(249,247,243,0.95));
+  }
+  .widget-viewer-stage iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+  }
+
+  .widget-context-menu {
+    position: fixed;
+    z-index: 1300;
+    display: none;
+    min-width: 160px;
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.96);
+    box-shadow: 0 18px 46px -28px rgba(0,0,0,0.35);
+    backdrop-filter: blur(12px);
+  }
+  .widget-context-menu.open { display: block; }
+  .widget-context-menu button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 10px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--color-text-main);
+    font-size: 13px;
+    font-weight: 650;
+    text-align: left;
+    cursor: pointer;
+  }
+  .widget-context-menu button:hover {
+    background: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 9%, white);
+    color: var(--theme-color);
+  }
+  .widget-context-menu button.danger:hover {
+    background: color-mix(in srgb, #ff4d4f 10%, white);
+    color: #ff4d4f;
+  }
+  .widget-context-menu i {
+    width: 15px;
+    height: 15px;
+  }
 
   /* 调整手柄 (Resizable) */
   .resize-handle {
@@ -480,30 +835,430 @@ import Sidebar from '../components/Sidebar.astro';
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3);
     backdrop-filter: blur(12px); z-index: 1000; display: none; align-items: center; justify-content: center;
   }
-  .widget-editor-content {
-    background: #fff; width: 95%; max-width: 900px; height: 85vh; border-radius: 24px;
-    display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 100px rgba(0,0,0,0.2);
+  .widget-editor-content.widget-editor-pro {
+    background: linear-gradient(180deg, #ffffff 0%, #faf8f4 100%);
+    width: min(1240px, 96vw);
+    height: min(90vh, 900px);
+    border-radius: 28px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 30px 100px rgba(0,0,0,0.22);
+    border: 1px solid rgba(255,255,255,0.65);
     animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .editor-header { padding: 24px 30px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
-  .editor-config-panel { padding: 20px 30px; background: #fafafa; border-bottom: 1px solid #f0f0f0; }
-  .config-row { display: flex; gap: 20px; }
-  .config-item { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-  .config-item label { font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; }
-  .config-item input, .config-item select { padding: 10px 14px; border-radius: 10px; border: 1px solid #ddd; outline: none; }
-  .editor-tabs { display: flex; padding: 10px 30px; gap: 15px; border-bottom: 1px solid #f0f0f0; }
-  .tab-btn { padding: 8px 0; border: none; background: none; cursor: pointer; font-weight: 600; color: #999; }
-  .tab-btn.active { color: var(--theme-color); border-bottom: 2px solid var(--theme-color); }
-  .editor-panes { flex-grow: 1; padding: 20px 30px; }
-  .editor-panes textarea {
-    width: 100%; height: 100%; background: #1e1e1e; color: #d4d4d4; border-radius: 14px;
-    padding: 20px; font-family: 'Fira Code', monospace; resize: none; border: none; outline: none;
+  .editor-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 24px 28px 18px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    background: rgba(255,255,255,0.72);
   }
-  .editor-footer { padding: 20px 30px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 12px; }
-  .save-widget-btn { background: var(--theme-color); color: #fff; padding: 12px 30px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; }
-  .cancel-btn { background: #fff; border: 1px solid #ddd; padding: 12px 24px; border-radius: 12px; cursor: pointer; }
-
-  /* ================= 骨架屏与动效 ================= */
+  .editor-title-group {
+    min-width: 0;
+  }
+  .editor-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 70%, #5c5c5c);
+  }
+  .editor-title-group h3 {
+    margin: 0;
+    color: var(--color-text-main);
+    font-size: 22px;
+    line-height: 1.2;
+    font-weight: 760;
+  }
+  .editor-subtitle {
+    margin: 6px 0 0;
+    color: var(--color-text-sub);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .close-editor-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: #fff;
+    color: var(--color-text-sub);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .close-editor-btn:hover {
+    color: var(--theme-color);
+    border-color: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 35%, transparent);
+    box-shadow: 0 12px 24px -18px color-mix(in srgb, var(--theme-primary, var(--theme-color)) 48%, transparent);
+    transform: translateY(-1px);
+  }
+  .close-editor-btn i {
+    width: 18px;
+    height: 18px;
+  }
+  .widget-editor-shell {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 16px;
+    padding: 18px 20px 0;
+    min-height: 0;
+    flex: 1;
+  }
+  .widget-template-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border-radius: 22px;
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    overflow: auto;
+  }
+  .template-panel-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-sub);
+    margin-bottom: 2px;
+  }
+  .widget-template-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid transparent;
+    background: rgba(255,255,255,0.65);
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+  .widget-template-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 28%, transparent);
+    box-shadow: 0 14px 28px -22px color-mix(in srgb, var(--theme-primary, var(--theme-color)) 35%, transparent);
+  }
+  .widget-template-card.active {
+    background: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 10%, white);
+    border-color: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 45%, transparent);
+    box-shadow: 0 14px 28px -22px color-mix(in srgb, var(--theme-primary, var(--theme-color)) 42%, transparent);
+  }
+  .widget-template-card i {
+    width: 18px;
+    height: 18px;
+    color: var(--theme-color);
+  }
+  .widget-template-card span {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text-main);
+  }
+  .widget-template-card small {
+    font-size: 12px;
+    color: var(--color-text-sub);
+  }
+  .widget-editor-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 16px;
+  }
+  .config-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .config-item {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    flex: 1;
+    min-width: 0;
+  }
+  .config-item.flex-2 {
+    flex: 1.35;
+  }
+  .config-item label {
+    color: color-mix(in srgb, var(--color-text-sub) 82%, #111);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .size-config-item {
+    min-width: 220px;
+  }
+  .size-config-item select {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .widget-size-options {
+    display: flex;
+    gap: 8px;
+  }
+  .widget-size-btn {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: white;
+    color: var(--color-text-sub);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .widget-size-btn.active {
+    color: var(--theme-color);
+    border-color: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 35%, transparent);
+    background: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 9%, white);
+  }
+  .split-editor-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    gap: 16px;
+    min-height: 0;
+    flex: 1;
+  }
+  .editor-body {
+    min-height: 0;
+  }
+  .code-editor-area,
+  .widget-preview-panel {
+    min-height: 0;
+    border-radius: 22px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
+    box-shadow: 0 20px 48px -34px rgba(0,0,0,0.2);
+  }
+  .code-editor-area {
+    display: flex;
+    flex-direction: column;
+  }
+  .widget-preview-panel {
+    display: flex;
+    flex-direction: column;
+  }
+  .preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    background: linear-gradient(180deg, #fff, #fafafa);
+  }
+  .preview-header span {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-main);
+  }
+  .preview-header small {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--color-text-sub);
+  }
+  .preview-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: white;
+    color: var(--color-text-main);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .preview-refresh-btn:hover {
+    color: var(--theme-color);
+    border-color: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 30%, transparent);
+    box-shadow: 0 10px 20px -16px color-mix(in srgb, var(--theme-primary, var(--theme-color)) 40%, transparent);
+  }
+  .preview-refresh-btn i {
+    width: 14px;
+    height: 14px;
+  }
+  .preview-stage {
+    flex: 1;
+    padding: 16px;
+    background: radial-gradient(circle at top, rgba(255,255,255,0.96), rgba(249,247,243,0.95));
+  }
+  .preview-stage iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 18px;
+    background: white;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+  }
+  .editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px 20px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    background: rgba(255,255,255,0.75);
+  }
+  .editor-storage-note {
+    margin: 0;
+    font-size: 12px;
+    color: var(--color-text-sub);
+  }
+  .editor-footer-actions {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+  }
+  .cancel-btn,
+  .save-widget-btn {
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .cancel-btn {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.1);
+    color: var(--color-text-main);
+  }
+  .save-widget-btn {
+    background: var(--theme-color);
+    border: 1px solid color-mix(in srgb, var(--theme-primary, var(--theme-color)) 78%, transparent);
+    color: #fff;
+    box-shadow: 0 14px 26px -18px color-mix(in srgb, var(--theme-primary, var(--theme-color)) 70%, transparent);
+  }
+  .cancel-btn:hover,
+  .save-widget-btn:hover {
+    transform: translateY(-1px);
+  }
+  .cancel-btn:hover {
+    border-color: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 30%, transparent);
+  }
+  .save-widget-btn:hover {
+    box-shadow: 0 18px 32px -18px color-mix(in srgb, var(--theme-primary, var(--theme-color)) 75%, transparent);
+  }
+  .editor-config-panel {
+    padding: 0;
+    background: transparent;
+    border-bottom: none;
+  }
+  .config-item input, .config-item select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    outline: none;
+    background: white;
+    color: var(--color-text-main);
+  }
+  .editor-tabs {
+    display: flex;
+    padding: 12px 14px 0;
+    gap: 10px;
+    border-bottom: none;
+  }
+  .tab-btn {
+    padding: 10px 14px;
+    border-radius: 12px 12px 0 0;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-bottom: none;
+    background: rgba(247,247,247,0.8);
+    cursor: pointer;
+    font-weight: 600;
+    color: #999;
+  }
+  .tab-btn.active {
+    color: var(--theme-color);
+    background: white;
+    border-color: rgba(0,0,0,0.08);
+  }
+  .editor-panes {
+    padding: 0 14px 14px;
+    height: calc(100% - 54px);
+  }
+  .editor-panes textarea {
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
+    height: 100%;
+    background: #121212;
+    color: #d4d4d4;
+    border-radius: 0 0 18px 18px;
+    padding: 18px;
+    font-family: 'Fira Code', monospace;
+    resize: none;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-top: none;
+    outline: none;
+  }
+  @media (max-width: 1100px) {
+    .widget-editor-shell,
+    .split-editor-body {
+      grid-template-columns: 1fr;
+    }
+    .widget-template-panel {
+      flex-direction: row;
+      overflow-x: auto;
+    }
+    .widget-template-card {
+      min-width: 180px;
+    }
+  }
+  @media (max-width: 768px) {
+    .widget-viewer-overlay {
+      padding: 14px;
+    }
+    .widget-viewer-dialog {
+      width: 100%;
+      height: 90vh;
+      border-radius: 20px;
+    }
+    .widget-viewer-header {
+      padding: 14px;
+    }
+    .widget-viewer-stage {
+      padding: 12px;
+    }
+    .widget-editor-content.widget-editor-pro {
+      width: 96vw;
+      height: 92vh;
+    }
+    .editor-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .editor-footer-actions {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
   @keyframes skeleton-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
   .skeleton-card {
     height: 110px; border-radius: var(--radius-md); border: 1px solid var(--card-border);

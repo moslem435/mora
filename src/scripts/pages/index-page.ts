@@ -1,5 +1,6 @@
 import { storage } from '../storage';
 import { renderLucideIconsSafe } from '../ui/icons';
+import { showToast } from '../ui/toast';
 
 interface Widget {
   id: string;
@@ -63,7 +64,7 @@ export function initMainPage() {
       workbenchModeBtn.classList.add('active');
       mainContent?.classList.add('workbench-active');
       modeSlider.style.transform = 'translateX(calc(100% + 4px))';
-      positionDragLayoutItems();
+      scheduleWorkbenchLayoutRefresh();
     }
     
     renderLucideIconsSafe();
@@ -100,15 +101,191 @@ export function initMainPage() {
   const cssEditor = document.getElementById('cssEditor') as HTMLTextAreaElement;
   const jsEditor = document.getElementById('jsEditor') as HTMLTextAreaElement;
   const tabs = document.querySelectorAll('.tab-btn');
+  const previewFrame = document.getElementById('widgetPreviewFrame') as HTMLIFrameElement | null;
+  const refreshPreviewBtn = document.getElementById('refreshWidgetPreview') as HTMLButtonElement | null;
+  const templateCards = document.querySelectorAll<HTMLElement>('.widget-template-card');
+  const sizeButtons = document.querySelectorAll<HTMLElement>('.widget-size-btn');
+  const widgetViewer = document.getElementById('widgetViewer');
+  const widgetViewerFrame = document.getElementById('widgetViewerFrame') as HTMLIFrameElement | null;
+  const widgetViewerTitle = document.getElementById('widgetViewerTitle');
+  const widgetViewerIcon = document.getElementById('widgetViewerIcon');
+  const refreshWidgetViewer = document.getElementById('refreshWidgetViewer');
+  const editWidgetViewer = document.getElementById('editWidgetViewer');
+  const toggleWidgetViewerFullscreen = document.getElementById('toggleWidgetViewerFullscreen');
+  const closeWidgetViewer = document.getElementById('closeWidgetViewer');
+  const lockWorkbenchBtn = document.getElementById('lockWorkbenchBtn');
+  const resetWorkbenchBtn = document.getElementById('resetWorkbenchBtn');
+  const exportWorkbenchBtn = document.getElementById('exportWorkbenchBtn');
+  const importWorkbenchBtn = document.getElementById('importWorkbenchBtn');
+  const importWorkbenchInput = document.getElementById('importWorkbenchInput') as HTMLInputElement | null;
+  const widgetContextMenu = document.getElementById('widgetContextMenu');
+  let activeViewerWidget: Widget | null = null;
+  let contextMenuWidget: Widget | null = null;
+
+  const WIDGET_TEMPLATES: Record<string, { name: string; icon: string; size: 'normal' | 'wide'; html: string; css: string; js: string }> = {
+    clock: {
+      name: '数字时钟',
+      icon: 'clock-3',
+      size: 'normal',
+      html: '<div class="clock-widget"><div id="clockTime">00:00:00</div><div id="clockDate">2026-06-09</div></div>',
+      css: 'body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;background:linear-gradient(135deg,#f8f7f4,#fff);color:#202020}.clock-widget{text-align:center}#clockTime{font-size:42px;font-weight:700;letter-spacing:.06em}#clockDate{margin-top:10px;font-size:12px;color:#6b6b6b}',
+      js: 'const timeEl=document.getElementById("clockTime");const dateEl=document.getElementById("clockDate");function tick(){const now=new Date();if(timeEl) timeEl.textContent=now.toLocaleTimeString("zh-CN",{hour12:false});if(dateEl) dateEl.textContent=now.toLocaleDateString("zh-CN",{year:"numeric",month:"2-digit",day:"2-digit",weekday:"long"});}tick();setInterval(tick,1000);'
+    },
+    note: {
+      name: '便签',
+      icon: 'sticky-note',
+      size: 'normal',
+      html: '<div class="note-widget"><h4>今日重点</h4><p>把最重要的一件事放在这里。</p></div>',
+      css: 'body{margin:0;padding:0;display:flex;height:100vh;font-family:system-ui;background:#fff8e8;color:#433a2e}.note-widget{padding:20px}.note-widget h4{margin:0 0 12px;font-size:18px}.note-widget p{margin:0;font-size:14px;line-height:1.7}',
+      js: ''
+    },
+    countdown: {
+      name: '倒计时',
+      icon: 'timer',
+      size: 'wide',
+      html: '<div class="countdown-widget"><div id="countdownTitle">目标日</div><div id="countdownDays">00</div><div class="countdown-sub">天</div></div>',
+      css: 'body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;background:linear-gradient(135deg,#f3f8ff,#ffffff);color:#1d2b3a}.countdown-widget{text-align:center}#countdownTitle{font-size:14px;color:#5a6b7b;letter-spacing:.08em;text-transform:uppercase}#countdownDays{margin-top:12px;font-size:48px;font-weight:800;line-height:1}.countdown-sub{margin-top:8px;font-size:12px;color:#6d7d8c}',
+      js: 'const daysEl=document.getElementById("countdownDays");const target=new Date();target.setDate(target.getDate()+30);function tick(){const now=new Date();const diff=Math.max(0,Math.ceil((target-now)/86400000));if(daysEl) daysEl.textContent=String(diff).padStart(2,"0");}tick();setInterval(tick,1000*60*10);'
+    },
+    blank: {
+      name: '新建小组件',
+      icon: 'code-2',
+      size: 'normal',
+      html: '<div class="blank-widget">在这里开始你的组件。</div>',
+      css: 'body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;background:#fff;color:#333}.blank-widget{padding:20px;font-size:14px;color:#666}',
+      js: ''
+    }
+  };
+
+  function getEditorValues() {
+    return {
+      name: nameInput?.value || '',
+      icon: iconInput?.value || 'code-2',
+      size: (sizeInput?.value as 'normal' | 'wide') || 'normal',
+      html: htmlEditor?.value || '',
+      css: cssEditor?.value || '',
+      js: jsEditor?.value || ''
+    };
+  }
+
+  function buildPreviewSrcDoc() {
+    return buildWidgetSrcDoc(getEditorValues(), 'Preview Error');
+  }
+
+  function syncPreviewFrame() {
+    if (previewFrame) previewFrame.srcdoc = buildPreviewSrcDoc();
+  }
+
+  function applyTemplate(templateKey: string) {
+    const template = WIDGET_TEMPLATES[templateKey] || WIDGET_TEMPLATES.blank;
+    if (nameInput) nameInput.value = template.name;
+    if (iconInput) iconInput.value = template.icon;
+    if (sizeInput) sizeInput.value = template.size;
+    if (htmlEditor) htmlEditor.value = template.html;
+    if (cssEditor) cssEditor.value = template.css;
+    if (jsEditor) jsEditor.value = template.js;
+    templateCards.forEach((card) => card.classList.toggle('active', card.dataset.template === templateKey));
+    sizeButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.size === template.size));
+    syncPreviewFrame();
+  }
+
+  function syncSizeButtons(size: 'normal' | 'wide') {
+    sizeButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.size === size));
+  }
+
+  function debounce<T extends (...args: any[]) => void>(fn: T, delay = 250) {
+    let timer = 0;
+    return (...args: Parameters<T>) => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  const debouncedSyncPreviewFrame = debounce(syncPreviewFrame, 220);
+
+  function sanitizeWidgetValues() {
+    const values = getEditorValues();
+    return {
+      name: values.name.trim(),
+      icon: values.icon.trim() || 'code-2',
+      size: values.size === 'wide' ? 'wide' : 'normal',
+      html: values.html.trim(),
+      css: values.css,
+      js: values.js
+    };
+  }
+
+  function validateWidget(values: ReturnType<typeof sanitizeWidgetValues>) {
+    if (!values.name) return '请填写组件名称';
+    if (!values.html && !values.css && !values.js) return '请至少填写 HTML、CSS 或 JS 中的一项';
+    if (!/^[a-z0-9-]+$/i.test(values.icon)) return '图标名只能包含字母、数字和连字符';
+    return '';
+  }
+
+  function closeWidgetEditor() {
+    if (widgetEditor) widgetEditor.style.display = 'none';
+  }
+
+  function persistWidgetsSafely(widgets: Widget[]) {
+    try {
+      saveWidgets(widgets);
+      return true;
+    } catch (e) {
+      console.error('Save custom widgets failed:', e);
+      showToast('保存失败，浏览器本地存储空间可能不足', 'error');
+      return false;
+    }
+  }
+
+  function setActiveEditorTab(type: string | null) {
+    tabs.forEach(t => t.classList.toggle('active', t.getAttribute('data-tab') === type));
+    htmlEditor.style.display = type === 'html' ? 'block' : 'none';
+    cssEditor.style.display = type === 'css' ? 'block' : 'none';
+    jsEditor.style.display = type === 'js' ? 'block' : 'none';
+  }
+
+  templateCards.forEach((card) => {
+    card.addEventListener('click', () => applyTemplate(card.dataset.template || 'blank'));
+  });
+
+  sizeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const size = btn.dataset.size === 'wide' ? 'wide' : 'normal';
+      sizeInput.value = size;
+      syncSizeButtons(size);
+      debouncedSyncPreviewFrame();
+    });
+  });
+
+  sizeInput?.addEventListener('change', () => syncSizeButtons(sizeInput.value === 'wide' ? 'wide' : 'normal'));
+  refreshPreviewBtn?.addEventListener('click', syncPreviewFrame);
+  [nameInput, iconInput, htmlEditor, cssEditor, jsEditor].forEach((input) => {
+    input?.addEventListener('input', debouncedSyncPreviewFrame);
+  });
+
+  lockWorkbenchBtn?.addEventListener('click', () => {
+    isWorkbenchLocked = !isWorkbenchLocked;
+    localStorage.setItem('workbench_locked', String(isWorkbenchLocked));
+    syncWorkbenchLockState();
+    showToast(isWorkbenchLocked ? '布局已锁定' : '布局已解锁', 'success');
+  });
+  resetWorkbenchBtn?.addEventListener('click', resetWorkbenchLayout);
+  exportWorkbenchBtn?.addEventListener('click', exportWorkbenchData);
+  importWorkbenchBtn?.addEventListener('click', () => importWorkbenchInput?.click());
+  importWorkbenchInput?.addEventListener('change', () => {
+    const file = importWorkbenchInput.files?.[0];
+    if (file) importWorkbenchData(file);
+  });
 
   let editingWidgetId: string | null = null;
   let workbenchLayoutMode: 'arrange' | 'drag' = localStorage.getItem('workbench_layout_mode') === 'drag' ? 'drag' : 'arrange';
+  let isWorkbenchLocked = localStorage.getItem('workbench_locked') === 'true';
 
   const CUSTOM_WIDGETS_KEY = 'custom_widgets';
   const WORKBENCH_LAYOUT_KEY = 'workbench_layout';
   const WIDGET_COLUMN_GAP = 24;
   const WIDGET_ROW_GAP = 12;
-  const GRID_COLUMN_WIDTH = 140;
+  const GRID_COLUMN_WIDTH = 220;
   const GRID_ROW_HEIGHT = 6;
   const DEFAULT_WIDGET_WIDTH = 300;
   const DEFAULT_WIDGET_HEIGHT = 180;
@@ -157,12 +334,151 @@ export function initMainPage() {
     localStorage.setItem(WORKBENCH_LAYOUT_KEY, JSON.stringify(layouts));
   }
 
+  function syncWorkbenchLockState() {
+    workbenchGrid?.classList.toggle('layout-locked', isWorkbenchLocked);
+    lockWorkbenchBtn?.classList.toggle('active', isWorkbenchLocked);
+    lockWorkbenchBtn?.setAttribute('title', isWorkbenchLocked ? '解锁布局' : '锁定布局');
+    const icon = lockWorkbenchBtn?.querySelector('i');
+    icon?.setAttribute('data-lucide', isWorkbenchLocked ? 'lock' : 'lock-open');
+    renderLucideIconsSafe();
+  }
+
+  function deleteWidget(widget: Widget) {
+    const filtered = getSavedWidgets().filter((w) => w.id !== widget.id);
+    const layouts = getWorkbenchLayouts();
+    delete layouts[widget.id];
+    if (!persistWidgetsSafely(filtered)) return false;
+    saveWorkbenchLayouts(layouts);
+    document.querySelector(`[data-widget-id="${widget.id}"]`)?.remove();
+    if (activeViewerWidget?.id === widget.id) closeWidgetViewerDialog();
+    positionDragLayoutItems();
+    showToast('小组件已删除', 'success');
+    return true;
+  }
+
+  function duplicateWidget(widget: Widget) {
+    const copy: Widget = {
+      ...widget,
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      name: `${widget.name || '未命名组件'} 副本`,
+      x: undefined,
+      y: undefined
+    };
+    const saved = getSavedWidgets();
+    saved.push(copy);
+    if (!persistWidgetsSafely(saved)) return;
+    renderWidgetCard(copy);
+    scheduleWorkbenchLayoutRefresh();
+    showToast('小组件已复制', 'success');
+  }
+
+  function resetCardLayout(card: HTMLElement, widget?: Widget) {
+    const id = getCardLayoutId(card);
+    if (id) {
+      const layouts = getWorkbenchLayouts();
+      delete layouts[id];
+      saveWorkbenchLayouts(layouts);
+    }
+    if (widget) {
+      delete widget.width;
+      delete widget.height;
+      widget.size = widget.size === 'wide' ? 'wide' : 'normal';
+      updateSavedWidget(widget);
+    }
+    card.style.left = '';
+    card.style.top = '';
+    card.style.width = '';
+    card.style.height = '';
+    card.style.minHeight = '';
+    applySavedLayout(card, widget);
+  }
+
+  function resetWorkbenchLayout() {
+    if (!confirm('确定要重置工作台布局吗？组件内容不会被删除。')) return;
+    saveWorkbenchLayouts({});
+    const saved = getSavedWidgets().map((widget) => {
+      const next = { ...widget };
+      delete next.width;
+      delete next.height;
+      delete next.x;
+      delete next.y;
+      return next;
+    });
+    persistWidgetsSafely(saved);
+    workbenchGrid?.querySelectorAll<HTMLElement>('.widget-card').forEach((card) => {
+      card.style.left = '';
+      card.style.top = '';
+      card.style.width = '';
+      card.style.height = '';
+      card.style.minHeight = '';
+      applySavedLayout(card);
+    });
+    scheduleWorkbenchLayoutRefresh();
+    showToast('布局已重置', 'success');
+  }
+
+  function exportWorkbenchData() {
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      widgets: getSavedWidgets(),
+      layouts: getWorkbenchLayouts(),
+      layoutMode: workbenchLayoutMode,
+      locked: isWorkbenchLocked
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `mora-workbench-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showToast('工作台已导出', 'success');
+  }
+
+  function importWorkbenchData(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result || '{}'));
+        if (!Array.isArray(data.widgets) || typeof data.layouts !== 'object' || !data.layouts) {
+          showToast('导入文件格式不正确', 'error');
+          return;
+        }
+        if (!confirm('导入会覆盖当前自定义组件和工作台布局，是否继续？')) return;
+        if (!persistWidgetsSafely(data.widgets)) return;
+        saveWorkbenchLayouts(data.layouts);
+        if (data.layoutMode === 'drag' || data.layoutMode === 'arrange') workbenchLayoutMode = data.layoutMode;
+        isWorkbenchLocked = !!data.locked;
+        localStorage.setItem('workbench_layout_mode', workbenchLayoutMode);
+        localStorage.setItem('workbench_locked', String(isWorkbenchLocked));
+        workbenchGrid?.querySelectorAll('.custom-code-widget').forEach((node) => node.remove());
+        loadSavedWidgets();
+        setWorkbenchLayoutMode(workbenchLayoutMode);
+        syncWorkbenchLockState();
+        showToast('工作台已导入', 'success');
+      } catch (e) {
+        console.error('Import workbench failed:', e);
+        showToast('导入失败，请检查 JSON 文件', 'error');
+      } finally {
+        if (importWorkbenchInput) importWorkbenchInput.value = '';
+      }
+    };
+    reader.readAsText(file);
+  }
+
   function getCardLayoutId(card: HTMLElement) {
     return card.dataset.widgetId || card.dataset.builtin || null;
   }
 
   function getCardDefaultWidth(card: HTMLElement) {
     return card.classList.contains('wide-widget') ? WIDE_WIDGET_WIDTH : DEFAULT_WIDGET_WIDTH;
+  }
+
+  function getRestoredWidth(card: HTMLElement, width?: number) {
+    const defaultWidth = getCardDefaultWidth(card);
+    if (!width || width < defaultWidth) return defaultWidth;
+    return width;
   }
 
   function getMaxGridColumns() {
@@ -216,7 +532,26 @@ export function initMainPage() {
   function applySavedLayout(card: HTMLElement, widget?: Widget) {
     const id = getCardLayoutId(card);
     const layout = id ? getWorkbenchLayouts()[id] : null;
-    applyCardSize(card, widget?.width || layout?.width, widget?.height || layout?.height);
+    applyCardSize(card, getRestoredWidth(card, widget?.width || layout?.width), widget?.height || layout?.height);
+  }
+
+  function refreshWorkbenchCardLayouts() {
+    if (!workbenchGrid) return;
+
+    const savedWidgets = getSavedWidgets();
+    workbenchGrid.querySelectorAll<HTMLElement>('.widget-card').forEach((card) => {
+      const widgetId = card.dataset.widgetId;
+      const widget = widgetId ? savedWidgets.find((item) => item.id === widgetId) : undefined;
+      applySavedLayout(card, widget);
+    });
+
+    if (workbenchLayoutMode === 'drag') positionDragLayoutItems();
+  }
+
+  function scheduleWorkbenchLayoutRefresh() {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(refreshWorkbenchCardLayouts);
+    });
   }
 
   function positionDragLayoutItems() {
@@ -286,7 +621,7 @@ export function initMainPage() {
       }
     });
 
-    if (mode === 'drag') positionDragLayoutItems();
+    scheduleWorkbenchLayoutRefresh();
   }
 
   arrangeModeBtn?.addEventListener('click', () => setWorkbenchLayoutMode('arrange'));
@@ -294,45 +629,51 @@ export function initMainPage() {
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const type = tab.getAttribute('data-tab');
-      htmlEditor.style.display = type === 'html' ? 'block' : 'none';
-      cssEditor.style.display = type === 'css' ? 'block' : 'none';
-      jsEditor.style.display = type === 'js' ? 'block' : 'none';
+      setActiveEditorTab(tab.getAttribute('data-tab'));
     });
   });
 
   function openEditor(widget?: Widget) {
+    setActiveEditorTab('html');
     if (widget) {
       editingWidgetId = widget.id;
       editorModalTitle!.textContent = '编辑小组件';
       nameInput.value = widget.name;
-      iconInput.value = widget.icon;
-      sizeInput.value = widget.size;
+      iconInput.value = widget.icon || 'code-2';
+      sizeInput.value = widget.size === 'wide' ? 'wide' : 'normal';
       htmlEditor.value = widget.html;
       cssEditor.value = widget.css;
       jsEditor.value = widget.js;
+      templateCards.forEach((card) => card.classList.remove('active'));
+      syncSizeButtons(sizeInput.value as 'normal' | 'wide');
     } else {
       editingWidgetId = null;
       editorModalTitle!.textContent = '新建小组件';
-      nameInput.value = '';
-      iconInput.value = 'code-2';
-      sizeInput.value = 'normal';
-      htmlEditor.value = '';
-      cssEditor.value = '';
-      jsEditor.value = '';
+      applyTemplate('clock');
     }
     widgetEditor!.style.display = 'flex';
+    syncPreviewFrame();
   }
 
   addWidgetBtn?.addEventListener('click', () => openEditor());
-  closeEditor?.addEventListener('click', () => widgetEditor!.style.display = 'none');
-  cancelWidget?.addEventListener('click', () => widgetEditor!.style.display = 'none');
+  closeEditor?.addEventListener('click', closeWidgetEditor);
+  cancelWidget?.addEventListener('click', closeWidgetEditor);
+  widgetEditor?.addEventListener('click', (e) => {
+    if (e.target === widgetEditor) closeWidgetEditor();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (widgetViewer?.classList.contains('open')) {
+      closeWidgetViewerDialog();
+      return;
+    }
+    if (widgetEditor?.style.display === 'flex') closeWidgetEditor();
+  });
 
   function bindWidgetInteractions(card: HTMLElement, widget?: Widget) {
     const handle = card.querySelector('.resize-handle') as HTMLElement | null;
     handle?.addEventListener('pointerdown', (e) => {
+      if (isWorkbenchLocked) return;
       e.preventDefault();
       e.stopPropagation();
       card.classList.add('resizing');
@@ -407,6 +748,7 @@ export function initMainPage() {
 
     const header = card.querySelector('.widget-header') as HTMLElement | null;
     header?.addEventListener('pointerdown', (e) => {
+      if (isWorkbenchLocked) return;
       if (workbenchLayoutMode !== 'drag' || (e.target as HTMLElement).closest('button')) return;
       e.preventDefault();
       card.classList.add('dragging');
@@ -437,6 +779,122 @@ export function initMainPage() {
     });
   }
 
+  function buildWidgetSrcDoc(widget: Pick<Widget, 'html' | 'css' | 'js'>, label = 'Widget Error', overflow: 'hidden' | 'auto' = 'hidden') {
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
+            * { box-sizing: border-box; }
+            body { font-family: -apple-system, system-ui, sans-serif; overflow: ${overflow}; background: transparent; }
+            ${widget.css}
+          </style>
+        </head>
+        <body>
+          ${widget.html}
+          <script>
+            try { ${widget.js.replace(/<\/script/gi, '<\\/script')} } catch (e) { console.error('${label}:', e); }
+          </script>
+        </body>
+      </html>
+    `;
+  }
+
+  function openWidgetViewer(widget: Widget) {
+    activeViewerWidget = widget;
+    if (widgetViewerTitle) widgetViewerTitle.textContent = widget.name || '未命名组件';
+    if (widgetViewerIcon) widgetViewerIcon.setAttribute('data-lucide', widget.icon || 'code-2');
+    if (widgetViewerFrame) widgetViewerFrame.srcdoc = buildWidgetSrcDoc(widget, 'Widget Viewer Error', 'auto');
+    widgetViewer?.classList.add('open');
+    widgetViewer?.setAttribute('aria-hidden', 'false');
+    renderLucideIconsSafe();
+  }
+
+  function setWidgetViewerFullscreen(enabled: boolean) {
+    widgetViewer?.classList.toggle('fullscreen', enabled);
+    toggleWidgetViewerFullscreen?.setAttribute('title', enabled ? '退出全屏' : '全屏');
+    const icon = toggleWidgetViewerFullscreen?.querySelector('i');
+    icon?.setAttribute('data-lucide', enabled ? 'minimize-2' : 'maximize-2');
+    renderLucideIconsSafe();
+  }
+
+  function closeWidgetViewerDialog() {
+    setWidgetViewerFullscreen(false);
+    widgetViewer?.classList.remove('open');
+    widgetViewer?.setAttribute('aria-hidden', 'true');
+    if (widgetViewerFrame) widgetViewerFrame.srcdoc = '';
+    activeViewerWidget = null;
+  }
+
+  refreshWidgetViewer?.addEventListener('click', () => {
+    if (activeViewerWidget && widgetViewerFrame) {
+      widgetViewerFrame.srcdoc = buildWidgetSrcDoc(activeViewerWidget, 'Widget Viewer Error', 'auto');
+    }
+  });
+
+  editWidgetViewer?.addEventListener('click', () => {
+    if (!activeViewerWidget) return;
+    const widget = activeViewerWidget;
+    closeWidgetViewerDialog();
+    openEditor(widget);
+  });
+
+  toggleWidgetViewerFullscreen?.addEventListener('click', () => {
+    setWidgetViewerFullscreen(!widgetViewer?.classList.contains('fullscreen'));
+  });
+
+  closeWidgetViewer?.addEventListener('click', closeWidgetViewerDialog);
+  widgetViewer?.addEventListener('click', (e) => {
+    if (e.target === widgetViewer) closeWidgetViewerDialog();
+  });
+
+  function hideWidgetContextMenu() {
+    widgetContextMenu?.classList.remove('open');
+    widgetContextMenu?.setAttribute('aria-hidden', 'true');
+    contextMenuWidget = null;
+  }
+
+  function showWidgetContextMenu(event: MouseEvent, widget: Widget) {
+    event.preventDefault();
+    contextMenuWidget = widget;
+    if (!widgetContextMenu) return;
+
+    const menuWidth = 180;
+    const menuHeight = 220;
+    const left = Math.min(event.clientX, window.innerWidth - menuWidth - 12);
+    const top = Math.min(event.clientY, window.innerHeight - menuHeight - 12);
+    widgetContextMenu.style.left = `${Math.max(12, left)}px`;
+    widgetContextMenu.style.top = `${Math.max(12, top)}px`;
+    widgetContextMenu.classList.add('open');
+    widgetContextMenu.setAttribute('aria-hidden', 'false');
+    renderLucideIconsSafe();
+  }
+
+  widgetContextMenu?.addEventListener('click', (event) => {
+    const action = (event.target as HTMLElement).closest<HTMLButtonElement>('button')?.dataset.action;
+    if (!action || !contextMenuWidget) return;
+
+    const widget = contextMenuWidget;
+    const card = document.querySelector<HTMLElement>(`[data-widget-id="${widget.id}"]`);
+    hideWidgetContextMenu();
+
+    if (action === 'open') openWidgetViewer(widget);
+    if (action === 'edit') openEditor(widget);
+    if (action === 'duplicate') duplicateWidget(widget);
+    if (action === 'reset' && card) {
+      resetCardLayout(card, widget);
+      scheduleWorkbenchLayoutRefresh();
+      showToast('组件尺寸已重置', 'success');
+    }
+    if (action === 'delete' && confirm('确定要删除这个组件吗？')) deleteWidget(widget);
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!(event.target as HTMLElement).closest('#widgetContextMenu')) hideWidgetContextMenu();
+  });
+
   function renderWidgetCard(widget: Widget) {
     const existing = document.querySelector(`[data-widget-id="${widget.id}"]`);
     if (existing) existing.remove();
@@ -446,23 +904,7 @@ export function initMainPage() {
     card.setAttribute('data-widget-id', widget.id);
     applySavedLayout(card, widget);
     
-    const srcDoc = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; overflow: hidden; background: transparent; }
-            ${widget.css}
-          </style>
-        </head>
-        <body>
-          ${widget.html}
-          <script>
-            try { ${widget.js.replace(/<\/script/gi, '<\\/script')} } catch (e) { console.error('Widget Error:', e); }
-          </script>
-        </body>
-      </html>
-    `;
+    const srcDoc = buildWidgetSrcDoc(widget);
 
     card.innerHTML = `
       <div class="widget-header">
@@ -476,9 +918,9 @@ export function initMainPage() {
           <button class="action-btn delete delete-btn" title="删除"><i data-lucide="trash-2"></i></button>
         </div>
       </div>
-      <div style="flex-grow:1; position:relative; overflow: hidden; border-radius: 8px; pointer-events: none;">
-        <iframe class="custom-widget-frame" sandbox="allow-scripts" style="width:100%; height:100%; border:none; background:transparent;"></iframe>
-      </div>
+      <button class="widget-open-surface" type="button" title="点击查看完整小组件">
+        <iframe class="custom-widget-frame" sandbox="allow-scripts"></iframe>
+      </button>
       <div class="resize-handle" title="拖拽调整大小">
         <i data-lucide="grip-vertical"></i>
       </div>
@@ -489,6 +931,8 @@ export function initMainPage() {
 
     bindWidgetInteractions(card, widget);
 
+    card.addEventListener('contextmenu', (event) => showWidgetContextMenu(event, widget));
+    card.querySelector('.widget-open-surface')?.addEventListener('click', () => openWidgetViewer(widget));
     card.querySelector('.refresh-btn')?.addEventListener('click', () => {
       const iframe = card.querySelector('iframe');
       if (iframe) iframe.srcdoc = srcDoc;
@@ -496,13 +940,7 @@ export function initMainPage() {
     card.querySelector('.edit-btn')?.addEventListener('click', () => openEditor(widget));
     card.querySelector('.delete-btn')?.addEventListener('click', () => {
       if (confirm('确定要删除这个组件吗？')) {
-        const filtered = getSavedWidgets().filter((w) => w.id !== widget.id);
-        const layouts = getWorkbenchLayouts();
-        delete layouts[widget.id];
-        saveWidgets(filtered);
-        saveWorkbenchLayouts(layouts);
-        card.remove();
-        positionDragLayoutItems();
+        deleteWidget(widget);
       }
     });
 
@@ -512,25 +950,35 @@ export function initMainPage() {
   }
 
   saveWidgetBtn?.addEventListener('click', () => {
+    const values = sanitizeWidgetValues();
+    const validationMessage = validateWidget(values);
+    if (validationMessage) {
+      showToast(validationMessage, 'error');
+      return;
+    }
+
     const previous = editingWidgetId ? getSavedWidgets().find((w) => w.id === editingWidgetId) : null;
     const widget: Widget = {
       ...previous,
       id: editingWidgetId || Date.now().toString(),
-      name: nameInput.value,
-      icon: iconInput.value,
-      size: sizeInput.value as any,
-      html: htmlEditor.value,
-      css: cssEditor.value,
-      js: jsEditor.value
+      name: values.name,
+      icon: values.icon,
+      size: values.size,
+      html: values.html,
+      css: values.css,
+      js: values.js
     };
     const saved = getSavedWidgets();
     if (editingWidgetId) {
       const idx = saved.findIndex((w) => w.id === editingWidgetId);
       if (idx > -1) saved[idx] = widget;
     } else saved.push(widget);
-    saveWidgets(saved);
+
+    if (!persistWidgetsSafely(saved)) return;
+
     renderWidgetCard(widget);
-    widgetEditor!.style.display = 'none';
+    closeWidgetEditor();
+    showToast(editingWidgetId ? '小组件已更新' : '小组件已添加', 'success');
   });
 
   // ================= 内置小组件加载逻辑 =================
@@ -604,8 +1052,10 @@ export function initMainPage() {
     bindWidgetInteractions(card);
   });
   setWorkbenchLayoutMode(workbenchLayoutMode);
+  syncWorkbenchLockState();
+  scheduleWorkbenchLayoutRefresh();
   renderBuiltinWidgets();
-  window.addEventListener('resize', () => positionDragLayoutItems());
+  window.addEventListener('resize', () => scheduleWorkbenchLayoutRefresh());
 
   function renderSkeleton() {
     if (!gridSection) return;
