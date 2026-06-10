@@ -378,10 +378,11 @@ import Sidebar from '../components/Sidebar.astro';
   }
   .workbench-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    grid-auto-rows: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-auto-rows: 6px;
     grid-auto-flow: dense;
-    gap: 24px;
+    column-gap: 24px;
+    row-gap: 12px;
     position: relative;
     align-items: stretch;
     min-height: 220px;
@@ -392,10 +393,11 @@ import Sidebar from '../components/Sidebar.astro';
   .widget-card {
     width: auto; max-width: 100%;
     grid-column: span var(--widget-col-span, 1);
-    grid-row: span var(--widget-row-span, 7);
+    grid-row: span var(--widget-row-span, 5);
     background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-md);
-    padding: 20px; display: flex; flex-direction: column; gap: 16px; min-height: var(--widget-height, 180px); transition: all 0.3s ease; position: relative;
+    padding: 16px; display: flex; flex-direction: column; gap: 12px; height: var(--widget-height, 180px); transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease; position: relative;
     box-sizing: border-box; backdrop-filter: blur(10px); touch-action: none; overflow: hidden;
+    min-height: 0;
   }
   .widget-card:hover {
     transform: translateY(-4px);
@@ -404,7 +406,7 @@ import Sidebar from '../components/Sidebar.astro';
   }
   .widget-card.wide-widget { --widget-col-span: 2; }
   .workbench-grid.drag-layout .widget-card {
-    position: absolute; max-width: none; margin: 0; width: var(--widget-width, 300px); min-height: var(--widget-height, 180px);
+    position: absolute; max-width: none; margin: 0; width: var(--widget-width, 300px); height: var(--widget-height, 180px);
   }
   .workbench-grid.drag-layout .widget-card:hover,
   .widget-card.dragging,
@@ -414,10 +416,10 @@ import Sidebar from '../components/Sidebar.astro';
   .widget-card.dragging,
   .widget-card.resizing {
     z-index: 9999 !important;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    border-color: color-mix(in srgb, var(--theme-primary, var(--theme-color)) 78%, transparent);
+    box-shadow: 0 20px 50px -26px color-mix(in srgb, var(--theme-primary, var(--theme-color)) 55%, transparent), 0 18px 44px rgba(0,0,0,0.12);
     opacity: 0.96;
     transition: none !important;
-    border-color: var(--theme-color);
     background: var(--card-bg);
   }
   .widget-card.dragging { cursor: grabbing; }
@@ -425,7 +427,7 @@ import Sidebar from '../components/Sidebar.astro';
   .widget-card.dragging iframe { pointer-events: none; }
   .widget-header {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    min-height: 42px; margin: -8px -8px 0; padding: 8px;
+    min-height: 34px; margin: -6px -6px 0; padding: 6px;
     border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--color-text-main);
     user-select: none;
   }
@@ -462,9 +464,9 @@ import Sidebar from '../components/Sidebar.astro';
   .add-widget-btn {
     width: auto; max-width: 100%;
     grid-column: span 1;
-    grid-row: span 7;
+    grid-row: span 5;
     background: transparent; border: 2px dashed rgba(0, 0, 0, 0.08); border-radius: var(--radius-md);
-    min-height: 180px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;
+    min-height: 108px; cursor: pointer; transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease; display: flex; align-items: center; justify-content: center;
   }
   .workbench-grid.drag-layout .add-widget-btn {
     position: absolute; left: 0; top: var(--workbench-add-top, 0px); width: 300px;

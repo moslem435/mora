@@ -106,11 +106,13 @@ export function initMainPage() {
 
   const CUSTOM_WIDGETS_KEY = 'custom_widgets';
   const WORKBENCH_LAYOUT_KEY = 'workbench_layout';
-  const WIDGET_GAP = 24;
-  const GRID_COLUMN_WIDTH = 220;
-  const GRID_ROW_HEIGHT = 24;
+  const WIDGET_COLUMN_GAP = 24;
+  const WIDGET_ROW_GAP = 12;
+  const GRID_COLUMN_WIDTH = 140;
+  const GRID_ROW_HEIGHT = 6;
   const DEFAULT_WIDGET_WIDTH = 300;
   const DEFAULT_WIDGET_HEIGHT = 180;
+  const MIN_WIDGET_HEIGHT = 108;
   const WIDE_WIDGET_WIDTH = 624;
 
   function escapeHtml(value: string) {
@@ -163,16 +165,37 @@ export function initMainPage() {
     return card.classList.contains('wide-widget') ? WIDE_WIDGET_WIDTH : DEFAULT_WIDGET_WIDTH;
   }
 
-  function applyCardSize(card: HTMLElement, width?: number, height?: number) {
-    const nextWidth = Math.max(220, Math.round(width || getCardDefaultWidth(card)));
-    const nextHeight = Math.max(140, Math.round(height || DEFAULT_WIDGET_HEIGHT));
-    const colSpan = Math.max(1, Math.min(4, Math.round((nextWidth + WIDGET_GAP) / (GRID_COLUMN_WIDTH + WIDGET_GAP))));
-    const rowSpan = Math.max(5, Math.ceil(nextHeight / GRID_ROW_HEIGHT));
+  function getMaxGridColumns() {
+    const gridWidth = workbenchGrid?.clientWidth || GRID_COLUMN_WIDTH;
+    return Math.max(1, Math.floor((gridWidth + WIDGET_COLUMN_GAP) / (GRID_COLUMN_WIDTH + WIDGET_COLUMN_GAP)));
+  }
 
-    card.style.setProperty('--widget-width', `${nextWidth}px`);
-    card.style.setProperty('--widget-height', `${nextHeight}px`);
-    card.style.setProperty('--widget-col-span', String(colSpan));
-    card.style.setProperty('--widget-row-span', String(rowSpan));
+  function getWidgetGridMetrics(width: number, height: number) {
+    const maxCols = getMaxGridColumns();
+    const nextWidth = Math.max(220, Math.round(width));
+    const nextHeight = Math.max(MIN_WIDGET_HEIGHT, Math.round(height));
+    const colSpan = Math.max(1, Math.min(maxCols, Math.round((nextWidth + WIDGET_COLUMN_GAP) / (GRID_COLUMN_WIDTH + WIDGET_COLUMN_GAP))));
+    const rowSpan = Math.max(5, Math.ceil((nextHeight + WIDGET_ROW_GAP) / (GRID_ROW_HEIGHT + WIDGET_ROW_GAP)));
+    const appliedWidth = colSpan * GRID_COLUMN_WIDTH + (colSpan - 1) * WIDGET_COLUMN_GAP;
+    const appliedHeight = rowSpan * GRID_ROW_HEIGHT + (rowSpan - 1) * WIDGET_ROW_GAP;
+
+    return { nextWidth, nextHeight, colSpan, rowSpan, appliedWidth, appliedHeight };
+  }
+
+  function applyCardSize(card: HTMLElement, width?: number, height?: number) {
+    const metrics = getWidgetGridMetrics(width || getCardDefaultWidth(card), height || DEFAULT_WIDGET_HEIGHT);
+    const appliedWidth = workbenchLayoutMode === 'arrange' ? metrics.appliedWidth : metrics.nextWidth;
+    const appliedHeight = workbenchLayoutMode === 'arrange' ? metrics.appliedHeight : metrics.nextHeight;
+
+    card.style.setProperty('--widget-width', `${appliedWidth}px`);
+    card.style.setProperty('--widget-height', `${appliedHeight}px`);
+    card.style.setProperty('--widget-col-span', String(metrics.colSpan));
+    card.style.setProperty('--widget-row-span', String(metrics.rowSpan));
+  }
+
+  function applyLiveCardSize(card: HTMLElement, width: number, height: number) {
+    card.style.width = `${Math.max(220, Math.round(width))}px`;
+    card.style.height = `${Math.max(MIN_WIDGET_HEIGHT, Math.round(height))}px`;
   }
 
   function persistCardLayout(card: HTMLElement) {
@@ -216,11 +239,11 @@ export function initMainPage() {
       if (!layout || layout.x === undefined || layout.y === undefined) {
         if (x + width > containerWidth && x > 0) {
           x = 0;
-          y += rowHeight + WIDGET_GAP;
+          y += rowHeight + WIDGET_ROW_GAP;
           rowHeight = 0;
         }
         if (id) layouts[id] = { ...layout, x, y, width, height };
-        x += width + WIDGET_GAP;
+        x += width + WIDGET_COLUMN_GAP;
         rowHeight = Math.max(rowHeight, height);
       }
 
@@ -232,8 +255,8 @@ export function initMainPage() {
     });
 
     saveWorkbenchLayouts(layouts);
-    workbenchGrid.style.setProperty('--workbench-drag-height', `${maxBottom + DEFAULT_WIDGET_HEIGHT + WIDGET_GAP}px`);
-    workbenchGrid.style.setProperty('--workbench-add-top', `${maxBottom + WIDGET_GAP}px`);
+    workbenchGrid.style.setProperty('--workbench-drag-height', `${maxBottom + DEFAULT_WIDGET_HEIGHT + WIDGET_ROW_GAP}px`);
+    workbenchGrid.style.setProperty('--workbench-add-top', `${maxBottom + WIDGET_ROW_GAP}px`);
   }
 
   function setWorkbenchLayoutMode(mode: 'arrange' | 'drag') {
@@ -257,6 +280,7 @@ export function initMainPage() {
         item.style.top = '';
         if (item.classList.contains('widget-card')) {
           item.style.width = '';
+          item.style.height = '';
           item.style.minHeight = '';
         }
       }
@@ -315,25 +339,65 @@ export function initMainPage() {
 
       const startX = e.clientX;
       const startY = e.clientY;
-      const startWidth = card.offsetWidth;
-      const startHeight = card.offsetHeight;
+      const startWidth = Number.parseFloat(card.style.getPropertyValue('--widget-width')) || card.offsetWidth;
+      const startHeight = Number.parseFloat(card.style.getPropertyValue('--widget-height')) || card.offsetHeight;
+      const startMetrics = getWidgetGridMetrics(startWidth, startHeight);
+      const startColSpan = startMetrics.colSpan;
+      const startRowSpan = startMetrics.rowSpan;
+      const wasArrangeMode = workbenchLayoutMode === 'arrange';
+      const previousInlineWidth = card.style.width;
+      const previousInlineHeight = card.style.height;
+      const previousInlineMinHeight = card.style.minHeight;
 
-      const onPointerMove = (moveEvent: PointerEvent) => {
-        const nextWidth = Math.max(220, startWidth + moveEvent.clientX - startX);
-        const nextHeight = Math.max(140, startHeight + moveEvent.clientY - startY);
-        applyCardSize(card, nextWidth, nextHeight);
-        if (widget) {
-          widget.size = nextWidth > 420 ? 'wide' : 'normal';
-          widget.width = nextWidth;
-          widget.height = nextHeight;
+      if (wasArrangeMode) {
+        card.style.width = `${startWidth}px`;
+        card.style.height = `${startHeight}px`;
+      }
+
+      let pendingWidth = startWidth;
+      let pendingHeight = startHeight;
+      let rafId = 0;
+
+      const commitResize = () => {
+        rafId = 0;
+        const metrics = getWidgetGridMetrics(pendingWidth, pendingHeight);
+        if (wasArrangeMode) {
+          applyLiveCardSize(card, pendingWidth, pendingHeight);
+          if (metrics.colSpan !== startColSpan || metrics.rowSpan !== startRowSpan) {
+            applyCardSize(card, pendingWidth, pendingHeight);
+            positionDragLayoutItems();
+          }
+        } else {
+          applyCardSize(card, pendingWidth, pendingHeight);
         }
       };
 
+      const onPointerMove = (moveEvent: PointerEvent) => {
+        pendingWidth = Math.max(220, startWidth + moveEvent.clientX - startX);
+        pendingHeight = Math.max(MIN_WIDGET_HEIGHT, startHeight + moveEvent.clientY - startY);
+        if (!rafId) rafId = requestAnimationFrame(commitResize);
+      };
+
       const onPointerUp = () => {
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          commitResize();
+        }
         card.classList.remove('resizing');
         document.removeEventListener('pointermove', onPointerMove);
         document.removeEventListener('pointerup', onPointerUp);
-        if (widget) updateSavedWidget(widget);
+        if (wasArrangeMode) {
+          card.style.width = previousInlineWidth;
+          card.style.height = previousInlineHeight;
+          card.style.minHeight = previousInlineMinHeight;
+          applyCardSize(card, pendingWidth, pendingHeight);
+        }
+        if (widget) {
+          widget.size = pendingWidth > 420 ? 'wide' : 'normal';
+          widget.width = pendingWidth;
+          widget.height = pendingHeight;
+          updateSavedWidget(widget);
+        }
         persistCardLayout(card);
       };
 
